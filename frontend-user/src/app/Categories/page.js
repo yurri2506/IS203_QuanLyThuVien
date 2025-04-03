@@ -4,6 +4,7 @@ import LeftSideBar from "../components/LeftSideBar";
 import Image from "next/image";
 import ChatBox from "../components/ChatBox";
 import { Button } from "@/components/ui/button";
+import useSidebarStore from "@/store/sidebarStore";
 
 const categories = [
   "Văn học",
@@ -49,8 +50,8 @@ const BookCategories = () => {
           onClick={() => setActiveCategory("Sách tiếng việt")}
           className={`px-6 py-3 rounded-lg flex items-center justify-center text-l font-normal transition-all ${
             activeCategory === "Sách tiếng việt"
-              ? "bg-blue-400 text-white"
-              : "bg-zinc-200 text-sky-900"
+              ? "bg-blue-400 text-white hover:bg-blue-400"
+              : "bg-white text-sky-900 hover:bg-white"
           }`}
         >
           Sách tiếng việt
@@ -59,8 +60,8 @@ const BookCategories = () => {
           onClick={() => setActiveCategory("Sách ngoại ngữ")}
           className={`px-6 py-3 rounded-lg flex items-center justify-center text-l font-normal transition-all ${
             activeCategory === "Sách ngoại ngữ"
-              ? "bg-blue-400 text-white"
-              : "bg-zinc-200 text-sky-900"
+              ? "bg-blue-400 text-white hover:bg-blue-400"
+              : "bg-zinc-200 text-sky-900 hover:bg-white"
           }`}
         >
           Sách ngoại ngữ
@@ -144,14 +145,20 @@ const Page = () => {
     fetchBook();
   }, []);
 
+  const isSidebarOpen = useSidebarStore();
+
   return (
     <div className="min-h-screen pt-16 flex w-full text-foreground bg-[#E6EAF1] relative">
       <LeftSideBar />
-      <div className="flex flex-col w-full ml-63 mt-4  bg-[#E6EAF1] rounded-xl">
+      <div
+        className={`flex-1 py-4 px-0 transition-all duration-300 ${
+          isSidebarOpen ? "md:ml-64" : "md:ml-0"
+        }`}
+      >
         <BookCategories />
         <div className="flex flex-col p-6 mt-4 bg-white rounded-2xl ">
           <div>
-            <p className="px-6 py-3 w-fit bg-blue-400 rounded-2xl flex justify-center items-center gap-3 text-white text-16 font-normal font-montserrat">
+            <p className="px-6 py-3 w-fit bg-blue-400 rounded-xl flex justify-center items-center gap-3 text-white text-l font-normal font-montserrat">
               Văn học
             </p>
           </div>
