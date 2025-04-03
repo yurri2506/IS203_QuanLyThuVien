@@ -1,6 +1,7 @@
 "use client";
 import Sidebar from "../../components/sidebar/Sidebar";
 import { useState } from "react";
+import useSidebarStore from "@/store/sideBarStore";
 
 // Icons Components
 const BackIcon = () => (
@@ -193,6 +194,7 @@ const CompleteButton = ({ onClick }) => (
 
 // Main Component
 function page() {
+  const { isSidebarOpen } = useSidebarStore();
   const [formData, setFormData] = useState({
     id: "125",
     username: "",
@@ -225,7 +227,11 @@ function page() {
   return (
     <div className="flex flex-row w-full h-full bg-[#EFF3FB] ">
       <Sidebar />
-      <main className="flex w-full flex-col py-6 md:ml-52 relative mt-5 gap-2 px-10 pb-[100px]">
+      <main
+        className={`flex-1 py-6 px-10 transition-all duration-300 ${
+          isSidebarOpen ? "md:ml-6" : "md:ml-0"
+        }`}
+      >
         <section className="flex flex-col gap-5 p-8">
           <BackButton onClick={handleBack} />
 

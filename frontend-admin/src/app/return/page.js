@@ -5,13 +5,11 @@ import { History, Search, Plus, IndentIncrease, BookOpen } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/app/components/ui/button";
 import useSidebarStore from "@/store/sideBarStore";
-
-const page = () => {
-  const { isSidebarOpen } = useSidebarStore(); 
+const Page = () => {
   const router = useRouter();
-
+  const { isSidebarOpen } = useSidebarStore();
   const handleDetail = (id) => {
-    router.push(`/borrow/${id}`);
+    router.push(`/return/${id}`);
   };
   const handleReturn = () => {
     router.push(`/return`);
@@ -19,14 +17,11 @@ const page = () => {
   const handleBorrow = () => {
     router.push(`/borrow`);
   };
-  const handleAddBorrow = () => {
-    router.push(`/borrow/addBorrow`);
-  };
 
   // 🔹 Mock data (giả lập dữ liệu từ backend)
   const mockData = {
-    10: {
-      MaPhieuMuon: 10,
+    7: {
+      MaPhieuMuon: 7,
       MaNguoiDung: 20,
       TenNguyoiDung: "Nguyen Thanh Tri",
       NgayMuon: "09/03/2025",
@@ -64,8 +59,8 @@ const page = () => {
         },
       ],
     },
-    11: {
-      MaPhieuMuon: 11,
+    8: {
+      MaPhieuMuon: 8,
       MaNguoiDung: 18,
       TenNguyoiDung: "Le Thi Thuy Trang",
       NgayMuon: "09/03/2025",
@@ -93,8 +88,8 @@ const page = () => {
         },
       ],
     },
-    12: {
-      MaPhieuMuon: 12,
+    9: {
+      MaPhieuMuon: 9,
       MaNguoiDung: 71,
       TenNguyoiDung: "Nguyen Le Thanh Huyen",
       NgayMuon: "10/03/2025",
@@ -115,7 +110,7 @@ const page = () => {
   };
 
   return (
-    <div className="flex flex-row w-full h-screen bg-[#F4F7FE]">
+    <div className="flex flex-row w-full max-w- h-screen bg-[#F4F7FE]">
       <Sidebar />
       <div
         className={`flex-1 py-6 px-10 transition-all duration-300 ${
@@ -126,20 +121,20 @@ const page = () => {
           {/* Thanh công cụ */}
           <div className="flex items-center justify-between bg-white p-4 rounded-lg shadow-md">
             <button
-              className="flex justify-center items-center w-80 gap-2 bg-blue-400 text-white font-bold py-2 px-4 rounded-full"
+              className="flex justify-center items-center w-80 gap-2 bg-blue-200 text-gray-700 font-bold py-2 px-4 rounded-full"
               onClick={() => handleBorrow()}
+            >
+              <BookOpen className="w-5 h-5 text-gray-600" />
+              Đang Mượn
+            </button>
+            <button
+              className="flex justify-center items-center w-80 gap-2 bg-blue-400 text-white font-bold py-2 px-4 rounded-full"
+              onClick={() => handleReturn()}
             >
               <span className="text-xs font-semibold bg-white text-blue-400 px-2 py-1 rounded-full">
                 NOW
               </span>
-              <BookOpen className="w-5 h-5 text-white" />
-              Đang Mượn
-            </button>
-            <button
-              className="flex justify-center items-center w-80 gap-2 bg-blue-200 text-gray-700 font-bold py-2 px-4 rounded-full"
-              onClick={() => handleReturn()}
-            >
-              <History className="w-5 h-5 text-gray-600" />
+              <History className="w-5 h-5 text-white" />
               Đã Trả
             </button>
             <div className="flex items-center border border-gray-300 rounded-full px-3 py-1 bg-white">
@@ -187,10 +182,7 @@ const page = () => {
           </div>
 
           {/* Nút Thêm */}
-          <button
-            className="flex justify-center items-center fixed bottom-4 right-4 w-16 h-16 bg-[#6CB1DA] rounded-full"
-            onClick={() => handleAddBorrow()}
-          >
+          <button className="flex justify-center items-center fixed bottom-4 right-4 w-16 h-16 bg-[#6CB1DA] rounded-full">
             <Plus className="w-10 h-10 text-white" />
           </button>
         </div>
@@ -199,4 +191,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;
