@@ -4,12 +4,12 @@ import Sidebar from "../components/sidebar/Sidebar";
 import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
 import { useRouter } from "next/navigation";
-import { Pencil, Plus, Search, Trash2 } from "lucide-react";
+import { Menu, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
 import useSidebarStore from "@/store/sideBarStore";
 
 const Page = () => {
-  const { isSidebarOpen } = useSidebarStore();
+  const { isSidebarOpen, toggleSidebar } = useSidebarStore();
   const [searchQuery, setSearchQuery] = useState("");
   const [bookList, setBookList] = useState(null);
   const [filterBooks, setFilterBooks] = useState([]);
@@ -43,7 +43,7 @@ const Page = () => {
   const fetchBook = async () => {
     const test = [
       {
-        MaSach: "id sach1",
+        MaSach: 1,
         TenSach: "Tên sách 1",
         MoTa: "Mo ta mau",
         MaTheLoai: "ma the loai",
@@ -59,7 +59,7 @@ const Page = () => {
         SoLuongMuon: 3,
       },
       {
-        MaSach: "id sach2",
+        MaSach: 2,
         TenSach: "Tên sách 2",
         MoTa: "Mo ta mau",
         MaTheLoai: "ma the loai",
@@ -75,7 +75,7 @@ const Page = () => {
         SoLuongMuon: 3,
       },
       {
-        MaSach: "id sach3",
+        MaSach: 3,
         TenSach: "Tên sách 3",
         MoTa: "Mo ta mau",
         MaTheLoai: "ma the loai",
@@ -91,7 +91,7 @@ const Page = () => {
         SoLuongMuon: 3,
       },
       {
-        MaSach: "id sach4",
+        MaSach: 4,
         TenSach: "Tên sách 4",
         MoTa: "Mo ta mau",
         MaTheLoai: "ma the loai",
@@ -122,7 +122,7 @@ const Page = () => {
 
   const BookCard = ({ book }) => {
     return (
-      <div className="flex bg-white w-full rounded-lg mt-2 relative drop-shadow-lg p-5 gap-[20px] md:gap-[50px] items-center">
+      <div className="flex bg-white w-full rounded-lg mt-6 relative drop-shadow-lg p-5 gap-[20px] md:gap-[50px] items-center">
         <img src={`${book.HinhAnh[0]}`} className="w-[145px] h-[205px]" />
         <div className="flex flex-col gap-[10px] relative w-full">
           <p className="">ID: {book.MaSach}</p>
@@ -161,9 +161,10 @@ const Page = () => {
       <Sidebar />
       <div
         className={`flex-1 py-6 px-10 transition-all duration-300 ${
-          isSidebarOpen ? "md:ml-6" : "md:ml-0"
-        }`}
+          isSidebarOpen ? "ml-64" : "ml-0"
+        } md:ml-64`}
       >
+        {/* Nội dung chính */}
         <div className="flex w-full items-center justify-between mb-10">
           <div className="flex gap-5">
             <Input
