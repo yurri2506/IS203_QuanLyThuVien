@@ -14,7 +14,7 @@ const SidebarItem = ({ path, icon, label }) => {
   const isActive =
     path === "/borrow"
       ? pathname.startsWith("/borrow") || pathname.startsWith("/return")
-      : pathname === path;
+      : pathname.startsWith(path);
 
   const handleClick = () => {
     router.push(path);
