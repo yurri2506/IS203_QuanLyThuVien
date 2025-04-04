@@ -4,7 +4,6 @@ import { Eye, EyeOff } from "lucide-react";
 import LeftSideBar from "../components/LeftSideBar";
 //import axios from "axios";
 
-
 const ChangePassword = () => {
   const [user, setUser] = useState({ name: "", email: "", avatar: "" });
   const [currentPassword, setCurrentPassword] = useState("");
