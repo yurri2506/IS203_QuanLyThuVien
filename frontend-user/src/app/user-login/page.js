@@ -38,7 +38,6 @@ const Page = () => {
       .min(6, "Mật khẩu phải có ít nhất 6 ký tự"),
   });
 
-
   const handleLogin = (e) => {
     e.preventDefault();
     // Handle login logic here
