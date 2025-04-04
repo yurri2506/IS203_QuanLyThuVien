@@ -10,7 +10,6 @@ const LeftSideBar = () => {
   const { isSidebarOpen, toggleSidebar } = useSidebarStore();
   const router = useRouter();
   const pathname = usePathname();
-
   const handleNavigation = (path) => {
     router.push(path);
     if (isSidebarOpen) {
