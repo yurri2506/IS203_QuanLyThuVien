@@ -257,14 +257,14 @@ export default function EditBook() {
             {/* Footer */}
             <div className="flex justify-end items-center w-full  bg-white mt-20 ">
               <Button
-                className="mr-8 text-lg  p-4 bg-[#6CB1DA] hover:bg-[#6CB1DA] hover:opacity-50 cursor-pointer"
+                className="mr-4 text-lg  p-4 bg-[#6CB1DA] hover:bg-[#6CB1DA] hover:opacity-50 cursor-pointer"
                 onClick={() => openDeletePopup(bookData)}
               >
                 <Trash2 className="mr-1" />
                 Xóa
               </Button>
               <Button 
-                className="ml-8 text-lg p-4  bg-[#6CB1DA]  hover:bg-[#6CB1DA] hover:opacity-50 cursor-pointer"
+                className="ml-4 text-lg p-4  bg-[#6CB1DA]  hover:bg-[#6CB1DA] hover:opacity-50 cursor-pointer"
                 onClick = {handleUpdate }>
                 <CircleCheck className="mr-1" />
                 Hoàn tất
