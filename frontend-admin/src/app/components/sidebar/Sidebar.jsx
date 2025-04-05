@@ -1,114 +1,98 @@
 "use client";
-import { useState, useEffect } from "react";
 import { Button } from "@/app/components/ui/button";
-import { LogOut } from "lucide-react";
-import { useRouter, usePathname } from "next/navigation";
+import { Separator } from "@/components/ui/separator";
 import useSidebarStore from "@/store/sideBarStore";
+import { LogOut } from "lucide-react";
+import { User, Book, Settings, FileWarning, ArrowDownUp, LayoutDashboard } from "lucide-react";
+import { useRouter, usePathname } from "next/navigation";
 
-const SidebarItem = ({ path, icon, label }) => {
+
+const SidebarItem = ({ path, icon: Icon, label }) => {
   const router = useRouter();
   const pathname = usePathname();
   const { isSidebarOpen, toggleSidebar } = useSidebarStore();
-  const [isHovered, setIsHovered] = useState(false);
 
-  const isActive =
-    path === "/borrow"
-      ? pathname.startsWith("/borrow") || pathname.startsWith("/return")
-      : pathname.startsWith(path);
+
+  const isActive = pathname === path;
+
 
   const handleClick = () => {
     router.push(path);
-    if (isSidebarOpen && window.innerWidth < 768) {
+    if (isSidebarOpen) {
       toggleSidebar();
     }
   };
 
+
   return (
     <Button
       variant="ghost"
-      className={`w-full justify-start mb-2 cursor-pointer flex items-center text-[15px] font-medium rounded-md py-2 px-4 transition-all duration-200 ${
+      className={`w-full justify-start mb-3 cursor-pointer flex items-center text-[15px] transition-colors ${
         isActive
-          ? "text-white bg-[#062D76]"
-          : "text-black bg-transparent hover:bg-gray-100"
+          ? "text-white bg-[#6CB1DA]"
+          : "text-[#6CB1DA] bg-transparent hover:bg-[#6CB1DA]/10"
       }`}
       onClick={handleClick}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
     >
-      <img
-        src={icon}
-        alt={label}
-        className={`mr-3 w-5 h-5 ${
-          isActive && !isHovered ? "filter brightness-0 invert" : ""
-        }`}
-      />
-      <span>{label}</span>
+      <Icon className="mr-3 w-5 h-5 self-center" strokeWidth={2} />
+      <span className="relative top-[1px]">{label}</span>
     </Button>
   );
 };
 
+
 const Sidebar = () => {
-  const { isSidebarOpen, toggleSidebar } = useSidebarStore();
-  const [isMobileView, setIsMobileView] = useState(false);
+  const { isSidebarOpen } = useSidebarStore();
 
-  useEffect(() => {
-    const mediaQuery = window.matchMedia("(max-width: 767px)"); // Dưới 48rem (768px)
-    const handleResize = () => {
-      setIsMobileView(mediaQuery.matches);
-      if (mediaQuery.matches && isSidebarOpen) {
-        toggleSidebar(); // Đóng sidebar khi chuyển sang mobile
-      } else if (!mediaQuery.matches && !isSidebarOpen) {
-        toggleSidebar(); // Mở sidebar khi chuyển sang desktop
-      }
-    };
-
-    mediaQuery.addEventListener("change", handleResize);
-    handleResize();
-
-    return () => mediaQuery.removeEventListener("change", handleResize);
-  }, [isSidebarOpen, toggleSidebar]);
 
   const menuItems = [
-    { path: "/dashboard", icon: "/svg/dashboard.svg", label: "Dashboard" },
-    { path: "/users", icon: "/svg/user_admin.svg", label: "Người dùng" },
-    { path: "/books", icon: "/svg/book_admin.svg", label: "Sách" },
-    { path: "/borrow", icon: "/svg/return_admin.svg", label: "Mượn/Trả" },
-    { path: "/fine", icon: "/svg/fine_admin.svg", label: "Phiếu phạt" },
-    { path: "/setting", icon: "/svg/setting.svg", label: "Cài đặt" },
+    { path: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+    { path: "/users", icon: User, label: "Người dùng" },
+    { path: "/books", icon: Book, label: "Sách" },
+    { path: "/borrow", icon: ArrowDownUp, label: "Mượn/Trả" },
+    { path: "/fine", icon: FileWarning, label: "Phiếu phạt" },
+    { path: "/setting", icon: Settings, label: "Cài đặt" },
   ];
+
 
   return (
     <aside
-      className={`w-64 bg-white shadow-md flex flex-col z-50 fixed top-0 left-0 h-screen transition-all duration-200 ${
-        isMobileView
-          ? `${isSidebarOpen ? "block" : "hidden"}`
-          : "block"
-      }`}
+      className={`fixed left-0 h-full w-52 p-4 transform bg-white transition-transform duration-200 ease-in-out md:translate-x-0 flex flex-col z-50 md:z-0 shadow-lg ${
+        isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+      } ${isSidebarOpen ? "md:hidden" : ""} md:shadow-none`}
     >
-      <div className="flex flex-col h-full p-6">
+      <div className="flex flex-col h-full overflow-y-auto">
         {/* Logo */}
-        <div className="flex justify-center mb-6">
-          <img src="/images/logo.jpg" alt="Vibely Logo" className="w-32" />
+        <div className="flex flex-col items-center mb-4">
+          <img src="/images/logo.jpg" alt="Vibely Logo" className="w-36" />
         </div>
+        <hr className="border-t border-gray-100 mb-6" />
+
 
         {/* Navigation */}
-        <nav className="flex-grow">
+        <nav className="space-y-3 flex-grow">
           {menuItems.map((item) => (
             <SidebarItem key={item.path} {...item} />
           ))}
         </nav>
 
-        {/* Logout Button */}
-        <Button
-          variant="ghost"
-          className="w-full justify-start cursor-pointer flex items-center text-[15px] font-medium rounded-md py-2 px-4 text-black bg-transparent hover:bg-gray-100 transition-all duration-200"
-        >
-          <LogOut className="mr-3 w-5 h-5" />
-          <span>Đăng xuất</span>
-        </Button>
+
+        <div className="mb-4">
+          <Separator className="my-3" />
+          <div className="text-xs text-muted-foreground">
+            <Button
+              variant="ghost"
+              className="ml-12 p-4 bg-[#EFF7F7] font-bold rounded-lg text-black hover:bg-[#6CB1DA] hover:text-white transition-colors"
+              onClick={() => {}}
+            >
+              Đăng xuất
+            </Button>
+          </div>
+        </div>
       </div>
     </aside>
   );
 };
+
 
 export default Sidebar;
