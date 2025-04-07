@@ -19,18 +19,6 @@ const ChangePassword = () => {
     setUser({ name: "Vy Đỗ", email: "Vyhap@gmail.com", avatar: "/images/logo. jpg" });
   }, []);
 
-/*
-  useEffect(() => {
-    // Gọi API để lấy thông tin user từ backend
-    axios.get("http://localhost:8088/api/user/profile", { withCredentials: true })
-      .then(response => {
-        setUser(response.data);
-      })
-      .catch(error => {
-        console.error("Error fetching user data:", error);
-      });
-  }, []);
-*/
 
 return (
   <div className="flex min-h-screen bg-[#EFF3FB]">
