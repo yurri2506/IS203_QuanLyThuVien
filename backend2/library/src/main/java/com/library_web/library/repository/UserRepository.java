@@ -1,8 +1,10 @@
 package com.library_web.library.repository;
 
-import com.library_web.library.model.User;
-import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.library_web.library.model.User;
 
 
 public interface UserRepository extends JpaRepository<User, Long> {
@@ -10,5 +12,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     //
     Optional<User> findByResetToken(String token);
+
+    // Tìm theo email (cho Google/Facebook login)
+    Optional<User> findByEmail(String email);
+
+    // Tìm theo providerId (Google/Facebook ID)
+    Optional<User> findByProviderId(String providerId);
 
 }
