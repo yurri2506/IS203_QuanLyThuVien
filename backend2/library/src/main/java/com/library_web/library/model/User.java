@@ -1,7 +1,14 @@
 package com.library_web.library.model;
 
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "users")
@@ -49,6 +56,16 @@ public class User {
         this.resetToken = resetToken;
     }
     
+    // Dùng cho login bằng Google / Facebook
+    private String email;
 
+    @Column(name = "provider")
+    private String provider; // GOOGLE, FACEBOOK
+
+    @Column(name = "provider_id")
+    private String providerId; // ID do Google/Facebook cấp
+
+    // Bạn có thể tùy chọn thêm name, avatar URL nếu cần
+    private String name;
 
 }
