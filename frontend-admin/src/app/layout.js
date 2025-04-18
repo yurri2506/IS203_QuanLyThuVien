@@ -24,7 +24,9 @@ export default function RootLayout({ children }) {
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Toaster />
-        {children}
+        <div className="bg-[#D1ECFF]/20 min-h-screen">
+          {children}
+        </div>
       </body>
     </html>
   );

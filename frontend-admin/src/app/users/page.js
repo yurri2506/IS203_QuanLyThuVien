@@ -6,8 +6,9 @@ import { Input } from "@/app/components/ui/input";
 import { useRouter } from "next/navigation";
 import { Pencil, Plus, Search, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
-
+import useSidebarStore from "@/store/sideBarStore";
 const page = () => {
+  const { isSidebarOpen } = useSidebarStore();
   const [searchQuery, setSearchQuery] = useState("");
   const [userList, setUserList] = useState(null);
   const [filterUsers, setFilterUsers] = useState([]);
@@ -115,7 +116,11 @@ const page = () => {
   return (
     <div className="flex flex-row w-full h-full bg-[#EFF3FB]">
       <Sidebar />
-      <div className="flex w-full flex-col py-6 md:ml-52 relative mt-5 gap-2 items-center px-10">
+      <div
+        className={`flex-1 py-6 px-10 transition-all duration-300 ${
+          isSidebarOpen ? "md:ml-6" : "md:ml-0"
+        }`}
+      >
         <div className="flex w-full items-center h-[10px] justify-between mb-10">
           <div className="flex gap-5">
             <Input
