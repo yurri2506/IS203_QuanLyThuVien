@@ -47,7 +47,7 @@ public class UserService {
 
     // Quên mật khẩu - gửi token
     public String forgotPassword(String email) {
-        Optional<User> userOptional = userRepository.findByUsername(email);
+        Optional<User> userOptional = userRepository.findByEmail(email);
         if (!userOptional.isPresent()) {
             return "Email không tồn tại!";
         }
