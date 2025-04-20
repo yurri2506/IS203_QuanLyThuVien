@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import LeftSideBar from "../components/LeftSideBar";
 import Image from "next/image";
-import ChatBox from "../components/ChatBox";
+import ChatBox from "../components/ChatBoxButton";
 import { Button } from "@/components/ui/button";
 import useSidebarStore from "@/store/sidebarStore";
 

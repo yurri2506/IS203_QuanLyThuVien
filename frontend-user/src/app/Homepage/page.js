@@ -1,209 +1,162 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import LeftSideBar from "../components/LeftSideBar";
-import Image from "next/image";
-import { Search } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import ChatBox from "../components/ChatBox";
-import useSidebarStore from "@/store/sidebarStore";
 
-const BookStatus = ({ status }) => {
-  return (
-    <div
-      className={`px-2 py-1 text-white w-fit text-sm font-medium rounded-lg flex items-center gap-1 ${
-        status === "Còn sẵn" ? "bg-green-500" : "bg-red-500"
-      }`}
-    >
-      <span>{status}</span>
-      <span
-        className={`w-2 h-2 rounded-full ${
-          status === "Còn sẵn" ? "bg-green-300" : "bg-red-300"
-        }`}
-      ></span>
-    </div>
-  );
-};
+import React, { useEffect, useState } from "react";
+import LeftSideBar from "../components/LeftSideBar";
+import BookCard from "../components/BookCard";
+import CollectionCard from "./CollectionCard";
+import ServiceHoursCard from "./ServiceHoursCard";
+import ChatBotButton from "../components/ChatBoxButton";
+import axios from "axios";
+
+const books = [
+  {
+    id: "DRPN001",
+    imageSrc:
+      "https://cdn.builder.io/api/v1/image/assets/TEMP/9b777cb3ef9abb920d086e97e27ac4f6f3559695",
+    available: true,
+    title: "Nam cao",
+    author: "Văn học",
+    publisher: "Văn học Việt Nam (2019)",
+    borrowCount: 120,
+  },
+  {
+    id: "DRPN002",
+    imageSrc:
+      "https://cdn.builder.io/api/v1/image/assets/TEMP/fc01b7cf44e0ca2f23258dcc0ad69329b2612af0?placeholderIfAbsent=true&apiKey=d911d70ad43c41e78d81b9650623c816",
+    available: false,
+    title: "Nam cao",
+    author: "Văn học",
+    publisher: "Văn học Việt Nam (2019)",
+    borrowCount: 120,
+  },
+  {
+    id: "DRPN003",
+    imageSrc:
+      "https://cdn.builder.io/api/v1/image/assets/TEMP/5e8a0f3fd4681a9512313c2c1c6dae1285bcf0a6?placeholderIfAbsent=true&apiKey=d911d70ad43c41e78d81b9650623c816",
+    available: true,
+    title: "Nam cao",
+    author: "Văn học",
+    publisher: "Văn học Việt Nam (2019)",
+    borrowCount: 120,
+  },
+  {
+    id: "DRPN004",
+    imageSrc:
+      "https://cdn.builder.io/api/v1/image/assets/TEMP/d854294877ea4263cf3494a98eecfd64cd148327?placeholderIfAbsent=true&apiKey=d911d70ad43c41e78d81b9650623c816",
+    available: false,
+    title: "Nam cao",
+    author: "Văn học",
+    publisher: "Văn học Việt Nam (2019)",
+    borrowCount: 120,
+  },
+  {
+    id: "DRPN005",
+    imageSrc:
+      "https://cdn.builder.io/api/v1/image/assets/TEMP/acf848c9260bfc86d1f9094e17e14ec25f3ec193?placeholderIfAbsent=true&apiKey=d911d70ad43c41e78d81b9650623c816",
+    available: true,
+    title: "Nam cao",
+    author: "Văn học",
+    publisher: "Văn học Việt Nam (2019)",
+    borrowCount: 120,
+  },
+  {
+    id: "DRPN006",
+    imageSrc:
+      "https://cdn.builder.io/api/v1/image/assets/TEMP/d854294877ea4263cf3494a98eecfd64cd148327?placeholderIfAbsent=true&apiKey=d911d70ad43c41e78d81b9650623c816",
+    available: false,
+    title: "Nam cao",
+    author: "Văn học",
+    publisher: "Văn học Việt Nam (2019)",
+    borrowCount: 120,
+  },
+];
 
 const HomePage = () => {
-  const [bookList, setBookList] = useState([]);
+  // const [books, setBooks] = useState([]);
 
-  const fetchBook = async () => {
-    const test = [
-      {
-        MaSach: "id sach",
-        TenSach: "Tên sách 1",
-        MoTa: "Mo ta mau",
-        MaTheLoai: "ma the loai",
-        MaTacGia: "ma tac gia",
-        NhaXB: "nha xuat ban",
-        HinhAnh: ["/images/test.webp", "3133331", "313213131", "31313123"],
-        SoLuongTon: 70,
-        SoLuongMuon: 3,
-      },
-      {
-        MaSach: "id sach2",
-        TenSach: "Tên sách 2",
-        MoTa: "Mo ta mau",
-        MaTheLoai: "ma the loai",
-        MaTacGia: "ma tac gia",
-        NhaXB: "nha xuat ban",
-        HinhAnh: ["/images/test.webp", "3133331", "313213131", "31313123"],
-        SoLuongTon: 70,
-        SoLuongMuon: 3,
-      },
-      {
-        MaSach: "id sach3",
-        TenSach: "Tên sách 3",
-        MoTa: "Mo ta mau",
-        MaTheLoai: "ma the loai",
-        MaTacGia: "ma tac gia",
-        NhaXB: "nha xuat ban",
-        HinhAnh: ["/images/test.webp", "3133331", "313213131", "31313123"],
-        SoLuongTon: 70,
-        SoLuongMuon: 3,
-      },
-      {
-        MaSach: "id sach4",
-        TenSach: "Tên sách 4",
-        MoTa: "Mo ta mau",
-        MaTheLoai: "ma the loai",
-        MaTacGia: "ma tac gia",
-        NhaXB: "nha xuat ban",
-        HinhAnh: ["/images/test.webp", "3133331", "313213131", "31313123"],
-        SoLuongTon: 70,
-        SoLuongMuon: 3,
-      },
-    ];
-    setBookList(test);
-  };
+  // useEffect(() => {
+  //   // gọi API lấy toàn bộ sách
+  //   const fetchBooks = async () => {
+  //     try {
+  //       const response = await axios.get("http://localhost:8081/books"); // đổi thành URL thật
+  //       // console.log("Dữ liệu sách:", response.data);
+  //       const convertedBooks = response.data.map((book) => ({
+  //         id: book.id,
+  //         imageSrc:book.hinhAnh[0],
+  //         available: (book.tongSoLuong - book.soLuongMuon - book.soLuongXoa) > 0,
+  //         title: book.tenSach,
+  //         author: book.tenTacGia,
+  //         publisher: book.nxb,
+  //         borrowCount: book.soLuongMuon,
+  //       }));
+  //       setBooks(convertedBooks);
+  //     } catch (error) {
+  //       console.error("Lỗi khi fetch sách:", error);
+  //     }
+  //   };
 
-  useEffect(() => {
-    fetchBook();
-  }, []);
-
-  const isSidebarOpen = useSidebarStore();
+  //   fetchBooks();
+  // }, []);
 
   return (
-    <div className="min-h-screen pt-16 flex w-full text-foreground bg-[#E6EAF1] relative">
-      <LeftSideBar />
-      <div
-        className={`flex-1 py-4 px-0 transition-all duration-300 ${
-          isSidebarOpen ? "md:ml-64" : "md:ml-0"
-        }`}
-      >
-        <div className="flex flex-col bg-[#E6EAF1] rounded-xl">
-          {/*Thanh tim kiem*/}
-          <div className="flex w-full items-center border border-gray-300 rounded-full px-3 py-1 bg-white">
-            <input
-              type="text"
-              placeholder="Tìm kiếm..."
-              className="w-full outline-none border-none bg-transparent text-gray-600 px-2"
+    <div className="flex flex-col min-h-screen text-foreground">
+      <main className="pt-16 flex">
+        <LeftSideBar />
+        <section className="self-stretch pr-[1.25rem] md:pl-64 ml-[1.25rem] my-auto w-full max-md:max-w-full mt-2">
+          <div className="flex flex-wrap gap-3 items-center px-3 py-2.5 w-full text-[1.25rem] leading-none text-[#062D76] bg-white backdrop-blur-[100px] min-h-[50px] rounded-[100px] max-md:max-w-full">
+            <img
+              src="https://cdn.builder.io/api/v1/image/assets/TEMP/669888cc237b300e928dbfd847b76e4236ef4b5a?placeholderIfAbsent=true&apiKey=d911d70ad43c41e78d81b9650623c816"
+              alt="Search icon"
+              className="object-contain shrink-0 self-stretch my-auto aspect-square w-[30px]"
             />
-            <Button className="text-blue-400 bg-white hover:bg-white">
-              <Search className="w-5 h-5" />
-            </Button>
+            <input
+              type="search"
+              id="search-input"
+              placeholder="Tìm kiếm"
+              className="flex-1 md:text-[1.25rem] bg-transparent border-none outline-none placeholder-[#062D76] text-[#062D76] focus:ring-2 focus:ring-red-dark focus:ring-opacity-50"
+            />
           </div>
-
-          {/*Khung 3 muc vuong*/}
-          <div className="flex mt-4 w-full p-0">
-            {/* Thời gian phục vụ */}
-            <div className="flex-1 p-3 ml-0 bg-white rounded-xl flex flex-col justify-start items-start gap-2">
-              <p className="px-6 py-3 bg-blue-400 rounded-2xl flex justify-center items-center gap-3 text-white text-16 font-normal font-montserrat">
-                Thời gian phục vụ
-              </p>
-              <div className="text-black text-l font-montserrat">
-                <span className="font-semibold">Thứ 2 - Thứ 6</span>: 7:30 -
-                16:30 <br />
-                <span className="font-semibold">Thứ 7</span>: 8:00 - 16:00{" "}
-                <br />
-                Thư viện không phục vụ vào chủ nhật, ngày lễ, tết theo quy định
-                và các ngày nghỉ đột xuất khác (có thông báo).
-              </div>
-              <Image
-                src="/images/goctimdo.png"
-                width={272}
-                height={68}
-                alt="Library Schedule"
-                className="w-[350px] h-[100px]"
+          <div className="flex lg:flex-row justify-between flex-col gap-3.5 mt-5 w-full max-md:max-w-full">
+            <ServiceHoursCard />
+            <div className="grid md:grid-cols-2 grid-cols-1 gap-3.5 items-center mt-3 lg:w-2/3 h-full self-stretch max-md:max-w-full">
+              <CollectionCard
+                title="Tài liệu số"
+                category="Bộ sưu tập"
+                imageSrc="https://cdn.builder.io/api/v1/image/assets/TEMP/9b777cb3ef9abb920d086e97e27ac4f6f3559695"
+                bgColor="bg-teal-500"
+                buttonTextColor="text-teal-500"
+              />
+              <CollectionCard
+                title="Sách"
+                category="Bộ sưu tập"
+                imageSrc="https://cdn.builder.io/api/v1/image/assets/TEMP/9b777cb3ef9abb920d086e97e27ac4f6f3559695"
+                bgColor="bg-sky-600"
+                buttonTextColor="text-sky-600"
               />
             </div>
-
-            {/* Tài liệu số */}
-            <div className="flex flex-col items-center w-1/3 ml-[25px]  bg-teal-500 rounded-xl  ">
-              <div className="flex  bg-gray-50 w-full rounded-tl-xl rounded-tr-xl h-[200px]"></div>
-              <div className="flex w-full justify-between px-6  items-center mt-6  ">
-                <div className=" flex flex-col">
-                  <div className="text-white text-l font-medium font-montserrat">
-                    Bộ sưu tập
-                  </div>
-                  <div className="text-white text-xl font-semibold font-montserrat">
-                    Tài liệu số
-                  </div>
-                </div>
-                <Button className="flex items-center rounded-full bg-white text-teal-500 hover:opacity-80 hover:bg-white">
-                  Truy cập
-                </Button>
-              </div>
-            </div>
-
-            {/* Sách */}
-            <div className="flex flex-col items-center w-1/3 ml-[25px]  bg-sky-600 rounded-xl  ">
-              <div className="flex  bg-gray-50 w-full rounded-tl-xl rounded-tr-xl h-[200px]"></div>
-              <div className="flex w-full justify-between px-6  items-center mt-6  ">
-                <div className=" flex flex-col">
-                  <div className="text-white text-l font-medium font-montserrat">
-                    Bộ sưu tập
-                  </div>
-                  <div className="text-white text-xl font-semibold font-montserrat">
-                    Tài liệu số
-                  </div>
-                </div>
-                <Button className="flex items-center rounded-full bg-white text-sky-600 hover:opacity-80 hover:bg-white">
-                  Truy cập
-                </Button>
-              </div>
-            </div>
           </div>
-
-          {/*Khung sach*/}
-          <div className="flex flex-col p-6 mt-4 bg-white rounded-2xl ">
-            <div>
-              <p className="px-6 py-3 w-fit bg-blue-400 rounded-2xl flex justify-center items-center gap-3 text-white text-16 font-normal font-montserrat">
-                Sách mới về
-              </p>
-            </div>
-            <div className="grid grid-cols-2 gap-4 p-3">
-              {bookList.map((book) => (
-                <div
-                  key={book.MaSach}
-                  className="flex flex-row w-[450px] gap-6 bg-white p-4 rounded-lg shadow-md"
-                >
-                  <Image
-                    src={book.HinhAnh[0]}
-                    width={100}
-                    height={150}
-                    alt={book.TenSach}
-                  />
-                  <div className="flex flex-col gap-3">
-                    <BookStatus
-                      status={book.SoLuongTon > 0 ? "Còn sẵn" : "Đã mượn"}
-                    />
-                    <h3 className="font-semibold">{book.TenSach}</h3>
-                    <p className="text-sm text-gray-600">
-                      Tác giả: {book.MaTacGia}
-                    </p>
-                    <p className="text-sm text-gray-600">NXB: {book.NhaXB}</p>
-                    <p className="text-sm text-gray-600">Lượt mượn:</p>
-                  </div>
-                </div>
+          <section className="flex flex-col p-5 mt-3 w-full bg-white rounded-xl max-md:max-w-full">
+            <h2 className="gap-2.5 self-start px-5 py-2.5 text-[1.25rem] text-white bg-[#062D76] rounded-lg">
+              Sách mới về
+            </h2>
+            <div className="grid grid-cols-2 max-sm:grid-cols-1 gap-6 items-start mt-5 w-full max-md:max-w-full">
+              {books.map((book, index) => (
+                <BookCard
+                  key={book.id}
+                  id={book.id}
+                  imageSrc={book.imageSrc}
+                  available={book.available}
+                  title={book.title}
+                  author={book.author}
+                  publisher={book.publisher}
+                  borrowCount={book.borrowCount}
+                />
               ))}
             </div>
-          </div>
-        </div>
-        <div className="fixed flex items-center right-4 bottom-4 z-50 ">
-          <ChatBox />
-        </div>
-      </div>
+          </section>
+        </section>
+        <ChatBotButton />
+      </main>
     </div>
   );
 };
