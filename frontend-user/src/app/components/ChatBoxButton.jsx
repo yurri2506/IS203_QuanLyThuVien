@@ -9,7 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import React, { useState, useEffect } from "react";
 
-const BoxChat = () => {
+const ChatBotButton = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [messages, setMessages] = useState([
@@ -139,4 +139,4 @@ const BoxChat = () => {
   );
 };
 
-export default BoxChat;
+export default ChatBotButton;
