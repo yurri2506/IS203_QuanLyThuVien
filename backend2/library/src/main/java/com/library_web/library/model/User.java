@@ -1,20 +1,9 @@
 package com.library_web.library.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "users")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class User {
 
     @Id
@@ -27,11 +16,29 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    @Column(name = "reset_token")
-    private String resetToken;
+    @Column(nullable = false, unique = true)
+    private String email;
 
-     // Nếu không dùng Lombok thì phải viết tay các getter/setter:
-    
+    @Column(name = "provider")
+    private String provider; // GOOGLE, FACEBOOK
+
+    @Column(name = "provider_id")
+    private String providerId; // ID do Google/Facebook cấp
+
+    private String name;
+
+    @Column(name = "reset_token")
+    private String resetToken; // Token để đặt lại mật khẩu
+
+    // Getters và Setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     public String getUsername() {
         return username;
     }
@@ -48,6 +55,38 @@ public class User {
         this.password = password;
     }
 
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getProvider() {
+        return provider;
+    }
+
+    public void setProvider(String provider) {
+        this.provider = provider;
+    }
+
+    public String getProviderId() {
+        return providerId;
+    }
+
+    public void setProviderId(String providerId) {
+        this.providerId = providerId;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public String getResetToken() {
         return resetToken;
     }
@@ -55,17 +94,4 @@ public class User {
     public void setResetToken(String resetToken) {
         this.resetToken = resetToken;
     }
-    
-    // Dùng cho login bằng Google / Facebook
-    private String email;
-
-    @Column(name = "provider")
-    private String provider; // GOOGLE, FACEBOOK
-
-    @Column(name = "provider_id")
-    private String providerId; // ID do Google/Facebook cấp
-
-    // Bạn có thể tùy chọn thêm name, avatar URL nếu cần
-    private String name;
-
 }
