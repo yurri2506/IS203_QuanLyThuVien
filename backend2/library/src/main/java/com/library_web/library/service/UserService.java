@@ -1,8 +1,10 @@
 package com.library_web.library.service;
 
 import com.library_web.library.model.User;
+import com.library_web.library.model.UserDTO;
 import com.library_web.library.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,23 +26,36 @@ public class UserService {
     private JavaMailSender mailSender;
 
     // Đăng ký tài khoản mới
-    public String register(User user) {
-        Optional<User> existingUser = userRepository.findByUsername(user.getUsername());
+    public String register(UserDTO userDTO) {
+        // In dữ liệu của UserDTO ra console
+        System.out.println("Received UserDTO: ");
+        System.out.println("Username: " + userDTO.getUsername());
+        System.out.println("Email: " + userDTO.getEmail());
+        System.out.println("Name: " + userDTO.getName());
+
+        Optional<User> existingUser = userRepository.findByUsername(userDTO.getUsername());
         if (existingUser.isPresent()) {
+            
             return "Username already exists!";
         }
 
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        User user = new User(); // Tạo mới đối tượng User
+        user.setUsername(userDTO.getUsername());
+        user.setEmail(userDTO.getEmail());
+        user.setName(userDTO.getName());
+        user.setPassword(passwordEncoder.encode("default_password")); // Mật khẩu mặc định
+
         userRepository.save(user);
         return "User registered successfully!";
+
     }
 
     // Đăng nhập
-    public boolean login(String username, String rawPassword) {
+    public boolean login(String username, String password) {
         Optional<User> userOptional = userRepository.findByUsername(username);
         if (userOptional.isPresent()) {
             User user = userOptional.get();
-            return passwordEncoder.matches(rawPassword, user.getPassword());
+            return passwordEncoder.matches(password, user.getPassword());
         }
         return false;
     }
