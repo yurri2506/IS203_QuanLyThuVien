@@ -31,8 +31,11 @@ public class SecurityConfig {
                 .requestMatchers("/api/register", "/api/login", "/api/forgot-password", "/api/reset-password", "/home").permitAll()
                 .anyRequest().authenticated()
             )
+
+            
+            
             .oauth2Login(oauth2 -> oauth2
-                .loginPage("/login") // Trang login tùy chỉnh
+                //.loginPage("/login") // Trang login tùy chỉnh
                 .successHandler(customOAuth2SuccessHandler) // Xử lý sau login
             );
 
