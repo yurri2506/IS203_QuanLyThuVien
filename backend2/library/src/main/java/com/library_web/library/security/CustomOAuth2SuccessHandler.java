@@ -51,7 +51,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
             // Nếu chưa có, tạo mới user
             User newUser = new User();
             newUser.setEmail(email);
-            newUser.setName(name);
+            newUser.setFullname(name);
             newUser.setProvider(provider.toUpperCase());
             newUser.setProviderId(providerId);
             newUser.setUsername(email); // Dùng email làm username

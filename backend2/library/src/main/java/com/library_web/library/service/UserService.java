@@ -4,12 +4,15 @@ import com.library_web.library.model.User;
 import com.library_web.library.model.UserDTO;
 import com.library_web.library.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
+import org.springframework.web.server.ResponseStatusException;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -26,29 +29,44 @@ public class UserService {
     private JavaMailSender mailSender;
 
     // Đăng ký tài khoản mới
-    public String register(UserDTO userDTO) {
-        // In dữ liệu của UserDTO ra console
-        System.out.println("Received UserDTO: ");
-        System.out.println("Username: " + userDTO.getUsername());
-        System.out.println("Email: " + userDTO.getEmail());
-        System.out.println("Name: " + userDTO.getName());
-
-        Optional<User> existingUser = userRepository.findByUsername(userDTO.getUsername());
-        if (existingUser.isPresent()) {
-            
-            return "Username already exists!";
+    public Map<String, String> register(UserDTO userDTO) {
+        Map<String, String> response = new HashMap<>();
+    
+        // Kiểm tra bắt buộc phải đăng ký bằng email hoặc số điện thoại
+        if ((userDTO.getEmail() == null || userDTO.getEmail().isBlank()) &&
+            (userDTO.getPhone() == null || userDTO.getPhone().isBlank())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Phải cung cấp email hoặc số điện thoại");
         }
-
-        User user = new User(); // Tạo mới đối tượng User
+    
+        // Kiểm tra trùng email
+        if (userDTO.getEmail() != null && !userDTO.getEmail().isBlank()) {
+            if (userRepository.findByEmail(userDTO.getEmail()).isPresent()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email đã tồn tại");
+            }
+        }
+    
+        // Kiểm tra trùng số điện thoại
+        if (userDTO.getPhone() != null && !userDTO.getPhone().isBlank()) {
+            if (userRepository.findByPhone(userDTO.getPhone()).isPresent()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Số điện thoại đã tồn tại");
+            }
+        }
+    
+        // Tạo user mới
+        User user = new User();
         user.setUsername(userDTO.getUsername());
-        user.setEmail(userDTO.getEmail());
-        user.setName(userDTO.getName());
-        user.setPassword(passwordEncoder.encode("default_password")); // Mật khẩu mặc định
-
+        user.setEmail(userDTO.getEmail() != null ? userDTO.getEmail() : "unknown");
+        user.setPhone(userDTO.getPhone() != null ? userDTO.getPhone() : "unknown");
+        user.setFullname(userDTO.getFullname());
+        user.setPassword(passwordEncoder.encode(userDTO.getPassword())); // dùng password người dùng nhập
+    
         userRepository.save(user);
-        return "User registered successfully!";
-
+    
+        response.put("message", "Đăng ký thành công!");
+    
+        return response;
     }
+    
 
     // Đăng nhập
     public boolean login(String username, String password) {
