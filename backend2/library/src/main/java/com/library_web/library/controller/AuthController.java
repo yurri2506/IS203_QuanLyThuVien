@@ -8,7 +8,9 @@ import java.util.Map;
 import java.util.HashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/api")
@@ -19,8 +21,37 @@ public class AuthController {
 
     // Đăng ký
     @PostMapping("/register")
-    public String register(@RequestBody UserDTO userDTO) {
-        return userService.register(userDTO);
+    public ResponseEntity<?> register(@RequestBody UserDTO userDTO) {
+        System.out.println("API /register được gọi với dữ liệu: " + userDTO);
+    
+        // Kiểm tra username
+        if (userDTO.getUsername() == null || userDTO.getUsername().isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Username không được để trống"));
+        }
+    
+        // Kiểm tra password
+        if (userDTO.getPassword() == null || userDTO.getPassword().isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Password không được để trống"));
+        }
+    
+        // Kiểm tra email hoặc phone (chỉ cần một trong hai)
+        if ((userDTO.getEmail() == null || userDTO.getEmail().isBlank()) &&
+            (userDTO.getPhone() == null || userDTO.getPhone().isBlank())) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Phải cung cấp email hoặc số điện thoại"));
+        }
+    
+        try {
+            Map<String, String> result = userService.register(userDTO);
+            return ResponseEntity.ok(result);
+        } catch (ResponseStatusException ex) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", ex.getReason());
+            return ResponseEntity.status(ex.getStatusCode()).body(error);
+        } catch (Exception ex) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", ex.getMessage());
+            return ResponseEntity.status(500).body(error);
+        }
     }
 
     // Đăng nhập
@@ -30,9 +61,6 @@ public class AuthController {
         if (!isAuthenticated) {
             throw new RuntimeException("Sai tài khoản hoặc mật khẩu!");
         }
-
-
-
 
         // Tạo Access Token và Refresh Token
         String accessToken = JwtUtil.generateAccessToken(username);

@@ -10,13 +10,16 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String username;
 
     @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = true, columnDefinition = "VARCHAR(255) DEFAULT 'unknown'")
+    private String phone;
+    
+    @Column(nullable = false, unique = true, columnDefinition = "VARCHAR(255) DEFAULT 'unknown'")
     private String email;
 
     @Column(name = "provider")
@@ -25,7 +28,7 @@ public class User {
     @Column(name = "provider_id")
     private String providerId; // ID do Google/Facebook cấp
 
-    private String name;
+    private String fullname;
 
     @Column(name = "reset_token")
     private String resetToken; // Token để đặt lại mật khẩu
@@ -62,6 +65,12 @@ public class User {
     public void setEmail(String email) {
         this.email = email;
     }
+    public String getPhone() {
+        return phone;
+    }
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
 
     public String getProvider() {
         return provider;
@@ -79,12 +88,12 @@ public class User {
         this.providerId = providerId;
     }
 
-    public String getName() {
-        return name;
+    public String getFullname() {
+        return fullname;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setFullname(String fullname) {
+        this.fullname = fullname;
     }
 
     public String getResetToken() {
