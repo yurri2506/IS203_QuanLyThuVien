@@ -16,7 +16,6 @@ import com.library_web.library.repository.UserRepository;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
 @Component
 public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
@@ -28,47 +27,42 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
-            HttpServletResponse response,
-            Authentication authentication)
+                                         HttpServletResponse response,
+                                         Authentication authentication)
             throws IOException, ServletException {
 
         OAuth2AuthenticationToken oauthToken = (OAuth2AuthenticationToken) authentication;
         OAuth2User oauthUser = oauthToken.getPrincipal();
         Map<String, Object> attributes = oauthUser.getAttributes();
 
-        String provider = oauthToken.getAuthorizedClientRegistrationId(); // google hoặc facebook
-        String providerId = (String) attributes.get("sub"); // Google dùng "sub"
-        if (providerId == null)
-            providerId = (String) attributes.get("id"); // Facebook dùng "id"
+        String provider = oauthToken.getAuthorizedClientRegistrationId(); 
+        String providerId = (String) attributes.get("sub");
+        if (providerId == null) {
+            providerId = (String) attributes.get("id");
+        }
 
         String email = (String) attributes.get("email");
         String name = (String) attributes.get("name");
 
-        // Kiểm tra email có tồn tại không
         Optional<User> existingUserOpt = userRepository.findByEmail(email);
 
         if (existingUserOpt.isEmpty()) {
-            // Nếu chưa có, tạo mới user
             User newUser = new User();
             newUser.setEmail(email);
             newUser.setFullname(name);
             newUser.setProvider(provider.toUpperCase());
             newUser.setProviderId(providerId);
-            newUser.setUsername(email); // Dùng email làm username
-            newUser.setPassword(""); // Không cần mật khẩu với OAuth2
+            newUser.setUsername(email);
+            newUser.setPassword("");
 
             userRepository.save(newUser);
         }
 
-        // Tạo Access Token và Refresh Token
         String accessToken = JwtUtil.generateAccessToken(email);
         String refreshToken = JwtUtil.generateRefreshToken(email);
 
-        // Trả về JSON chứa token
         response.setContentType("application/json");
-        response.getWriter()
-                .write("{\"accessToken\": \"" + accessToken + "\", \"refreshToken\": \"" + refreshToken + "\"}");
-        // Sau khi login xong, chuyển hướng về /home
-        response.sendRedirect("/home");
+        response.getWriter().write("{\"accessToken\": \"" + accessToken + "\", \"refreshToken\": \"" + refreshToken + "\"}");
+        response.getWriter().flush(); // Ghi dữ liệu xong, không redirect nữa
     }
 }

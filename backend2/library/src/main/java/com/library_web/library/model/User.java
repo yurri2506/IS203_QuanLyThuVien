@@ -1,5 +1,7 @@
 package com.library_web.library.model;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.*;
 
 @Entity
@@ -18,7 +20,7 @@ public class User {
 
     @Column(nullable = false, unique = true, columnDefinition = "VARCHAR(255) DEFAULT 'unknown'")
     private String phone;
-    
+
     @Column(nullable = false, unique = true, columnDefinition = "VARCHAR(255) DEFAULT 'unknown'")
     private String email;
 
@@ -32,6 +34,12 @@ public class User {
 
     @Column(name = "reset_token")
     private String resetToken; // Token để đặt lại mật khẩu
+
+    @Column(name = "otp")
+    private String otp;
+
+    @Column(name = "otp_expired_at")
+    private LocalDateTime otpExpiredAt;
 
     // Getters và Setters
     public Long getId() {
@@ -65,9 +73,11 @@ public class User {
     public void setEmail(String email) {
         this.email = email;
     }
+
     public String getPhone() {
         return phone;
     }
+
     public void setPhone(String phone) {
         this.phone = phone;
     }
@@ -102,5 +112,18 @@ public class User {
 
     public void setResetToken(String resetToken) {
         this.resetToken = resetToken;
+    }
+    
+    public String getOtp() {
+        return otp;
+    }
+    public void setOtp(String otp) {
+        this.otp = otp;
+    }
+    public LocalDateTime getOtpExpiredAt() {
+        return otpExpiredAt;
+    }
+    public void setOtpExpiredAt(LocalDateTime otpExpiredAt) {
+        this.otpExpiredAt = otpExpiredAt;
     }
 }
