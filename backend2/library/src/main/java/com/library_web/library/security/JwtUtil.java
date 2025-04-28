@@ -20,7 +20,7 @@ public class JwtUtil {
                 .setExpiration(new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRATION))
                 .signWith(key)
                 .compact();
-    }
+    }   
 
     public static String generateRefreshToken(String username) {
         return Jwts.builder()

@@ -1,11 +1,14 @@
 package com.library_web.library.controller;
 
 import com.library_web.library.model.UserDTO;
+import com.library_web.library.model.User; // THÊM IMPORT NÀY
 import com.library_web.library.security.JwtUtil;
 import com.library_web.library.service.UserService;
+import com.library_web.library.repository.UserRepository; // THÊM IMPORT NÀY
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -19,38 +22,34 @@ public class AuthController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private UserRepository userRepository; // AUTOWIRE UserRepository ĐÚNG
+
     // Đăng ký
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody UserDTO userDTO) {
         System.out.println("API /register được gọi với dữ liệu: " + userDTO);
-    
-        // Kiểm tra username
+
         if (userDTO.getUsername() == null || userDTO.getUsername().isBlank()) {
             return ResponseEntity.badRequest().body(Map.of("error", "Username không được để trống"));
         }
-    
-        // Kiểm tra password
+
         if (userDTO.getPassword() == null || userDTO.getPassword().isBlank()) {
             return ResponseEntity.badRequest().body(Map.of("error", "Password không được để trống"));
         }
-    
-        // Kiểm tra email hoặc phone (chỉ cần một trong hai)
+
         if ((userDTO.getEmail() == null || userDTO.getEmail().isBlank()) &&
             (userDTO.getPhone() == null || userDTO.getPhone().isBlank())) {
             return ResponseEntity.badRequest().body(Map.of("error", "Phải cung cấp email hoặc số điện thoại"));
         }
-    
+
         try {
             Map<String, String> result = userService.register(userDTO);
             return ResponseEntity.ok(result);
         } catch (ResponseStatusException ex) {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", ex.getReason());
-            return ResponseEntity.status(ex.getStatusCode()).body(error);
+            return ResponseEntity.status(ex.getStatusCode()).body(Map.of("error", ex.getReason()));
         } catch (Exception ex) {
-            Map<String, String> error = new HashMap<>();
-            error.put("error", ex.getMessage());
-            return ResponseEntity.status(500).body(error);
+            return ResponseEntity.status(500).body(Map.of("error", ex.getMessage()));
         }
     }
 
@@ -74,6 +73,36 @@ public class AuthController {
         return tokens;
     }
 
+    // Lấy thông tin người dùng từ token
+    @GetMapping("/user-info")
+    public ResponseEntity<?> getUserInfo(@RequestHeader("Authorization") String token) {
+        try {
+            String username = JwtUtil.validateToken(token.substring(7)); // "Bearer ..."
+            UserDTO user = userService.getUserInfo(username);
+            return ResponseEntity.ok(user);
+        } catch (Exception ex) {
+            return ResponseEntity.status(401).body(Map.of("error", "Token không hợp lệ"));
+        }
+    }
+
+    // Đăng ký bằng OAuth
+    @PostMapping("/oauth-register")
+    public ResponseEntity<?> oauthRegister(@RequestBody UserDTO userDTO) {
+        // Kiểm tra xem người dùng có tồn tại chưa
+        Optional<User> existingUser = userRepository.findByEmail(userDTO.getEmail());
+        if (existingUser.isPresent()) {
+            return ResponseEntity.status(400).body(Map.of("error", "Email đã được sử dụng"));
+        }
+
+        try {
+            userService.register(userDTO);
+            return ResponseEntity.ok(Map.of("message", "Đăng ký thành công"));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    // Làm mới token
     @PostMapping("/refresh-token")
     public Map<String, String> refreshToken(@RequestParam String refreshToken) {
         // Xác thực Refresh Token

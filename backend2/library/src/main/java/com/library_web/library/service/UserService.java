@@ -51,6 +51,8 @@ public class UserService {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Số điện thoại đã tồn tại");
             }
         }
+
+        
     
         // Tạo user mới
         User user = new User();
@@ -66,6 +68,16 @@ public class UserService {
     
         return response;
     }
+
+    public UserDTO getUserInfo(String username) {
+        // Lấy thông tin người dùng từ cơ sở dữ liệu
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new RuntimeException("Người dùng không tồn tại"));
+        
+        // Chuyển User thành UserDTO
+        UserDTO userDTO = new UserDTO(user.getUsername(), user.getEmail(), user.getPhone(), user.getFullname(), username);
+        return userDTO;
+    }
+    
     
 
     // Đăng nhập
