@@ -1,7 +1,5 @@
 package com.library_web.library.config;
-/*import com.library_web.library.cloudinary.Cloudinary;
-import com.library_web.library.cloudinary.utils.ObjectUtils;
-*/
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -14,11 +12,12 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
-            .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+            .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())  // Giữ phần này
             .httpBasic(httpBasic -> {});
         return http.build();
     }
 }
+
 /* 
  * @Configuration
 public class CloudinaryConfig {

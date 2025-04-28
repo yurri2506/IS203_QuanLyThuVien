@@ -1,9 +1,11 @@
 "use client";
 import Sidebar from "../../components/sidebar/Sidebar";
 import { useState } from "react";
-import useSidebarStore from "@/store/sideBarStore";
+import { useRouter } from "next/navigation";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
-// Icons Components
+// Icons Components remain the same
 const BackIcon = () => (
   <svg
     width="40"
@@ -80,216 +82,274 @@ const CompletedIcon = () => (
 );
 
 // Back Button Component
-const BackButton = ({ onClick }) => (
-  <button
-    onClick={onClick}
-    className="flex justify-center items-center p-2.5 bg-red-400 rounded-xl h-[60px] w-[60px]"
-    aria-label="Go back"
-  >
-    <BackIcon />
-  </button>
-);
+
+const BackButton = () => {
+  const router = useRouter();
+
+  return (
+    <button
+      onClick={() => router.back()} // Điều hướng về trang trước
+      className="flex justify-center items-center p-2.5 bg-red-400 rounded-xl h-[60px] w-[60px] max-sm:h-[50px] max-sm:w-[50px]"
+      aria-label="Go back"
+    >
+      <BackIcon />
+    </button>
+  );
+};
 
 // Input Field Component
-const InputField = ({
-  label,
-  type = "text",
-  placeholder,
-  value,
-  onChange,
-  disabled,
-}) => (
-  <div className="flex flex-col gap-5">
-    <label className="text-2xl font-bold text-black">{label}</label>
-    {disabled ? (
-      <div className="p-3 w-full text-2xl rounded-xl shadow-sm bg-zinc-300 h-[53px] text-neutral-500">
-        {value}
-      </div>
-    ) : (
-      <div className="flex items-center p-3 w-full bg-white rounded-xl shadow-sm h-[53px]">
-        <input
-          type={type}
-          placeholder={placeholder}
-          value={value}
-          onChange={onChange}
-          className="w-full text-2xl text-black bg-transparent border-[nonepx]"
-        />
-      </div>
-    )}
+const InputField = ({ label, value, disabled, onChange }) => (
+  <div className="h-[103px] w-full">
+    <label className="block mb-5 ml-5 text-2xl font-bold text-black max-sm:text-xl">
+      {label}
+    </label>
+    <input
+      type="text"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      disabled={disabled}
+      className={`p-3 w-full text-2xl rounded-xl shadow-sm h-[53px] max-sm:text-xl max-sm:h-[45px] ${
+        disabled ? "bg-zinc-300 text-neutral-500 cursor-not-allowed" : "bg-white text-black"
+      }`}
+    />
   </div>
 );
 
 // Date Picker Field Component
-const DatePickerField = ({ value, onChange }) => (
-  <div className="flex flex-col gap-5 w-[580px] max-md:w-full">
-    <label className="text-2xl font-bold text-black">Ngày Sinh</label>
-    <div className="flex gap-5">
-      <div className="flex items-center p-3 bg-white rounded-xl shadow-sm h-[53px] w-[500px]">
-        <input
-          type="text"
-          placeholder="Chọn ngày sinh"
-          value={value}
-          onChange={onChange}
-          className="w-full text-2xl text-black bg-transparent border-[nonepx]"
-        />
-      </div>
-      <button
-        className="flex justify-center items-center p-2.5 bg-red-400 rounded-xl h-[60px] w-[60px]"
-        aria-label="Open calendar"
-      >
-        <CalendarIcon />
-      </button>
-    </div>
-  </div>
-);
+const DatePickerField = ({ value, onChange }) => {
+  const [startDate, setStartDate] = useState(new Date(value));
 
-// Avatar Upload Component
-const AvatarUpload = ({ avatarUrl, onUpload }) => (
-  <div className="flex flex-col gap-5 w-[380px]">
-    <h2 className="text-2xl font-bold text-black">Ảnh Đại Diện</h2>
-    <div className="flex flex-col gap-8 items-center">
-      <div
-        className="border border-red-400 bg-zinc-300 h-[200px] rounded-[100px] w-[200px]"
-        style={
-          avatarUrl
-            ? { backgroundImage: `url(${avatarUrl})`, backgroundSize: "cover" }
-            : {}
-        }
-      />
-      <button
-        onClick={onUpload}
-        className="flex gap-5 justify-center items-center p-2.5 bg-red-400 rounded-xl h-[60px] w-[300px]"
-      >
-        <UploadIcon />
-        <span className="text-xl font-bold text-white">Tải ảnh đại diện</span>
-      </button>
-    </div>
-  </div>
-);
-
-// Role Selector Component
-const RoleSelector = ({ value, onChange }) => (
-  <div className="flex flex-col gap-5 w-[500px] max-md:w-full">
-    <label className="text-2xl font-bold text-black">Vai Trò</label>
-    <button
-      onClick={onChange}
-      className="flex justify-between items-center p-3 w-full bg-white rounded-xl shadow-sm h-[53px]"
-    >
-      <span className="text-2xl text-black">{value}</span>
-      <DropdownIcon />
-    </button>
-  </div>
-);
-
-// Complete Button Component
-const CompleteButton = ({ onClick }) => (
-  <button
-    onClick={onClick}
-    className="flex gap-5 justify-center p-5 h-20 bg-red-400 rounded-xl w-[350px]"
-  >
-    <CompletedIcon />
-    <span className="text-3xl font-bold text-white">Hoàn Tất</span>
-  </button>
-);
-
-// Main Component
-function page() {
-  const { isSidebarOpen } = useSidebarStore();
-  const [formData, setFormData] = useState({
-    id: "125",
-    username: "",
-    email: "",
-    phone: "",
-    birthDate: "",
-    avatar: "",
-    role: "Người Dùng",
-  });
-
-  const handleInputChange = (field) => (e) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: e.target.value,
-    }));
-  };
-
-  const handleAvatarUpload = () => {
-    // Implement avatar upload logic
-  };
-
-  const handleComplete = () => {
-    // Implement form submission logic
-  };
-
-  const handleBack = () => {
-    // Implement navigation logic
+  const handleDateChange = (date) => {
+    setStartDate(date);
+    onChange(date.toLocaleDateString("vi-VN"));
   };
 
   return (
-    <div className="flex flex-row w-full h-full bg-[#EFF3FB] ">
-      <Sidebar />
-      <main
-        className={`flex-1 py-6 px-10 transition-all duration-300 ${
-          isSidebarOpen ? "md:ml-6" : "md:ml-0"
-        }`}
+    <div className="h-[107px] w-[300px] max-md:w-full">
+      {" "}
+      {/* Giảm chiều rộng */}
+      <label className="block mb-5 ml-5 text-2xl font-bold text-black max-sm:text-xl">
+        Ngày Sinh
+      </label>
+      <div className="relative flex items-center">
+        <DatePicker
+          selected={startDate}
+          onChange={handleDateChange}
+          dateFormat="dd/MM/yyyy"
+          className="p-3 w-[300px] text-2xl text-black bg-white rounded-xl shadow-sm h-[53px] max-sm:text-xl max-sm:h-[45px]" // Giảm chiều rộng
+        />
+        <button
+          className="absolute right-2 flex justify-center items-center p-2 bg-red-400 rounded-xl h-[45px] w-[45px]" // Giảm kích thước icon
+          onClick={() =>
+            document
+              .querySelector(".react-datepicker__input-container input")
+              .focus()
+          }
+        >
+          <CalendarIcon />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// Avatar Upload Component
+const AvatarUpload = ({ avatarUrl, onAvatarChange }) => {
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const imageUrl = URL.createObjectURL(file);
+      onAvatarChange(imageUrl);
+    }
+  };
+
+  return (
+    <div className="h-[342px] w-[380px] max-md:w-full">
+      <h2 className="mb-5 ml-5 text-2xl font-bold text-black max-sm:text-xl">
+        Ảnh Đại Diện
+      </h2>
+
+      <div className="flex flex-col items-center">
+        <img
+          src={avatarUrl}
+          alt="Avatar"
+          className="border border-red-400 border-solid h-[200px] w-[200px] rounded-full"
+        />
+
+        <input
+          type="file"
+          accept="image/*"
+          className="hidden"
+          id="avatarUpload"
+          onChange={handleFileChange}
+        />
+
+        <label
+          htmlFor="avatarUpload"
+          className="flex gap-5 justify-center items-center px-9 py-2.5 bg-red-400 rounded-xl h-[60px] w-[300px] mt-5 max-md:w-[80%] max-sm:h-[50px] cursor-pointer"
+        >
+          <span className="text-xl font-bold text-center text-white max-sm:text-base">
+            Tải ảnh đại diện
+          </span>
+          <UploadIcon />
+        </label>
+      </div>
+    </div>
+  );
+};
+
+// Role Selector Component
+const roles = ["Quản trị viên", "Người dùng", "Nhân viên"];
+const RoleSelector = ({ value, onChange }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div className="h-[103px] w-[500px] max-md:w-full relative">
+      <h2 className="mb-5 ml-5 text-2xl font-bold text-black max-sm:text-xl">
+        Vai Trò
+      </h2>
+      <button
+        className="flex justify-between items-center px-2.5 py-2 bg-white rounded-xl shadow-sm h-[53px] w-full max-sm:h-[45px]"
+        onClick={() => setIsOpen(!isOpen)}
       >
-        <section className="flex flex-col gap-5 p-8">
-          <BackButton onClick={handleBack} />
+        <span>{value}</span>
+        <DropdownIcon />
+      </button>
+      {isOpen && (
+        <ul className="absolute top-[60px] w-full bg-white shadow-lg rounded-xl z-10">
+          {roles.map((role) => (
+            <li
+              key={role}
+              className="p-3 text-black hover:bg-red-400 hover:text-white cursor-pointer"
+              onClick={() => {
+                onChange(role);
+                setIsOpen(false);
+              }}
+            >
+              {role}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+};
 
-          <form className="flex flex-col gap-5 w-full max-w-[1351px]">
-            <div className="flex flex-col gap-5">
-              <InputField label="ID (Tự Động)" value={formData.id} disabled />
+function page() {
+  const initialData = {
+    id: "24",
+    username: "Zydo",
+    email: "tuongvy@gmail.com",
+    phone: "0123456789",
+    birthDate: "04/02/2004",
+    avatar:
+      "https://cdn.builder.io/api/v1/image/assets/TEMP/c5b345a406a7a540ecb42f22e282d97ddcf0005b",
+    role: "Người Dùng",
+  };
 
-              <InputField
-                label="Tên Người Dùng"
-                placeholder="Nhập tên người dùng..."
-                value={formData.username}
-                onChange={handleInputChange("username")}
-              />
+  const [formData, setFormData] = useState(initialData);
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
 
-              <InputField
-                label="Email"
-                type="email"
-                placeholder="Nhập email..."
-                value={formData.email}
-                onChange={handleInputChange("email")}
-              />
+  const handleSubmit = () => {
+    setIsPopupOpen(true);
+    setTimeout(() => setIsPopupOpen(false), 2000); // Ẩn popup sau 2 giây
+  };
+  const isFormChanged =
+    JSON.stringify(formData) !== JSON.stringify(initialData);
 
-              <div className="flex flex-wrap gap-5 max-md:flex-col">
-                <div className="flex flex-col gap-5 w-[500px] max-md:w-full">
-                  <InputField
-                    label="Số Điện Thoại"
-                    type="tel"
-                    placeholder="Nhập số điện thoại..."
-                    value={formData.phone}
-                    onChange={handleInputChange("phone")}
-                  />
-                </div>
+  const handleAvatarChange = (newAvatar) => {
+    setFormData((prev) => ({ ...prev, avatar: newAvatar }));
+  };
+  const handleDateChange = (newDate) => {
+    setFormData((prev) => ({ ...prev, birthDate: newDate }));
+  };
+  
+  const handlePhoneChange = (newPhone) => {
+    setFormData((prev) => ({ ...prev, phone: newPhone }));
+  }
 
-                <DatePickerField
-                  value={formData.birthDate}
-                  onChange={handleInputChange("birthDate")}
-                />
-              </div>
+  const handleUserNameChange = (newUserName) => {
+    setFormData((prev) => ({ ...prev, username: newUserName }));
+  }
 
-              <div className="flex flex-wrap gap-52 max-md:flex-col max-md:gap-5">
-                <AvatarUpload
-                  avatarUrl={formData.avatar}
-                  onUpload={handleAvatarUpload}
-                />
+  const handleEmailChange = (newEmail) => {
+    setFormData((prev) => ({ ...prev, email: newEmail }));
+  }
 
-                <RoleSelector
-                  value={formData.role}
-                  onChange={() => {
-                    /* Implement role selection logic */
-                  }}
-                />
-              </div>
-            </div>
-          </form>
+  const handleRoleChange = (newRole) => {
+    setFormData((prev) => ({ ...prev, role: newRole }));
+  };
+
+  return (
+    <div className="flex flex-row w-full h-full" style={{ backgroundColor: "#FFF7F8" }}>
+      <Sidebar />
+      <main className="relative mx-auto my-0 w-full h-[1080px] max-w-[1420px] max-md:p-5 max-md:h-auto max-sm:p-2.5" style={{ backgroundColor: "#FFF7F8" }}>
+        <div className="absolute left-[30px] top-[30px] max-md:relative max-md:left-0 max-md:top-0">
+          <BackButton />
+        </div>
+
+        <section className="absolute left-[30px] top-[110px] w-[1351px] max-md:relative max-md:top-0 max-md:left-0 max-md:w-full">
+          <InputField label="ID" value={formData.id} disabled />
         </section>
 
-        <footer className="fixed bottom-0 left-[250px] w-[calc(100%-250px)] px-4 py-2.5 bg-white shadow-sm h-[100px] flex justify-end items-center">
-          <CompleteButton onClick={handleComplete} />
+        <section className="absolute left-[30px] top-[233px] w-[1351px] max-md:relative max-md:top-0 max-md:left-0 max-md:w-full">
+          <InputField label="Tên Người Dùng" value={formData.username} onChange={handleUserNameChange}/>
+        </section>
+
+        <section className="absolute left-[30px] top-[356px] w-[1351px] max-md:relative max-md:top-0 max-md:left-0 max-md:w-full">
+          <InputField label="Email" value={formData.email} onChange={handleEmailChange}/>
+        </section>
+
+        <div className="flex flex-wrap gap-20 absolute left-[30px] top-[500px] max-md:relative max-md:top-0 max-md:left-0">
+          <section className="w-[400px] max-md:w-full">
+            <InputField label="Số Điện Thoại" value={formData.phone} onChange={handlePhoneChange}/>
+          </section>
+
+          <section className="max-md:w-full">
+            <DatePickerField
+              value={formData.birthDate}
+              onChange={handleDateChange}
+            />
+          </section>
+
+          <section className="max-md:w-full">
+            <RoleSelector value={formData.role} onChange={handleRoleChange} />
+          </section>
+        </div>
+
+        <div className="flex flex-wrap gap-20 absolute left-[30px] top-[630px] max-md:relative max-md:top-0 max-md:left-0">
+          <section className="max-md:w-full">
+            <AvatarUpload
+              avatarUrl={formData.avatar}
+              onAvatarChange={handleAvatarChange}
+            />
+          </section>
+        </div>
+
+        <footer className="flex absolute left-0 justify-end items-center px-8 py-2.5 bg-white shadow-sm h-[100px] top-[980px] w-[1415px] max-md:relative max-md:top-0 max-md:left-0 max-md:w-full">
+          {isPopupOpen && (
+            <div className="fixed top-10 right-10 bg-white p-4 rounded-lg shadow-lg border border-green-400">
+              <p className="text-green-600 font-semibold">
+                Cập nhật thành công!
+              </p>
+            </div>
+          )}
+          <button
+            onClick={handleSubmit}
+            className={`flex gap-5 justify-center items-center px-24 py-5 h-20 rounded-xl w-[400px] max-md:w-full max-md:max-w-[400px] max-sm:px-12 max-sm:py-4 max-sm:h-[60px] 
+      ${
+        isFormChanged
+          ? "bg-red-400 cursor-pointer"
+          : "bg-gray-400 cursor-not-allowed"
+      }
+    `}
+            disabled={!isFormChanged}
+          >
+            <span className="text-3xl font-bold text-center text-white max-sm:text-2xl">
+              Hoàn Tất
+            </span>
+            <CompletedIcon />
+          </button>
         </footer>
       </main>
     </div>
