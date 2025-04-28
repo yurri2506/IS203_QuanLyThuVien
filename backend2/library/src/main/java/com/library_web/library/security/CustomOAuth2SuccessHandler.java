@@ -28,8 +28,8 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
-            HttpServletResponse response,
-            Authentication authentication)
+                                        HttpServletResponse response,
+                                        Authentication authentication)
             throws IOException, ServletException {
 
         OAuth2AuthenticationToken oauthToken = (OAuth2AuthenticationToken) authentication;
@@ -38,8 +38,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
 
         String provider = oauthToken.getAuthorizedClientRegistrationId(); // google hoặc facebook
         String providerId = (String) attributes.get("sub"); // Google dùng "sub"
-        if (providerId == null)
-            providerId = (String) attributes.get("id"); // Facebook dùng "id"
+        if (providerId == null) providerId = (String) attributes.get("id"); // Facebook dùng "id"
 
         String email = (String) attributes.get("email");
         String name = (String) attributes.get("name");
@@ -55,9 +54,16 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
             newUser.setProvider(provider.toUpperCase());
             newUser.setProviderId(providerId);
             newUser.setUsername(email); // Dùng email làm username
-            newUser.setPassword(""); // Không cần mật khẩu với OAuth2
+            newUser.setPassword("");    // Không cần mật khẩu với OAuth2
 
             userRepository.save(newUser);
+        } else {
+            // Nếu người dùng đã tồn tại, bạn có thể cập nhật thông tin nếu cần (email, name, v.v.)
+            User existingUser = existingUserOpt.get();
+            existingUser.setProvider(provider.toUpperCase());
+            existingUser.setProviderId(providerId);
+
+            userRepository.save(existingUser);
         }
 
         // Tạo Access Token và Refresh Token
@@ -68,6 +74,10 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
         response.setContentType("application/json");
         response.getWriter()
                 .write("{\"accessToken\": \"" + accessToken + "\", \"refreshToken\": \"" + refreshToken + "\"}");
+        
+        // Trả về các token qua header
+        response.setHeader("Authorization", "Bearer " + accessToken);
+        response.setHeader("Refresh-Token", refreshToken);
         // Sau khi login xong, chuyển hướng về /home
         response.sendRedirect("/home");
     }

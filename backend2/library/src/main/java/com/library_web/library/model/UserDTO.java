@@ -6,6 +6,19 @@ public class UserDTO {
     private String fullname;
     private String phone;
     private String password;
+    // Constructor không tham số (bắt buộc cho Spring Boot xài @RequestBody)
+public UserDTO() {
+}
+
+// Constructor đầy đủ tham số
+public UserDTO(String username, String email, String fullname, String phone, String password) {
+    this.username = username;
+    this.email = email;
+    this.fullname = fullname;
+    this.phone = phone;
+    this.password = password;
+}
+
 
     // Getters và Setters
     public String getUsername() {
