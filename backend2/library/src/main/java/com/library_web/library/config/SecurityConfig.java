@@ -1,38 +1,34 @@
 package com.library_web.library.config;
-
-import org.springframework.beans.factory.annotation.Autowired;
+/*import com.library_web.library.cloudinary.Cloudinary;
+import com.library_web.library.cloudinary.utils.ObjectUtils;
+*/
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-
-import com.library_web.library.security.CustomOAuth2SuccessHandler;
 
 @Configuration
 public class SecurityConfig {
-    @Autowired
-    private CustomOAuth2SuccessHandler customOAuth2SuccessHandler;
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/login", "/oauth2/**", "/css/**", "/js/**").permitAll()
-                .anyRequest().authenticated()
-            )
-            .oauth2Login(oauth2 -> oauth2
-                .loginPage("/login") // trang login tùy chỉnh
-                .successHandler(customOAuth2SuccessHandler) // xử lý sau login
-            );
-
+            .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+            .httpBasic(httpBasic -> {});
         return http.build();
     }
 }
+/* 
+ * @Configuration
+public class CloudinaryConfig {
 
+    @Bean
+    public Cloudinary cloudinary() {
+        return new Cloudinary(ObjectUtils.asMap(
+            "cloud_name", "dqkr3b1dq", 
+            "api_key", "your_api_key", 
+            "api_secret", "your_api_secret"));
+    }
+}
+*/
