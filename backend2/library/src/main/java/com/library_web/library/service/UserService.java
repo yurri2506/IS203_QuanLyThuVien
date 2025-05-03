@@ -3,21 +3,22 @@ package com.library_web.library.service;
 import com.library_web.library.model.User;
 import com.library_web.library.model.UserDTO;
 import com.library_web.library.repository.UserRepository;
+import com.library_web.library.security.JwtUtil;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
+import java.util.NoSuchElementException;
+
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
+@Transactional
 public class UserService {
 
     @Autowired
@@ -29,7 +30,6 @@ public class UserService {
     @Autowired
     private JavaMailSender mailSender;
 
-    // Gửi OTP qua email
     private void sendOtpEmail(String toEmail, String otp) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(toEmail);
@@ -38,123 +38,121 @@ public class UserService {
         mailSender.send(message);
     }
 
-    // Gửi OTP qua SMS (giả lập)
-    private void sendOtpSms(String phone, String otp) {
-        System.out.println("Gửi SMS tới " + phone + ": Mã OTP của bạn là " + otp);
-    }
-
-    // Đăng ký tài khoản mới
     public Map<String, String> register(UserDTO userDTO) {
-        Map<String, String> response = new HashMap<>();
+        if (userDTO.getUsername() == null || userDTO.getUsername().isBlank())
+            throw new IllegalArgumentException("Username không được để trống");
+        if (userDTO.getPassword() == null || userDTO.getPassword().isBlank())
+            throw new IllegalArgumentException("Password không được để trống");
 
-        // Kiểm tra email hoặc số điện thoại
         if ((userDTO.getEmail() == null || userDTO.getEmail().isBlank()) &&
-            (userDTO.getPhone() == null || userDTO.getPhone().isBlank())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Phải cung cấp email hoặc số điện thoại");
+            (userDTO.getPhone() == null || userDTO.getPhone().isBlank()))
+            throw new IllegalArgumentException("Phải cung cấp email hoặc số điện thoại");
+
+        if (userDTO.getEmail() != null && userRepository.findByEmail(userDTO.getEmail()).isPresent())
+            throw new IllegalArgumentException("Email đã tồn tại");
+        if (userDTO.getPhone() != null && userRepository.findByPhone(userDTO.getPhone()).isPresent())
+            throw new IllegalArgumentException("Số điện thoại đã tồn tại");
+
+        if (userDTO.getPhone() != null && (userDTO.getEmail() == null || userDTO.getEmail().isBlank())) {
+            User user = new User();
+            user.setUsername(userDTO.getUsername());
+            user.setPhone(userDTO.getPhone());
+            user.setFullname(userDTO.getFullname());
+            user.setEmail("unknown");
+            user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
+            user.setRole(userDTO.getRole() != null ? userDTO.getRole() : "USER");
+
+            userRepository.save(user);
+            return Map.of("message", "Đăng ký thành công bằng số điện thoại");
         }
 
-        // Kiểm tra trùng lặp
-        if (userDTO.getEmail() != null && userRepository.findByEmail(userDTO.getEmail()).isPresent()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email đã tồn tại");
-        }
-        if (userDTO.getPhone() != null && userRepository.findByPhone(userDTO.getPhone()).isPresent()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Số điện thoại đã tồn tại");
-        }
-
-        // Sinh OTP
         String otp = String.valueOf((int) (Math.random() * 900000) + 100000);
         LocalDateTime expiredAt = LocalDateTime.now().plusMinutes(5);
-
-        // Gửi OTP
-        if (userDTO.getEmail() != null) {
-            sendOtpEmail(userDTO.getEmail(), otp);
-            System.out.println("OTP gửi tới email " + userDTO.getEmail() + " là: " + otp);
-        }
-        if (userDTO.getPhone() != null) {
-            sendOtpSms(userDTO.getPhone(), otp);
-            System.out.println("OTP gửi tới số điện thoại " + userDTO.getPhone() + " là: " + otp);
-        }
-
-        // Lưu OTP vào TempStorage
         TempStorage.savePendingUser(userDTO, otp, expiredAt);
 
-        response.put("message", "OTP đã gửi. Vui lòng xác thực!");
-        return response;
+        sendOtpEmail(userDTO.getEmail(), otp);
+        return Map.of("message", "Đã gửi OTP tới email, vui lòng xác thực");
     }
 
-    // Xác thực và tạo user từ OTP
-    public boolean verifyAndCreateUser(String emailOrPhone, String otp) {
-        TempStorage.PendingUser pending = TempStorage.getPendingUser(emailOrPhone);
-        if (pending == null) {
-            return false;
-        }
+    public Map<String, String> verifyOtpAndCreate(String email, String otp) {
+        TempStorage.PendingUser pending = TempStorage.getPendingUser(email);
+        if (pending == null || !pending.getOtp().equals(otp) || LocalDateTime.now().isAfter(pending.getExpiredAt()))
+            throw new IllegalArgumentException("OTP không chính xác hoặc đã hết hạn");
 
-        if (!pending.getOtp().equals(otp) || LocalDateTime.now().isAfter(pending.getExpiredAt())) {
-            return false;
-        }
-
-        // Đúng OTP -> Tạo user
         User user = new User();
         user.setUsername(pending.getUserDTO().getUsername());
-        user.setEmail(Optional.ofNullable(pending.getUserDTO().getEmail()).orElse("unknown"));
-        user.setPhone(Optional.ofNullable(pending.getUserDTO().getPhone()).orElse("unknown"));
+        user.setEmail(pending.getUserDTO().getEmail());
+        user.setPhone(pending.getUserDTO().getPhone());
         user.setFullname(pending.getUserDTO().getFullname());
         user.setPassword(passwordEncoder.encode(pending.getUserDTO().getPassword()));
+        user.setRole(pending.getUserDTO().getRole() != null ? pending.getUserDTO().getRole() : "USER");
         userRepository.save(user);
+        TempStorage.removePendingUser(email);
 
-        TempStorage.removePendingUser(emailOrPhone);
-        return true;
+        return Map.of("message", "Đăng ký thành công bằng email");
     }
 
-    // Đăng nhập
-    public boolean login(String username, String password) {
-        Optional<User> userOptional = userRepository.findByUsername(username);
-        if (userOptional.isPresent()) {
-            User user = userOptional.get();
-            return passwordEncoder.matches(password, user.getPassword());
-        }
-        return false;
+    public Map<String, Object> login(String username, String password) {
+        Optional<User> userOpt = userRepository.findByUsername(username);
+        if (userOpt.isEmpty() || !passwordEncoder.matches(password, userOpt.get().getPassword()))
+            throw new IllegalArgumentException("Sai tài khoản hoặc mật khẩu");
+
+        User user = userOpt.get();
+        String accessToken = JwtUtil.generateAccessToken(user);
+        String refreshToken = JwtUtil.generateRefreshToken(user.getUsername());
+
+        return Map.of(
+            "message", "Đăng nhập thành công",
+            "accessToken", accessToken,
+            "refreshToken", refreshToken
+        );
     }
 
-    // Quên mật khẩu - gửi token
-    public String forgotPassword(String email) {
-        Optional<User> userOptional = userRepository.findByEmail(email);
-        if (!userOptional.isPresent()) {
-            return "Email không tồn tại!";
+    public Map<String, Object> refreshAccessToken(String refreshToken) {
+        try {
+            String username = JwtUtil.validateToken(refreshToken);
+            User user = userRepository.findByUsername(username).orElseThrow();
+            String newAccessToken = JwtUtil.generateAccessToken(user);
+            return Map.of("accessToken", newAccessToken);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Refresh Token không hợp lệ hoặc đã hết hạn");
         }
-
-        String token = UUID.randomUUID().toString();
-        User user = userOptional.get();
-        user.setResetToken(token);
-        userRepository.save(user);
-
-        sendResetEmail(email, token);
-        return "Đã gửi email đặt lại mật khẩu.";
     }
 
-    // Đặt lại mật khẩu
-    public String resetPassword(String token, String newPassword) {
-        Optional<User> userOptional = userRepository.findByResetToken(token);
-        if (!userOptional.isPresent()) {
-            return "Token không hợp lệ!";
+    public Map<String, String> forgotPassword(String emailOrPhone) {
+        Optional<User> userOpt = userRepository.findByEmail(emailOrPhone);
+        if (userOpt.isEmpty()) userOpt = userRepository.findByPhone(emailOrPhone);
+        if (userOpt.isEmpty())
+            throw new NoSuchElementException("Không tìm thấy người dùng");
+    
+        String otp = String.valueOf((int) (Math.random() * 900000) + 100000);
+        TempStorage.savePendingOtp(emailOrPhone, otp, LocalDateTime.now().plusMinutes(5));
+    
+        if (emailOrPhone.contains("@")) {
+            // Nếu là email
+            sendOtpEmail(emailOrPhone, otp);
+        } else {
+            // Nếu là số điện thoại ➔ log OTP ra console
+            System.out.println("Gửi SMS tới số " + emailOrPhone + ": Mã OTP của bạn là " + otp);
         }
+    
+        return Map.of("message", "Đã gửi OTP để đặt lại mật khẩu");
+    }
+    
+    public Map<String, String> resetPassword(String emailOrPhone, String otp, String newPassword) {
+        if (!TempStorage.isValidOtp(emailOrPhone, otp))
+            throw new IllegalArgumentException("OTP không chính xác hoặc đã hết hạn");
 
-        User user = userOptional.get();
+        Optional<User> userOpt = userRepository.findByEmail(emailOrPhone);
+        if (userOpt.isEmpty()) userOpt = userRepository.findByPhone(emailOrPhone);
+        if (userOpt.isEmpty())
+            throw new NoSuchElementException("Không tìm thấy người dùng");
+
+        User user = userOpt.get();
         user.setPassword(passwordEncoder.encode(newPassword));
-        user.setResetToken(null);
         userRepository.save(user);
+        TempStorage.removeOtp(emailOrPhone);
 
-        return "Đặt lại mật khẩu thành công!";
-    }
-
-    // Gửi mail đặt lại mật khẩu
-    private void sendResetEmail(String toEmail, String token) {
-        String resetLink = "http://localhost:8080/api/reset-password?token=" + token;
-
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(toEmail);
-        message.setSubject("Đặt lại mật khẩu");
-        message.setText("Nhấn vào liên kết để đặt lại mật khẩu: " + resetLink);
-        mailSender.send(message);
+        return Map.of("message", "Đặt lại mật khẩu thành công");
     }
 }
