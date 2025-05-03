@@ -16,7 +16,7 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false, unique = true, columnDefinition = "VARCHAR(255) DEFAULT 'unknown'")
+    @Column(nullable = true, unique = true, columnDefinition = "VARCHAR(255) DEFAULT 'unknown'")
     private String phone;
     
     @Column(nullable = false, unique = true, columnDefinition = "VARCHAR(255) DEFAULT 'unknown'")

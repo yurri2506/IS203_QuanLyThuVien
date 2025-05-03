@@ -19,22 +19,27 @@ public class TokenService {
     // Kiểm tra tính hợp lệ của Access Token
     public boolean validateToken(String token) {
         try {
-            JwtUtil.validateToken(token);
+            JwtUtil.validateToken(token);  // Kiểm tra token hợp lệ
             return true;
         } catch (Exception e) {
             return false;
         }
     }
 
+    // Lấy username từ token
     public String getUsernameFromToken(String token) {
-        return JwtUtil.validateToken(token);  // validateToken trả ra username luôn
+        try {
+            return JwtUtil.getUsernameFromToken(token);  // Lấy username từ token
+        } catch (Exception e) {
+            return null;  // Nếu token không hợp lệ, trả về null
+        }
     }
 
     // Làm mới Access Token bằng Refresh Token
     public String refreshAccessToken(String refreshToken) {
         if (validateToken(refreshToken)) {
-            String username = JwtUtil.validateToken(refreshToken);
-            return createAccessToken(username);
+            String username = getUsernameFromToken(refreshToken);  // Lấy username từ refresh token
+            return createAccessToken(username);  // Tạo access token mới
         }
         return null; // Nếu Refresh Token không hợp lệ
     }

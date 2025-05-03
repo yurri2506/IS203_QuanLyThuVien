@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import LeftSideBar from "../components/LeftSideBar";
 import ChatBox from "../components/ChatBoxButton";
 import Image from "next/image";
-import useSidebarStore from "@/store/sidebarStore";
+import useSidebarStore from "@/store/sideBarStore";
 
 const BookStatus = ({ status }) => {
   return (
