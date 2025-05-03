@@ -3,18 +3,29 @@ package com.library_web.library.service;
 import com.library_web.library.model.User;
 import com.library_web.library.model.UserDTO;
 import com.library_web.library.repository.UserRepository;
+
+import java.util.Collections;
+
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
 import org.springframework.web.server.ResponseStatusException;
+
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.UUID;
+
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.gson.GsonFactory;
+
 
 @Service
 public class UserService {
@@ -132,4 +143,25 @@ public class UserService {
 
         mailSender.send(message);
     }
+
+    // Đăng nhập bằng Google
+public String getEmailFromGoogleIdToken(String idToken) {
+    try {
+        // Sử dụng GoogleIdTokenVerifier để xác thực idToken
+        GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), new GsonFactory())
+                .setAudience(Collections.singletonList("376530680599-mlb7pbrp0inmjnfqmit5q6v4a38e6t09.apps.googleusercontent.com")) // Thay bằng client ID của bạn
+                .build();
+
+        GoogleIdToken idTokenObj = verifier.verify(idToken);
+        if (idTokenObj != null) {
+            GoogleIdToken.Payload payload = idTokenObj.getPayload();
+            return payload.getEmail();
+        }
+        return null;
+    } catch (Exception e) {
+        System.out.println("Lỗi xác thực idToken: " + e.getMessage());
+        return null;
+    }
+}
+
 }

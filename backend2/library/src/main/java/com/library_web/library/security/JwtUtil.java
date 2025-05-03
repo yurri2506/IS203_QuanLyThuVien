@@ -13,6 +13,7 @@ public class JwtUtil {
     private static final long ACCESS_TOKEN_EXPIRATION = 1000 * 60 * 15; // 15 phút
     private static final long REFRESH_TOKEN_EXPIRATION = 1000 * 60 * 60 * 24; // 24 giờ
 
+    // Tạo Access Token
     public static String generateAccessToken(String username) {
         return Jwts.builder()
                 .setSubject(username)
@@ -22,6 +23,7 @@ public class JwtUtil {
                 .compact();
     }   
 
+    // Tạo Refresh Token
     public static String generateRefreshToken(String username) {
         return Jwts.builder()
                 .setSubject(username)
@@ -31,12 +33,22 @@ public class JwtUtil {
                 .compact();
     }
 
+    // Kiểm tra tính hợp lệ của token và lấy username từ token
     public static String validateToken(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build()
-                .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
+        try {
+            return Jwts.parserBuilder()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody()
+                    .getSubject();  // Trả về username từ subject
+        } catch (Exception e) {
+            throw new RuntimeException("Token không hợp lệ hoặc đã hết hạn", e);
+        }
+    }
+
+    // Lấy username từ token
+    public static String getUsernameFromToken(String token) {
+        return validateToken(token);  // validateToken trả về username
     }
 }

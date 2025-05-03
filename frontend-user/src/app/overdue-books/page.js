@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import LeftSideBar from "../components/LeftSideBar";
 import ChatBox from "../components/ChatBoxButton";
 import Image from "next/image";
-import useSidebarStore from "@/store/sidebarStore";
+import useSidebarStore from "@/store/sideBarStore";
 
 const Page = () => {
   const [bookList, setBookList] = useState([]);
@@ -81,7 +81,9 @@ const Page = () => {
                   <h3 className="font-semibold">{book.TenSach}</h3>
                   <p className="text-sm text-black">Tác giả: {book.TacGia}</p>
                   <p className="text-sm text-black">NXB: {book.NhaXB}</p>
-                  <p className="text-sm text-black">Ngày mượn: {book.NgayMuon}</p>
+                  <p className="text-sm text-black">
+                    Ngày mượn: {book.NgayMuon}
+                  </p>
                 </div>
               </div>
             ))}
