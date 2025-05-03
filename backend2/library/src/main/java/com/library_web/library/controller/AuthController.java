@@ -14,13 +14,13 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api")
 public class AuthController {
 
     @Autowired
     private UserService userService;
 
-    @PostMapping("/register")
+    @PostMapping("/user-signup")
     public ResponseEntity<?> register(@RequestBody UserDTO userDTO) {
         return ResponseEntity.ok(userService.register(userDTO));
     }

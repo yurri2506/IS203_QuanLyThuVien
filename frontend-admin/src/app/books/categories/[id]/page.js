@@ -1,19 +1,17 @@
 "use client";
 
-import { useSearchParams, useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
 import { Input } from "@/app/components/ui/input";
 import { Button } from "@/app/components/ui/button";
 import Sidebar from "@/app/components/sidebar/Sidebar";
 import { Undo2, Save } from "lucide-react";
 import toast from "react-hot-toast";
+import axios from "axios";
 
 export default function EditCategoryPage() {
   const router = useRouter();
-  const params = useParams(); // 👈 lấy từ dynamic route
-  const tenTheLoaiCon = params?.id; // sẽ được decode sẵn nếu là string
-  
+  const { id } = useParams();
   const [formData, setFormData] = useState({
     tenTheLoaiCha: "",
     tenTheLoaiCon: "",
@@ -23,49 +21,33 @@ export default function EditCategoryPage() {
   useEffect(() => {
     const fetchCategory = async () => {
       try {
-        const encoded = encodeURIComponent(tenTheLoaiCon);
-        const res = await fetch(`http://localhost:8081/books/categories/${encoded}`);
-  
-        if (!res.ok) {
-          toast.error("Không tìm thấy thể loại");
-          return;
-        }
-  
-        const data = await res.json();
-        setFormData(data);
-      } catch (err) {
-        toast.error("Không thể tải dữ liệu thể loại");
+        const response = await axios.get(`http://localhost:8080/api/category/${id}`);
+        setFormData(response.data);
+      } catch (error) {
+        console.error("Lỗi khi lấy danh mục:", error);
+        toast.error("Không thể tải dữ liệu danh mục");
       }
     };
-  
-    if (tenTheLoaiCon) {
+    if (id) {
       fetchCategory();
-    } else {
-      console.warn("Thiếu tham số truy vấn URL con"); // 👈 kiểm tra thiếu
     }
-  }, [tenTheLoaiCon]);
-  
+  }, [id]);
 
-  const handleChange = (e) =>
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    setFormData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
 
   const handleSave = async () => {
     try {
-      const res = await fetch(
-        `http://localhost:8081/books/categories/updateCategory/{id}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(formData),
-        }
-      );
-
-      if (!res.ok) throw new Error("Cập nhật thất bại");
-
-      toast.success("✅ Cập nhật thành công");
+      await axios.patch(`http://localhost:8080/api/category/${id}`, formData);
+      toast.success("Cập nhật danh mục thành công");
       router.push("/books/categories");
-    } catch (err) {
-      toast.error("❌ Lỗi khi cập nhật thể loại");
+    } catch (error) {
+      console.error("Lỗi khi cập nhật danh mục:", error);
+      toast.error("Cập nhật danh mục thất bại");
     }
   };
 
@@ -81,11 +63,11 @@ export default function EditCategoryPage() {
             <Undo2 color="white" />
           </Button>
           <h1 className="text-2xl font-bold text-[#062D76]">
-            Chỉnh sửa thể loại
+            Chỉnh sửa danh mục
           </h1>
         </div>
 
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 max-w-xl">
           <Input
             name="tenTheLoaiCha"
             value={formData.tenTheLoaiCha}
