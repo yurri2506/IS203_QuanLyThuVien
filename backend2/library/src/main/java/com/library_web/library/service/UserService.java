@@ -5,6 +5,8 @@ import com.library_web.library.model.UserDTO;
 import com.library_web.library.repository.UserRepository;
 import com.library_web.library.security.JwtUtil;
 import jakarta.transaction.Transactional;
+
+import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -30,7 +32,7 @@ public class UserService {
     @Autowired
     private JavaMailSender mailSender;
 
-    private void sendOtpEmail(String toEmail, String otp) {
+    public void sendOtpEmail(String toEmail, String otp) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(toEmail);
         message.setSubject("Mã OTP xác thực");
@@ -82,7 +84,7 @@ public class UserService {
         User user = new User();
         user.setUsername(pending.getUserDTO().getUsername());
         user.setEmail(pending.getUserDTO().getEmail());
-        user.setPhone(pending.getUserDTO().getPhone());
+        user.setPhone("unknown");
         user.setFullname(pending.getUserDTO().getFullname());
         user.setPassword(passwordEncoder.encode(pending.getUserDTO().getPassword()));
         user.setRole(pending.getUserDTO().getRole() != null ? pending.getUserDTO().getRole() : "USER");
@@ -104,9 +106,12 @@ public class UserService {
         return Map.of(
             "message", "Đăng nhập thành công",
             "accessToken", accessToken,
-            "refreshToken", refreshToken
+            "refreshToken", refreshToken,
+            "data", user
         );
     }
+
+
 
     public Map<String, Object> refreshAccessToken(String refreshToken) {
         try {
