@@ -1,21 +1,19 @@
 package com.library_web.library.security;
 
-import java.io.IOException;
-import java.util.Map;
-import java.util.Optional;
-
+import com.library_web.library.model.User;
+import com.library_web.library.repository.UserRepository;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
+import java.io.IOException;
+import java.util.Map;
+import java.util.Optional;
 
-import com.library_web.library.model.User;
-import com.library_web.library.repository.UserRepository;
-
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 @Component
 public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
@@ -35,34 +33,30 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
         OAuth2User oauthUser = oauthToken.getPrincipal();
         Map<String, Object> attributes = oauthUser.getAttributes();
 
-        String provider = oauthToken.getAuthorizedClientRegistrationId(); 
-        String providerId = (String) attributes.get("sub");
-        if (providerId == null) {
-            providerId = (String) attributes.get("id");
-        }
-
         String email = (String) attributes.get("email");
         String name = (String) attributes.get("name");
 
-        Optional<User> existingUserOpt = userRepository.findByEmail(email);
+        Optional<User> userOpt = userRepository.findByEmail(email);
+        User user;
 
-        if (existingUserOpt.isEmpty()) {
-            User newUser = new User();
-            newUser.setEmail(email);
-            newUser.setFullname(name);
-            newUser.setProvider(provider.toUpperCase());
-            newUser.setProviderId(providerId);
-            newUser.setUsername(email);
-            newUser.setPassword("");
-
-            userRepository.save(newUser);
+        if (userOpt.isEmpty()) {
+            user = new User();
+            user.setEmail(email);
+            user.setFullname(name);
+            user.setUsername(email);
+            user.setPhone("");
+            user.setPassword("");
+            user.setRole("USER");
+            userRepository.save(user);
+        } else {
+            user = userOpt.get();
         }
 
-        String accessToken = JwtUtil.generateAccessToken(email);
-        String refreshToken = JwtUtil.generateRefreshToken(email);
+        String accessToken = JwtUtil.generateAccessToken(user);
+        String refreshToken = JwtUtil.generateRefreshToken(user.getUsername());
 
         response.setContentType("application/json");
-        response.getWriter().write("{\"accessToken\": \"" + accessToken + "\", \"refreshToken\": \"" + refreshToken + "\"}");
-        response.getWriter().flush(); // Ghi dữ liệu xong, không redirect nữa
+        response.setCharacterEncoding("UTF-8");
+        response.getWriter().write("{\"accessToken\":\"" + accessToken + "\", \"refreshToken\":\"" + refreshToken + "\"}");
     }
 }

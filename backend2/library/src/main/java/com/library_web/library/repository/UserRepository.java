@@ -8,8 +8,8 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByUsername(String username); // Tìm kiếm theo tên đăng nhập
     Optional<User> findByEmail(String email); // Tìm kiếm theo email
-    Optional<User> findByResetToken(String resetToken); // Tìm kiếm theo token đặt lại mật khẩu
-    Optional<User> findByProviderId(String providerId); // Tìm kiếm theo ID của Google/Facebook
+    Optional<User> findByFullname(String fullname); // Tìm kiếm theo tên đầy đủ
     Optional<User> findByPhone(String phone); // Tìm kiếm theo số điện thoại
     Optional<User> findByOtp(String otp); // Tìm kiếm theo OTP
+    
 }

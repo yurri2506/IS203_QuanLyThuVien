@@ -6,6 +6,7 @@ public class UserDTO {
     private String fullname;
     private String phone;
     private String password;
+    private String role = "USER"; // mặc định là USER
 
     // Getters và Setters
     public String getUsername() {
@@ -43,5 +44,11 @@ public class UserDTO {
     }
     public void setPassword(String password) {
         this.password = password;
+    }
+    public String getRole() {
+        return role;
+    }
+    public void setRole(String role) {
+        this.role = role;
     }
 }

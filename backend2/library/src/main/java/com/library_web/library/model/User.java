@@ -24,16 +24,10 @@ public class User {
     @Column(nullable = false, unique = true, columnDefinition = "VARCHAR(255) DEFAULT 'unknown'")
     private String email;
 
-    @Column(name = "provider")
-    private String provider; // GOOGLE, FACEBOOK
-
-    @Column(name = "provider_id")
-    private String providerId; // ID do Google/Facebook cấp
+    @Column(nullable = false)
+    private String role = "USER"; // mặc định là USER
 
     private String fullname;
-
-    @Column(name = "reset_token")
-    private String resetToken; // Token để đặt lại mật khẩu
 
     @Column(name = "otp")
     private String otp;
@@ -82,22 +76,6 @@ public class User {
         this.phone = phone;
     }
 
-    public String getProvider() {
-        return provider;
-    }
-
-    public void setProvider(String provider) {
-        this.provider = provider;
-    }
-
-    public String getProviderId() {
-        return providerId;
-    }
-
-    public void setProviderId(String providerId) {
-        this.providerId = providerId;
-    }
-
     public String getFullname() {
         return fullname;
     }
@@ -106,23 +84,26 @@ public class User {
         this.fullname = fullname;
     }
 
-    public String getResetToken() {
-        return resetToken;
+    public String getRole() {
+        return role;
     }
 
-    public void setResetToken(String resetToken) {
-        this.resetToken = resetToken;
+    public void setRole(String role) {
+        this.role = role;
     }
-    
+
     public String getOtp() {
         return otp;
     }
+
     public void setOtp(String otp) {
         this.otp = otp;
     }
+
     public LocalDateTime getOtpExpiredAt() {
         return otpExpiredAt;
     }
+
     public void setOtpExpiredAt(LocalDateTime otpExpiredAt) {
         this.otpExpiredAt = otpExpiredAt;
     }
