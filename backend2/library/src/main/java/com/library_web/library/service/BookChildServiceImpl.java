@@ -28,6 +28,11 @@ public class BookChildServiceImpl implements BookChildService {
     }
 
     @Override
+    public List<BookChild> findByStatus(BookChild.Status status) {
+        return childRepo.findByStatus(status);
+    }
+
+    @Override
     @Transactional
     public BookChild addChild(Long bookId) {
         Book book = bookRepo.findById(bookId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy sách: " + bookId));
@@ -80,8 +85,8 @@ public void deleteChild(String childId) {
     Book book = child.getBook();
     child.markNotAvailable();
     childRepo.save(child);
-    book.removeChild(child);
-    book.setSoLuongXoa(book.getSoLuongXoa() + 1);
+    book.decreaseTotalQuantity();
+    book.setSoLuongXoa((book.getSoLuongXoa() == null ? 0 : book.getSoLuongXoa()) + 1);
     bookRepo.save(book);
 }
 

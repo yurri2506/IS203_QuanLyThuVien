@@ -36,13 +36,20 @@ public class BookController {
     public void deleteBook(@PathVariable Long maSach) { service.delBook(maSach); }
 
     @GetMapping("/search")
-public List<Book> searchBooks(
+    public List<Book> searchBooks(
         @RequestParam(required = false) String author,
         @RequestParam(required = false) String category,
         @RequestParam(required = false) String publisher,
         @RequestParam(required = false) Integer year,
-        @RequestParam(defaultValue = "false") boolean sortByBorrowCount) {
-    return service.searchBooks(author, category, publisher, year, sortByBorrowCount);
+        @RequestParam(defaultValue = "false") boolean sortByBorrowCount,
+        @RequestParam(required = false) String title) {
+    return service.searchBooks(author, category, publisher, year, title, sortByBorrowCount);
 }
+    @GetMapping("/category/{categoryChildId}")
+    public List<Book> getByCategory(
+        @PathVariable String categoryChildId
+    ) {
+        return service.getBooksByCategoryChild(categoryChildId);
+    }
 
 }

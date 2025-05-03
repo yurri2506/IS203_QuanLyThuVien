@@ -2,6 +2,7 @@ package com.library_web.library.model;
 
 import jakarta.persistence.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 public class CategoryChild {
@@ -22,6 +23,11 @@ public class CategoryChild {
         this.parent = parent;
         this.name = name;
     }
+    @JsonProperty("categoryName")
+    public String getCategoryName() {
+        return this.parent != null ? this.parent.getName() : null;
+    }
+
 
     public String getId() { return id; }
     public String getName() { return name; }
