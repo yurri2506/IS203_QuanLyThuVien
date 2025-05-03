@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useEffect, useState } from "react";
 import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
@@ -7,154 +8,179 @@ import { CalendarClock, Check, Search, X } from "lucide-react";
 import toast from "react-hot-toast";
 import { ThreeDot } from "react-loading-indicators";
 import Sidebar from "@/app/components/sidebar/Sidebar";
-
-const page = () => {
+import axios from "axios";
+const Page = () => {
   const { id } = useParams();
   const [book, setBook] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [childBookList, setChildBookList] = useState([]);
+  const [filterBooks, setFilterBooks] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
+
   useEffect(() => {
-    setLoading(true);
-    const fetchPage = async () => {
+    const fetchData = async () => {
+      setLoading(true);
       try {
-        //lấy chi tiết sách
-        const response = await fetch(`http://localhost:8081/book/${id}`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-        if (!response.ok) {
-          throw new Error(`Lỗi khi lấy sách: ${response.status}`);
-        }
-        const data = await response.json();
-        if (!data) return;
+        const resBook = await fetch(`http://localhost:8080/api/book/${id}`);
+        if (!resBook.ok) throw new Error(`Lỗi khi lấy sách: ${resBook.status}`);
+        const data = await resBook.json();
         setBook(data);
-        // lấy ds sách con từ id cha
-        const res = await fetch(`http://localhost:8081/childrenOf/${data.id}`, {
-          method: "GET",
-        });
 
-        if (!res.ok) {
-          throw new Error("Không thể lấy danh sách sách");
-        }
-
-        const books = await res.json();
-        setChildBookList(books);
+        const resChild = await fetch(`http://localhost:8080/api/bookchild/book/${id}`);
+        if (!resChild.ok) throw new Error(`Lỗi khi lấy sách con: ${resChild.status}`);
+        const children = await resChild.json();
+        setChildBookList(children);
       } catch (error) {
-        console.error("Lỗi fetch:", error);
-        return null;
+        console.error(error);
+        toast.error(error.message || "Lỗi khi tải dữ liệu");
+      } finally {
+        setLoading(false);
       }
     };
-    fetchPage();
-    setLoading(false);
-  }, []);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [childBookList, setChildBookList] = useState(null);
-  const [filterBooks, setFilterBooks] = useState([]);
+    fetchData();
+  }, [id]);
+  const handleAddChild = async () => {
+    setActionLoading(true);
+    try {
+      const response = await axios.post(`http://localhost:8080/api/bookchild/book/${id}/add`);
+      const newChildBook = response.data;
+  
+      toast.success("Đã tạo sách con mới");
+  
+      setChildBookList(prev => [
+        ...prev,
+        {
+          id: newChildBook.id, 
+          status: "AVAILABLE",
+        }
+      ]);
+    } catch (error) {
+      console.error(error);
+      toast.error("Không thể thêm sách con");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+  
 
-  const handleSearch = () => {
-    if (searchQuery) {
-      const filterBook = childBookList?.filter((book) =>
-        book.id === searchQuery.trim() //tìm theo id
-          ? book
-          : null
+ const handleDeleteChild = async (childId) => {
+     setActionLoading(true);
+     try {
+       await axios.delete(`http://localhost:8080/api/bookchild/${childId}`);
+       toast.success("Xóa sách con thành công");
+       setChildBookList(prev =>
+        prev.map(child =>
+          child.id === childId ? { ...child, status: "NOT_AVAILABLE" } : child
+        )
       );
-      if (filterBook.length < 1) toast.error("Không tìm thấy kết quả");
-      setFilterBooks(filterBook);
+      
+     } catch {
+       toast.error("Xóa thất bại");
+     } finally { setActionLoading(false); }
+ };
+  
+  const handleSearch = () => {
+    if (searchQuery.trim()) {
+      const result = childBookList.filter(cb => cb.id.toString() === searchQuery.trim());
+      if (result.length === 0) toast.error("Không tìm thấy kết quả");
+      setFilterBooks(result);
     } else {
       setFilterBooks([]);
     }
   };
-  const BookCard = ({ book }) => {
-    return (
-      <div className="flex bg-white w-full rounded-lg relative drop-shadow-lg px-5 py-3 gap-[10px] md:gap-[30px] items-center">
-        <img src={`${book.hinhAnh[0]}`} className="w-[145px] h-[205px]" />
-        <div className="flex flex-col gap-[10px] relative w-full">
-          <p className="">ID:&nbsp;{book.id}</p>
-          <p className="font-bold">Tên sách:&nbsp;{book.tenSach}</p>
-          <p className="italic">Tên tác giả: &nbsp;{book.tenTacGia}</p>
-          <p className="">Tổng số lượng:&nbsp;{book.tongSoLuong}</p>
-          <p className="">
-            Còn sẵn:&nbsp;
-            {book.tongSoLuong - book.soLuongMuon - book.soLuongXoa}
-          </p>
-        </div>
-        <div className="flex flex-col gap-[10px] relative w-full">
-          <p className="">ID thể loại:&nbsp;{book.theLoai}</p>
-          <p className="">Thể loại chính:&nbsp;{book.tenTheLoaiCha}</p>
-          <p className="">Thể loại phụ&nbsp;{book.tenTheLoaiCon}</p>
-          <p className="">Số lượng mượn:&nbsp;{book.soLuongMuon}</p>
-          <p className="">Số lượng xóa:&nbsp;{book.soLuongXoa}</p>
-        </div>
+
+  const borrowedCount = childBookList.filter(cb => cb.status === 'BORROWED').length;
+  const availableCount = book ? book.tongSoLuong - borrowedCount : 0;
+
+  const BookCard = ({ book }) => (
+    <div className="flex bg-white w-full rounded-lg shadow-lg p-6 gap-8">
+      <img
+        src={book.hinhAnh?.[0] || '/placeholder.png'}
+        className="w-64 h-96 object-cover rounded-md"
+      />
+      <div className="flex flex-col gap-3 flex-1 text-sm md:text-base">
+        <p><strong>ID:</strong> {book.maSach}</p>
+        <p><strong>Tên sách:</strong> {book.tenSach}</p>
+       {/* <p><strong>Mô tả:</strong> {book.moTa}</p>*/}
+        <p><strong>Tác giả:</strong> {book.tenTacGia}</p>
+        <p><strong>Nhà xuất bản:</strong> {book.nxb}</p>
+        <p><strong>Năm xuất bản:</strong> {book.nam}</p>
+        <p><strong>Tổng số lượng:</strong> {book.tongSoLuong}</p>
+        <p><strong>Còn sẵn:</strong> {availableCount}</p>
+        <p><strong>Thể loại chính:</strong> {book.categoryChild?.categoryName}</p>
+        <p><strong>Thể loại phụ:</strong> {book.categoryChild?.name}</p>
+        <p><strong>Đã mượn:</strong> {book.soLuongMuon}</p>
+        <p><strong>Đã xóa:</strong> {book.soLuongXoa}</p>
       </div>
-    );
-  };
-  const ChildBookCard = ({ book }) => {
-    return (
-      <div className="flex bg-white w-full rounded-lg relative drop-shadow-lg justify-between">
-        <div className="flex w-full p-3 gap-2">
-          <p className="">ID:&nbsp;{book.id}</p>
-          {book.trangThai === "Còn sẵn" ? (
-            <Check className="w-5 h-5" color="#2ab23a" />
-          ) : book.trangThai === "Đang mượn" ? (
-            <CalendarClock className="w-5 h-5" color="#fe9501" />
-          ) : (
-            <X className="w-5 h-5" color="#f50000" />
-          )}
+    </div>
+  );
+
+  const ChildBookCard = ({ book }) => (
+    <div className="flex bg-white rounded-lg shadow p-4 items-center justify-between">
+      <div className="flex items-center gap-2 font-medium">
+        <span>ID con: {book.id}</span>
+        {book.status === 'AVAILABLE' && <Check className="w-5 h-5 text-green-500" />}
+        {book.status === 'BORROWED' && <CalendarClock className="w-5 h-5 text-yellow-500" />}
+        {book.status === 'NOT_AVAILABLE' && <X className="w-5 h-5 text-red-500" />}
       </div>
+      <Button
+        disabled={actionLoading}
+        onClick={() => handleDeleteChild(book.id)}
+        size="sm"
+        variant="destructive"
+      >
+        Xóa
+      </Button>
+    </div>
+  );
+  
+
+  if (loading) return (
+    <div className="flex">
+      <Sidebar />
+      <div className="flex-1 flex items-center justify-center min-h-screen">
+        <ThreeDot color="#062D76" size="large" text="Đang tải..." />
       </div>
-    );
-  };
+    </div>
+  );
 
   return (
-    <div className="flex flex-row w-full min-h-screen h-full  bg-[#EFF3FB]">
+
+    <div className="flex flex-row w-full min-h-screen bg-[#EFF3FB]">
       <Sidebar />
-      {loading ? (
-        <div className="flex md:ml-52 w-full h-screen justify-center items-center">
-          <ThreeDot
-            color="#062D76"
-            size="large"
-            text="Vui lòng chờ"
-            variant="bounce"
-            textColor="#062D76"
+      <div className="flex-1 p-6 md:ml-52">
+        <div className="flex mb-6">
+          <Input
+            placeholder="Tìm kiếm sách con theo ID"
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            className="flex-1 h-10 px-4 rounded-lg"
           />
+          <Button onClick={handleSearch} className="ml-4 w-12 h-10 bg-[#062D76] hover:bg-gray-700">
+            <Search className="w-6 h-6 text-white" />
+          </Button>
         </div>
-      ) : (
-        <div className="flex w-full flex-col py-6 md:ml-52 relative mt-5 gap-2 items-center px-10">
-          <div className="flex w-full items-center h-[10px] justify-between mb-5">
-            <div className="flex gap-5">
-              <Input
-                type="text"
-                placeholder="Tìm kiếm"
-                className="w-sm md:w-3xl h-10 font-thin italic text-black text-2xl bg-white rounded-[10px]"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              <Button
-                className="w-10 h-10 cursor-pointer text-[20px] bg-[#062D76] hover:bg-gray-700 font-bold rounded-[10px] overflow-hidden"
-                onClick={() => {
-                  handleSearch();
-                }}
-              >
-                <Search className="w-10 h-10" color="white" />
-              </Button>
-            </div>
-          </div>
-          {book && <BookCard book={book} />}
-          <div className="grid grid-cols-4 gap-4">
-            {childBookList &&
-              (filterBooks.length > 0 //nếu đang search thì hiện danh sách lọc
-                ? filterBooks.map((book) => {
-                    return <ChildBookCard key={book?.id} book={book} />;
-                  })
-                : childBookList.map((book) => {
-                    return <ChildBookCard key={book?.id} book={book} />;
-                  }))}
-          </div>
+        {/* Book details */}
+        {book && <BookCard book={book} />}
+        <div className="mt-6">
+        <Button
+          disabled={actionLoading}
+          onClick={handleAddChild}
+          className="bg-[#062D76] hover:bg-gray-700"
+        >
+          Tạo bản sao mới
+        </Button>
+      </div>
+        {/* Child books grid */}
+        <div className="grid grid-cols-4 gap-4 mt-8">
+          {(filterBooks.length ? filterBooks : childBookList).map(cb => (
+            <ChildBookCard key={cb.id} book={cb} />
+          ))}
         </div>
-      )}
+      </div>
     </div>
   );
 };
 
-export default page;
+export default Page;
