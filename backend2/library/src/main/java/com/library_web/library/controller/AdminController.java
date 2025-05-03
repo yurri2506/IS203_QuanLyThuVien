@@ -29,6 +29,6 @@ public class AdminController {
             return ResponseEntity.status(404).body(Map.of("message", "Không tìm thấy người dùng"));
         }
         userRepository.deleteById(id);
-        return ResponseEntity.ok(Map.of("message", "Xóa người dùng thành công"));
+        return ResponseEntity.ok(Map.of("message", "Xóa người dùng " + id + " thành công"));
     }
 }

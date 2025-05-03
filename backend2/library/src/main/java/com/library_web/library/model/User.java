@@ -107,4 +107,6 @@ public class User {
     public void setOtpExpiredAt(LocalDateTime otpExpiredAt) {
         this.otpExpiredAt = otpExpiredAt;
     }
+    
+    
 }
