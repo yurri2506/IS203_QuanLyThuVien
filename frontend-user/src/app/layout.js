@@ -1,6 +1,8 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Header from "./components/Header";
+import { GoogleOAuthProvider } from "@react-oauth/google";
+import FacebookSDK from "./components/FacebookSDK";
 //import Sidebar from "./components/LeftSidebar";
 
 const geistSans = Geist({
@@ -25,11 +27,16 @@ export default function RootLayout({ children }) {
         className={`${geistSans.variable} ${geistMono.variable} antialiased flex`}
       >
         {/*<Sidebar />*/}
-        <div className="flex-1 bg-[#EFF3FB]">
-          <Header />
-          {children}
-        </div>
+        <GoogleOAuthProvider
+          clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}
+        >
+          <FacebookSDK />
+          <div className="flex-1 bg-[#EFF3FB]">
+            <Header />
+            {children}
+          </div>
+        </GoogleOAuthProvider>
       </body>
     </html>
-  );  
+  );
 }
