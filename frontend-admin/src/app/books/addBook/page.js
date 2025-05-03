@@ -7,18 +7,19 @@ import { useRouter } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { ThreeDot } from "react-loading-indicators";
+import axios from "axios";
 
-function page() {
+function Page() {
   const [loading, setLoading] = useState(false);
   const route = useRouter();
   const handleGoBack = () => {
     route.back();
   };
   const [bookname, setBookname] = useState(""); // Tên sách
-  const [author, setAuthor] = useState(""); //Tên tác giả
-  const [publisher, setPublisher] = useState(""); //NXB
-  const [year, setYear] = useState(""); //Năm XB
-  const [quantity, setQuantity] = useState(""); //SL
+  const [author, setAuthor] = useState(""); // Tên tác giả
+  const [publisher, setPublisher] = useState(""); // NXB
+  const [year, setYear] = useState(""); // Năm XB
+  const [quantity, setQuantity] = useState(""); // SL
   const [description, setDescription] = useState(""); // Mô tả
   const [category, setCategory] = useState("");
   const [category2, setCategory2] = useState("");
@@ -27,43 +28,42 @@ function page() {
   const fileInputRef2 = useRef(null);
   const fileInputRef3 = useRef(null);
   const [image, setImage] = useState([
-    {
-      filePreview: null,
-      selectedFile: null,
-    },
-    {
-      filePreview: null,
-      selectedFile: null,
-    },
-    {
-      filePreview: null,
-      selectedFile: null,
-    },
-    {
-      filePreview: null,
-      selectedFile: null,
-    },
+    { filePreview: null, selectedFile: null },
+    { filePreview: null, selectedFile: null },
+    { filePreview: null, selectedFile: null },
+    { filePreview: null, selectedFile: null },
   ]);
   const [totalCate, setTotalCate] = useState([]);
   const [cateList, setCateList] = useState([]);
   const [cate2List, setCate2List] = useState([]);
+
   useEffect(() => {
-    const fetchCategory = async() =>{
-      const response = await fetch("http://localhost:8081/books/categories");
-      const data = await response.json();
-      setTotalCate(data)
-      setCateList([...new Set(data.map(item => item.tenTheLoaiCha))])
-    } 
-    fetchCategory()
+    const fetchCategory = async () => {
+      try {
+        const response = await axios.get("http://localhost:8080/api/category");
+        const data = response.data;
+        setTotalCate(data);
+        setCateList(data.map(item => item.name));
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+        toast.error("Không thể tải danh mục");
+      }
+    };
+    fetchCategory();
   }, []);
-  useEffect(()=>{
-    if(category != ""){
-      const tmp = totalCate.filter(cate => cate.tenTheLoaiCha === category).map(cate => cate.tenTheLoaiCon);
-      setCate2List(tmp)
-      setCategory2("")
+
+  useEffect(() => {
+    if (category !== "") {
+      const selectedCate = totalCate.find(cate => cate.name === category);
+      if (selectedCate) {
+        setCate2List(selectedCate.children.map(child => child.name));
+      } else {
+        setCate2List([]);
+      }
+      setCategory2("");
     }
-    
-  },[category])
+  }, [category, totalCate]);
+
   const [isCateListOpen, setIsCateListOpen] = useState(false);
   const [isCateList2Open, setIsCateList2Open] = useState(false);
   const openCategoryList = () => {
@@ -72,38 +72,51 @@ function page() {
   const openCategory2List = () => {
     setIsCateList2Open(!isCateList2Open);
   };
+
   const handleFileChange = (number, event) => {
     const file = event.target.files[0];
     setImage((prev) => {
-      const updated = [...prev]; // copy mảng cũ
+      const updated = [...prev];
       updated[number] = {
-        ...updated[number], // giữ lại các giá trị cũ nếu không muốn ghi đè hết
+        ...updated[number],
         filePreview: URL.createObjectURL(file),
         selectedFile: file,
       };
       return updated;
     });
   };
-  /*  upload các ảnh lên cloudinary để lấy link => up hết */
+
   const uploadImagesToCloudinary = async () => {
     const formData = new FormData();
     image.forEach((img) => {
       if (img.selectedFile) {
-        formData.append("file", img.selectedFile); // gửi với key "file"
+        formData.append("file", img.selectedFile);
       }
     });
-    const res = await fetch("http://localhost:8081/upload/image", {
-      method: "POST",
-      body: formData,
-    });
-
-    if (!res.ok) {
-      throw new Error("Upload thất bại");
+    try {
+      const res = await axios.post("http://localhost:8080/upload/image", formData);
+      return res.data; // Giả định backend trả về danh sách URL
+    } catch (error) {
+      console.error("Error uploading images:", error);
+      toast.error("Upload hình ảnh thất bại");
+      throw error;
     }
-
-    const data = await res.json();
-    return data
   };
+const handleValidation = () => {
+  const newErrors = { ...errors };
+  newErrors.bookname = !bookname;
+  newErrors.author = !author;
+  newErrors.publisher = !publisher;
+  newErrors.year = !year;
+  newErrors.quantity = !quantity || parseInt(quantity) < 1;
+  newErrors.description = !description;
+  newErrors.category = !category;
+  newErrors.category2 = !category2;
+
+  setErrors(newErrors);
+  return !Object.values(newErrors).includes(true);
+};
+
   const handleSubmit = async () => {
     if (
       bookname === "" ||
@@ -118,68 +131,53 @@ function page() {
       toast.error("Vui lòng điền đầy đủ thông tin");
       return;
     }
-    if (quantity < 1) {
+    if (parseInt(quantity) < 1) {
       toast.error("Số lượng sách phải lớn hơn 0");
       return;
     }
-    if (!image[0].filePreview) {
-      toast.error("Vui lòng tải ít nhất hình ảnh bìa");
-      return;
-    }
     setLoading(true);
-    const newImages = await uploadImagesToCloudinary();
-
-    const updatedImages = image.map((img) => {
-      if (img.selectedFile) {
-        return {
-          ...img,
-          filePreview: newImages.shift(), // lấy ra từng url
-          selectedFile: null,
-        };
-      }
-      return img;
-    });
-    const finalCategory = totalCate.find(
-      cate =>
-        cate.tenTheLoaiCha === category &&
-        cate.tenTheLoaiCon === category2
-    );
-    const finalImageURLs = updatedImages
-      .filter((img) => img.filePreview)
-      .map((img) => img.filePreview);
-    const bookData = {
-      tenSach: bookname,
-      moTa: description,
-      hinhAnh: finalImageURLs,
-      theLoai: finalCategory.id,
-      tenTacGia: author,
-      nam: year,      
-      nxb: publisher,      
-      tongSoLuong: quantity,
-      soLuongMuon: 0,
-      soLuongXoa : 0,      
-    };
     try {
-      console.log(bookData)
-      const res = await fetch("http://localhost:8081/addBook", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(bookData),
-      });
-  
-      if (!res.ok) {
-        throw new Error("Thêm sách thất bại");
+      let finalImageURLs = [];
+      if (image.some(img => img.selectedFile)) {
+        const newImages = await uploadImagesToCloudinary();
+        finalImageURLs = newImages;
       }
-  
-      const data = await res.json();
-      console.log("Sách đã thêm:", data);
-      setLoading(false);
+
+      const selectedParent = totalCate.find(cate => cate.name === category);
+      if (!selectedParent) {
+        toast.error("Thể loại chính không hợp lệ");
+        return;
+      }
+      const selectedChild = selectedParent.children.find(child => child.name === category2);
+      if (!selectedChild) {
+        toast.error("Thể loại phụ không hợp lệ");
+        return;
+      }
+      const childId = selectedChild.id;
+
+      const bookData = {
+        book: {
+          tenSach: bookname,
+          moTa: description,
+          tenTacGia: author,
+          nxb: publisher,
+          nam: parseInt(year),
+          hinhAnh: finalImageURLs,
+          categoryChild: { id: childId },
+          trangThai: "CON_SAN"
+        },
+        quantity: parseInt(quantity),
+      };
+
+      const res = await axios.post("http://localhost:8080/api/book", bookData);
+      console.log("Sách đã thêm:", res.data);
       toast.success("Thêm sách thành công");
       handleGoBack();
     } catch (error) {
       console.error("Lỗi:", error.message);
+      toast.error("Thêm sách thất bại");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -203,16 +201,14 @@ function page() {
             <Button
               title={"Quay Lại"}
               className="bg-[#062D76] rounded-3xl w-10 h-10"
-              onClick={() => {
-                handleGoBack();
-              }}
+              onClick={handleGoBack}
             >
               <Undo2 className="w-12 h-12" color="white" />
             </Button>
           </div>
           {/*Dòng tên sách*/}
           <div className="flex flex-col w-full gap-[5px] md:gap-[10px]">
-            <p className="font-semibold text-lg mt-3">Tên Sách</p>
+            <p className="font-semibold text-lg mt-3">Tên Sách<span className="text-red-500"> *</span></p>
             <Input
               type="text"
               placeholder="Nhập tên sách"
@@ -223,7 +219,7 @@ function page() {
           </div>
           {/*Dòng tên tg*/}
           <div className="flex flex-col w-full gap-[5px] md:gap-[10px]">
-            <p className="font-semibold text-lg mt-3">Tên Tác Giả</p>
+            <p className="font-semibold text-lg mt-3">Tên Tác Giả<span className="text-red-500"> *</span></p>
             <Input
               type="text"
               placeholder="Nhập tên tác giả"
@@ -235,7 +231,7 @@ function page() {
           {/*Dòng năm xuất bản và nhà xuất bản */}
           <div className="flex w-full justify-between gap-10">
             <div className="flex flex-col w-2/3 gap-[5px] md:gap-[10px]">
-              <p className="font-semibold text-lg mt-3">Năm Xuất Bản</p>
+              <p className="font-semibold text-lg mt-3">Năm Xuất Bản<span className="text-red-500"> *</span></p>
               <Input
                 type="number"
                 placeholder="Nhập năm xuất bản"
@@ -245,7 +241,7 @@ function page() {
               />
             </div>
             <div className="flex flex-col w-full gap-[5px] md:gap-[10px]">
-              <p className="font-semibold text-lg mt-3">Nhà Xuất Bản</p>
+              <p className="font-semibold text-lg mt-3">Nhà Xuất Bản<span className="text-red-500"> *</span></p>
               <Input
                 type="text"
                 placeholder="Nhập tên nhà xuất bản"
@@ -258,7 +254,7 @@ function page() {
           {/*Dòng số lượng và thể loại */}
           <div className="flex w-full justify-between gap-10">
             <div className="flex flex-col w-2/3 gap-[5px] md:gap-[10px]">
-              <p className="font-semibold text-lg mt-3">Số lượng</p>
+              <p className="font-semibold text-lg mt-3">Số lượng<span className="text-red-500"> *</span></p>
               <Input
                 type="number"
                 placeholder="Nhập số lượng"
@@ -268,72 +264,64 @@ function page() {
               />
             </div>
             <div className="flex flex-col w-full gap-[5px] md:gap-[10px] space-y-2 relative inline-block text-left">
-              <p className="font-semibold text-lg mt-3">Thể Loại Chính</p>
+              <p className="font-semibold text-lg mt-3">Thể Loại Chính<span className="text-red-500"> *</span></p>
               <Button
                 title={"Thể Loại Chính"}
                 className="bg-white text-black rounded-lg w-full h-10 hover:bg-gray-300 flex justify-between"
-                onClick={() => {
-                  openCategoryList();
-                }}
+                onClick={openCategoryList}
               >
                 {category !== "" ? category : "Chọn Thể Loại Chính"}
                 <ChevronDown className="w-12 h-12" color="#062D76" />
               </Button>
               {isCateListOpen && (
                 <div className="absolute bg-white rounded-lg w-full z-50 shadow-lg">
-                  {cateList?.map((cate, index) => {
-                    return (
-                      <Button
-                        key={index}
-                        className="flex justify-start block w-full px-4 py-2 text-left bg-white text-black hover:bg-gray-300 items-center gap-2"
-                        onClick={() => {
-                          setCategory(cate);
-                          setIsCateListOpen(false);
-                        }}
-                      >
-                        {cate}
-                      </Button>
-                    );
-                  })}
+                  {cateList?.map((cate, index) => (
+                    <Button
+                      key={index}
+                      className="flex justify-start block w-full px-4 py-2 text-left bg-white text-black hover:bg-gray-300 items-center gap-2"
+                      onClick={() => {
+                        setCategory(cate);
+                        setIsCateListOpen(false);
+                      }}
+                    >
+                      {cate}
+                    </Button>
+                  ))}
                 </div>
               )}
             </div>
-          {/*Thể loại 2*/}
-          <div className="flex flex-col w-full gap-[5px] md:gap-[10px] space-y-2 relative inline-block text-left">
-              <p className="font-semibold text-lg mt-3">Thể Loại Phụ</p>
+            {/*Thể loại 2*/}
+            <div className="flex flex-col w-full gap-[5px] md:gap-[10px] space-y-2 relative inline-block text-left">
+              <p className="font-semibold text-lg mt-3">Thể Loại Phụ<span className="text-red-500"> *</span></p>
               <Button
                 title={"Thể Loại Phụ"}
                 className="bg-white text-black rounded-lg w-full h-10 hover:bg-gray-300 flex justify-between"
-                onClick={() => {
-                  openCategory2List();
-                }}
+                onClick={openCategory2List}
               >
                 {category2 !== "" ? category2 : "Chọn Thể Loại Phụ"}
                 <ChevronDown className="w-12 h-12" color="#062D76" />
               </Button>
               {isCateList2Open && (
                 <div className="absolute bg-white rounded-lg w-full z-50 shadow-lg">
-                  {cate2List?.map((cate, index) => {
-                    return (
-                      <Button
-                        key={index}
-                        className="flex justify-start block w-full px-4 py-2 text-left bg-white text-black hover:bg-gray-300 items-center gap-2"
-                        onClick={() => {
-                          setCategory2(cate);
-                          setIsCateList2Open(false);
-                        }}
-                      >
-                        {cate}
-                      </Button>
-                    );
-                  })}
+                  {cate2List?.map((cate, index) => (
+                    <Button
+                      key={index}
+                      className="flex justify-start block w-full px-4 py-2 text-left bg-white text-black hover:bg-gray-300 items-center gap-2"
+                      onClick={() => {
+                        setCategory2(cate);
+                        setIsCateList2Open(false);
+                      }}
+                    >
+                      {cate}
+                    </Button>
+                  ))}
                 </div>
               )}
             </div>
           </div>
           {/*Dòng mô tả*/}
           <div className="flex flex-col w-full gap-[5px] md:gap-[10px]">
-            <p className="font-semibold text-lg mt-3">Mô Tả</p>
+            <p className="font-semibold text-lg mt-3">Mô Tả<span className="text-red-500"> *</span></p>
             <Input
               type="text"
               placeholder="Nhập mô tả sách"
@@ -348,7 +336,7 @@ function page() {
             <div className="grid grid-cols-4 gap-4">
               {/*Cột ảnh bìa*/}
               <div className="flex flex-col space-y-3">
-                {image[0].filePreview ? ( //size sách thường là 14.5 x 20.5
+                {image[0].filePreview ? (
                   <img
                     src={image[0].filePreview}
                     className="w-[290px] h-[410px] rounded-lg"
@@ -363,9 +351,7 @@ function page() {
                 )}
                 <Button
                   className="flex w-[290px] bg-[#062D76]"
-                  onClick={() => {
-                    fileInputRef.current.click();
-                  }}
+                  onClick={() => fileInputRef.current.click()}
                 >
                   <ArrowUpFromLine className="w-12 h-12" color="white" />
                   Tải Ảnh Bìa
@@ -380,7 +366,7 @@ function page() {
               </div>
               {/*Cột ảnh 1*/}
               <div className="flex flex-col space-y-3">
-                {image[1].filePreview ? ( //size sách thường là 14.5 x 20.5
+                {image[1].filePreview ? (
                   <img
                     src={image[1].filePreview}
                     className="w-[290px] h-[410px] rounded-lg"
@@ -395,9 +381,7 @@ function page() {
                 )}
                 <Button
                   className="flex w-[290px] bg-[#062D76]"
-                  onClick={() => {
-                    fileInputRef1.current.click();
-                  }}
+                  onClick={() => fileInputRef1.current.click()}
                 >
                   <ArrowUpFromLine className="w-12 h-12" color="white" />
                   Tải Ảnh Xem Trước
@@ -412,7 +396,7 @@ function page() {
               </div>
               {/*Cột ảnh 2*/}
               <div className="flex flex-col space-y-3">
-                {image[2].filePreview ? ( //size sách thường là 14.5 x 20.5
+                {image[2].filePreview ? (
                   <img
                     src={image[2].filePreview}
                     className="w-[290px] h-[410px] rounded-lg"
@@ -427,9 +411,7 @@ function page() {
                 )}
                 <Button
                   className="flex w-[290px] bg-[#062D76]"
-                  onClick={() => {
-                    fileInputRef2.current.click();
-                  }}
+                  onClick={() => fileInputRef2.current.click()}
                 >
                   <ArrowUpFromLine className="w-12 h-12" color="white" />
                   Tải Ảnh Xem Trước
@@ -444,7 +426,7 @@ function page() {
               </div>
               {/*Cột ảnh 3*/}
               <div className="flex flex-col space-y-3">
-                {image[3].filePreview ? ( //size sách thường là 14.5 x 20.5
+                {image[3].filePreview ? (
                   <img
                     src={image[3].filePreview}
                     className="w-[290px] h-[410px] rounded-lg"
@@ -459,9 +441,7 @@ function page() {
                 )}
                 <Button
                   className="flex w-[290px] bg-[#062D76]"
-                  onClick={() => {
-                    fileInputRef3.current.click();
-                  }}
+                  onClick={() => fileInputRef3.current.click()}
                 >
                   <ArrowUpFromLine className="w-12 h-12" color="white" />
                   Tải Ảnh Xem Trước
@@ -482,9 +462,7 @@ function page() {
             <Button
               title={"Hoàn Tất"}
               className={`rounded-3xl w-40 h-12 bg-[#062D76]`}
-              onClick={() => {
-                handleSubmit();
-              }}
+              onClick={handleSubmit}
             >
               <CircleCheck className="w-12 h-12" color="white" />
               Hoàn Tất
@@ -496,99 +474,4 @@ function page() {
   );
 }
 
-<<<<<<< HEAD
-export default page
-
-
-/**
- * 'use client';
-import React, { useState } from 'react';
-import axios from 'axios';
-
-const AddBookPage = () => {
-    const [bookData, setBookData] = useState({
-        tenSach: '',
-        moTa: '',
-        maTheLoai: '',
-        maTacGia: '',
-        maNXB: '',
-        namXB: '',
-        trongLuong: '',
-        tinhTrang: '',
-        soLTK: '',
-        donGia: '',
-        soLuongMuon: '',
-    });
-    const [images, setImages] = useState([]);
-
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setBookData((prevData) => ({
-            ...prevData,
-            [name]: value,
-        }));
-    };
-
-    const handleImageChange = (e) => {
-        setImages(e.target.files);
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-
-        const formData = new FormData();
-        formData.append('book', JSON.stringify(bookData));
-
-        for (let i = 0; i < images.length; i++) {
-            formData.append('image', images[i]);
-        }
-
-        try {
-            const response = await axios.post('http://localhost:8088/api/book/addBook', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
-            console.log(response.data);
-            // Handle successful response (e.g., show success message)
-        } catch (error) {
-            console.error('Error adding book:', error);
-        }
-    };
-
-    return (
-        <div>
-            <h2>Add Book</h2>
-            <form onSubmit={handleSubmit}>
-                <input
-                    type="text"
-                    name="tenSach"
-                    placeholder="Tên sách"
-                    value={bookData.tenSach}
-                    onChange={handleInputChange}
-                />
-                <input
-                    type="text"
-                    name="moTa"
-                    placeholder="Mô tả"
-                    value={bookData.moTa}
-                    onChange={handleInputChange}
-                />
-                <input
-                    type="file"
-                    name="image"
-                    multiple
-                    onChange={handleImageChange}
-                />
-                <button type="submit">Add Book</button>
-            </form>
-        </div>
-    );
-};
-
-export default AddBookPage;
-
- */
-=======
-export default page;
->>>>>>> 731b5b214e56cd25073ec664e7478f869792e9b9
+export default Page;
