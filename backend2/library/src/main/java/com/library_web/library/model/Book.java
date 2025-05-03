@@ -35,7 +35,8 @@ public class Book {
 
     public enum TrangThai {
         CON_SAN("Còn sẵn"),
-        DA_XOA("Đã xóa");
+        DA_XOA("Đã xóa"),
+        DA_HET("Đã hết"); 
 
         private final String moTa;
         TrangThai(String moTa) { this.moTa = moTa; }
@@ -46,7 +47,9 @@ public class Book {
         }
     }
 
-    public Book() {}
+    public Book() {
+        this.trangThai = TrangThai.CON_SAN;
+    }
 
     // getters & setters
     public Long getMaSach() { return maSach; }
@@ -89,9 +92,13 @@ public class Book {
         }
     }
 
-    public void removeChild(BookChild c) {
-            tongSoLuong--;        
+    public void decreaseTotalQuantity() {
+        if (tongSoLuong > 0) {
+            tongSoLuong--;
+        }
     }
+
+    
 
     public void onBorrow() {
         if (tongSoLuong - getCurrentBorrowedCount() < 0) {
@@ -107,4 +114,20 @@ public class Book {
     public void onReturn() {
         if (soLuongMuon <= 0) throw new IllegalStateException("Không có sách nào đang mượn");
     }
+    public void updateTrangThai() {
+        int borrowed = this.getCurrentBorrowedCount();
+        int available = this.getTongSoLuong() - borrowed;
+    
+        int soLuongXoa = this.getSoLuongXoa() != null ? this.getSoLuongXoa() : 0;
+    
+        if (this.getTongSoLuong() == 0 || available == 0) {
+            this.trangThai = TrangThai.DA_HET;
+        } else if (soLuongXoa >= this.getTongSoLuong()) {
+            this.trangThai = TrangThai.DA_XOA;
+        } else {
+            this.trangThai = TrangThai.CON_SAN;
+        }
+    }
+    
+    
 }

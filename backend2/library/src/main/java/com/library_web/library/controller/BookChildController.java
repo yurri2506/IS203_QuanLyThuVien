@@ -42,4 +42,9 @@ public class BookChildController {
     public BookChild returnBook(@PathVariable String id) {
         return service.returnChild(id);
     }
+    
+    @GetMapping("/borrowed")
+    public List<BookChild> getBorrowed() {
+        return service.findByStatus(BookChild.Status.BORROWED);
+    }
 }

@@ -2,13 +2,12 @@ package com.library_web.library.service;
 import com.library_web.library.model.Book;
 import com.library_web.library.model.BookChild;
 import com.library_web.library.model.CategoryChild;
+import com.library_web.library.repository.BookChildRepository;
 import com.library_web.library.repository.BookRepository;
 import com.library_web.library.repository.CategoryRepository;
 import com.library_web.library.repository.CategoryChildRepository;
 
-
 import jakarta.transaction.Transactional;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -18,6 +17,8 @@ import java.util.*;
 @Service
 public class BookServiceImpl implements BookService {
     private final BookRepository repo;
+    private final BookChildRepository bookChildRepository;
+
   //  private final CategoryRepository categoryRepo;
     private final CategoryChildRepository childRepo;
   //  private final Long defaultParentId = 1L;
@@ -25,26 +26,56 @@ public class BookServiceImpl implements BookService {
     public BookServiceImpl(
         BookRepository repo,
         CategoryRepository categoryRepo,
-        CategoryChildRepository childRepo
+        CategoryChildRepository childRepo,
+        BookChildRepository bookChildRepository
     ) {
         this.repo = repo;
       //  this.categoryRepo = categoryRepo;
         this.childRepo = childRepo;
+        this.bookChildRepository = bookChildRepository;
     }
 
     @Override
     public List<Book> getAllBooks() {
-        return repo.findAll();
+        List<Book> books = repo.findAll();
+    
+        for (Book book : books) {
+            book.updateTrangThai();
+        }
+        return books;
+    }
+    
+    @Override
+    public List<Book> getBooksByCategoryChild(String categoryChildId) {
+        return repo.findByCategoryChild_Id(categoryChildId);
     }
 
     @Override
-    @Transactional
-    public void delBook(Long maSach) {
-        if (!repo.existsById(maSach)) {
-            throw new RuntimeException("Không tìm thấy sách có mã: " + maSach);
+@Transactional
+public void delBook(Long maSach) {
+    Book book = repo.findById(maSach)
+        .orElseThrow(() -> 
+            new ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                "Không tìm thấy sách có mã: " + maSach
+            )
+        );
+    book.setTrangThai(Book.TrangThai.DA_XOA);
+    List<BookChild> listChild = bookChildRepository.findByBookMaSachOrderByIdAsc(maSach);
+    int countDeleted = 0;
+    for (BookChild bc : listChild) {
+        if (bc.getStatus() != BookChild.Status.NOT_AVAILABLE) {
+            bc.setStatus(BookChild.Status.NOT_AVAILABLE);
+            countDeleted++;
         }
-        repo.deleteById(maSach);
     }
+    book.setSoLuongXoa(countDeleted);
+
+    
+    repo.save(book);
+    bookChildRepository.saveAll(listChild);
+}
+
 
     @Override
     public Book getBookbyID(Long maSach) {
@@ -91,6 +122,7 @@ public Book addBook(Book book, int initialQuantity) {
         .orElseThrow(() -> new ResponseStatusException(
             HttpStatus.BAD_REQUEST, "Không tìm thấy thể loại con với id: " + childId));
     book.setCategoryChild(child);
+    book.setTrangThai(Book.TrangThai.CON_SAN);
     Book saved = repo.save(book);
     for (int i = 0; i < initialQuantity; i++) {
         String suffix = generateSuffix(i);
@@ -196,19 +228,16 @@ public Book updateBook(Long maSach, Map<String, Object> updates) {
                     book.setHinhAnh(imgs);
                 }
             }
-            case "category" -> {
-                if (value instanceof Map<?, ?> mapValue) {
-                    Object nameObj = mapValue.get("name");
-                    if (nameObj instanceof String categoryName) {
-                        if (!categoryName.isBlank()) {
-                            CategoryChild child = childRepo.findByName(categoryName)
-                                .orElseThrow(() -> new RuntimeException("Không tìm thấy thể loại: " + categoryName));
-                            book.setCategoryChild(child);
-                        }
-                    }
-                }
+            case "categoryChildId" -> {
+                // value là String
+                String childId = value.toString();
+                CategoryChild child = childRepo.findById(childId)
+                    .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "Không tìm thấy thể loại con với ID: " + childId
+                    ));
+                book.setCategoryChild(child);
             }
-            
         }
     });
 
@@ -216,7 +245,7 @@ public Book updateBook(Long maSach, Map<String, Object> updates) {
 }
 
 @Override
-public List<Book> searchBooks(String author, String category, String publisher, Integer year, boolean sortByBorrowCount) {
+public List<Book> searchBooks(String author, String category, String publisher, Integer year, String title, boolean sortByBorrowCount) {
     List<Book> books = repo.findAll();
 
     if (author != null && !author.isBlank()) {
@@ -241,6 +270,13 @@ public List<Book> searchBooks(String author, String category, String publisher, 
             .filter(b -> b.getNam() != null && b.getNam().equals(year))
             .toList();
     }
+    if (title != null && !title.isBlank()) {
+        String t = title.toLowerCase();
+        books = books.stream()
+            .filter(b -> b.getTenSach() != null
+                       && b.getTenSach().toLowerCase().contains(t))
+            .toList();
+    }
 
     if (sortByBorrowCount) {
         books = books.stream()
@@ -250,5 +286,6 @@ public List<Book> searchBooks(String author, String category, String publisher, 
 
     return books;
 }
+    
 
 }
