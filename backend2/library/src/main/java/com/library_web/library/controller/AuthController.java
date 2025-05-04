@@ -1,7 +1,9 @@
 package com.library_web.library.controller;
 
+
+import com.library_web.library.dto.UserDTO;
 import com.library_web.library.model.User;
-import com.library_web.library.model.UserDTO;
+
 import com.library_web.library.model.GoogleLoginRequest;
 import com.library_web.library.repository.UserRepository;
 import com.library_web.library.security.JwtUtil;
@@ -27,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.util.Map;
 
 @RestController
+
 @RequestMapping("/api")
 @CrossOrigin(origins = "http://localhost:3000")
 public class AuthController {
@@ -38,6 +41,7 @@ public class AuthController {
 
     @Autowired
     private FacebookAuthService facebookAuthService;
+
 
     public AuthController(UserService userService, UserRepository userRepository) {
         this.userService = userService;
@@ -165,7 +169,7 @@ public class AuthController {
 
 //         String response = userService.resetPassword(token, newPassword);
 //         return ResponseEntity.ok(Map.of("message", response));
-    @PostMapping("/user-signup")
+    @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody UserDTO userDTO) {
         return ResponseEntity.ok(userService.register(userDTO));
     }
