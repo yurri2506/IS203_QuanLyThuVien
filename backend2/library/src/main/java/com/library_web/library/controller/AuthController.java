@@ -181,7 +181,7 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> request) {
-        return ResponseEntity.ok(userService.login(request.get("username"), request.get("password")));
+        return ResponseEntity.ok(userService.login(request.get("email"), request.get("password")));
     }
 
     @GetMapping("/refresh-token")

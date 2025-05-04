@@ -133,21 +133,29 @@ public class UserService {
     // return userDTO;
     // }
 
-    public Map<String, Object> login(String username, String password) {
-        Optional<User> userOpt = userRepository.findByUsername(username);
-        if (userOpt.isEmpty() || !passwordEncoder.matches(password, userOpt.get().getPassword()))
-            throw new IllegalArgumentException("Sai tài khoản hoặc mật khẩu");
+   public Map<String, Object> login(String email, String password) {
+    try {
+        Optional<User> userOpt = userRepository.findByEmail(email);
+        if (userOpt.isEmpty() || !passwordEncoder.matches(password, userOpt.get().getPassword())) {
+            throw new IllegalArgumentException("Sai email tài khoản hoặc mật khẩu");
+        }
 
         User user = userOpt.get();
         String accessToken = JwtUtil.generateAccessToken(user.getUsername());
         String refreshToken = JwtUtil.generateRefreshToken(user.getUsername());
 
         return Map.of(
-                "message", "Đăng nhập thành công",
-                "accessToken", accessToken,
-                "refreshToken", refreshToken,
-                "data", user);
+            "message", "Đăng nhập thành công",
+            "accessToken", accessToken,
+            "refreshToken", refreshToken,
+            "data", user
+        );
+    } catch (Exception e) {
+        // Log lỗi chi tiết và trả về lỗi cho frontend
+        e.printStackTrace();
+        throw new RuntimeException("Đã có lỗi xảy ra khi đăng nhập: " + e.getMessage());
     }
+}
 
     public Map<String, Object> refreshAccessToken(String refreshToken) {
         try {
