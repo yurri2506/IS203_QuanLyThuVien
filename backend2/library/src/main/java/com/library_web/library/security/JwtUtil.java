@@ -18,11 +18,7 @@ public class JwtUtil {
     public static String generateAccessToken(String username) {
 
         return Jwts.builder()
-                .setSubject(user.getUsername())
-                .claim("email", user.getEmail())
-                .claim("phone", user.getPhone())
-                .claim("fullname", user.getFullname())
-                .claim("role", user.getRole())
+                .setSubject(username)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRATION))
                 .signWith(key)
@@ -55,35 +51,6 @@ public class JwtUtil {
 
     // Lấy username từ token
     public static String getUsernameFromToken(String token) {
-        return validateToken(token);  // validateToken trả về username
-//     public static Claims parseClaims(String token) {
-//         return Jwts.parserBuilder()
-//                 .setSigningKey(key)
-//                 .build()
-//                 .parseClaimsJws(token)
-//                 .getBody();
-//     }
-
-//     public static boolean isTokenExpired(String token) {
-//         try {
-//             return parseClaims(token).getExpiration().before(new Date());
-//         } catch (JwtException e) {
-//             return true;
-//         }
-//     }
-
-//     public static String validateToken(String token) {
-//         return parseClaims(token).getSubject();
-//     }
-
-//     public static Map<String, Object> getPayload(String token) {
-//         Claims claims = parseClaims(token);
-//         return Map.of(
-//             "username", claims.getSubject(),
-//             "email", claims.get("email"),
-//             "phone", claims.get("phone"),
-//             "fullname", claims.get("fullname"),
-//             "role", claims.get("role")
-//         );
+        return validateToken(token);  // Gọi hàm validateToken để lấy username
     }
 }
