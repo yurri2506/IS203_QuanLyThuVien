@@ -1,6 +1,7 @@
 package com.library_web.library.model;
 
 import java.time.LocalDate;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -19,6 +20,7 @@ public class User {
     private String username;
 
     @Column(nullable = false)
+    @JsonIgnore // không trả về JSON
     private String password;
 
 
@@ -34,11 +36,11 @@ public class User {
 
     private String fullname;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String gender;
 
     
-    @Column(nullable = false)
+    @Column(nullable = true)
     @JsonFormat(pattern = "MM/dd/yyyy") // định dạng JSON input/output
     private LocalDate birthdate;
 
