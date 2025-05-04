@@ -14,15 +14,13 @@ public class JwtUtil {
     private static final long ACCESS_TOKEN_EXPIRATION = 1000 * 60 * 5; // 5 phút
     private static final long REFRESH_TOKEN_EXPIRATION = 1000 * 60 * 60 * 24 * 7; // 1 tuần
 
+
     // Tạo Access Token
+
     public static String generateAccessToken(String username) {
 
         return Jwts.builder()
-                .setSubject(user.getUsername())
-                .claim("email", user.getEmail())
-                .claim("phone", user.getPhone())
-                .claim("fullname", user.getFullname())
-                .claim("role", user.getRole())
+                .setSubject(username)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRATION))
                 .signWith(key)

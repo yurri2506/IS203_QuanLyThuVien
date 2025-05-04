@@ -1,6 +1,9 @@
 package com.library_web.library.model;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import jakarta.persistence.*;
 
@@ -18,10 +21,12 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    @Column(nullable = true, unique = true, columnDefinition = "VARCHAR(255) DEFAULT 'unknown'")
+
+    @Column(nullable = true, unique = true)
+
     private String phone;
 
-    @Column(nullable = false, unique = true, columnDefinition = "VARCHAR(255) DEFAULT 'unknown'")
+    @Column(nullable = true, unique = true)
     private String email;
 
     @Column(nullable = false)
@@ -29,11 +34,19 @@ public class User {
 
     private String fullname;
 
-    @Column(name = "otp")
-    private String otp;
+    @Column(nullable = false)
+    private String gender;
 
-    @Column(name = "otp_expired_at")
-    private LocalDateTime otpExpiredAt;
+    
+    @Column(nullable = false)
+    @JsonFormat(pattern = "MM/dd/yyyy") // định dạng JSON input/output
+    private LocalDate birthdate;
+
+    @Column(name = "provider")
+     private String provider; // GOOGLE, FACEBOOK
+ 
+     @Column(name = "provider_id")
+     private String providerId; // ID do Google/Facebook cấp
 
     // Getters và Setters
     public Long getId() {
@@ -92,21 +105,35 @@ public class User {
         this.role = role;
     }
 
-    public String getOtp() {
-        return otp;
+    public String getGender() {
+        return gender;
     }
 
-    public void setOtp(String otp) {
-        this.otp = otp;
+    public void setGender(String gender) {
+        this.gender = gender;
     }
 
-    public LocalDateTime getOtpExpiredAt() {
-        return otpExpiredAt;
+    public LocalDate getBirthdate() {
+        return birthdate;
     }
 
-    public void setOtpExpiredAt(LocalDateTime otpExpiredAt) {
-        this.otpExpiredAt = otpExpiredAt;
+    public void setBirthdate(LocalDate birthdate) {
+        this.birthdate = birthdate;
     }
-    
-    
+    public String getProvider() {
+        return provider;
+    }
+
+    public void setProvider(String provider) {
+        this.provider = provider;
+    }
+
+    public String getProviderId() {
+        return providerId;
+    }
+
+    public void setProviderId(String providerId) {
+        this.providerId = providerId;
+    }
+
 }
