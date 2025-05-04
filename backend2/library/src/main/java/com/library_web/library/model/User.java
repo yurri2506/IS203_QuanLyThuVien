@@ -1,37 +1,64 @@
 package com.library_web.library.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import java.time.LocalDate;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.time.LocalDateTime;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+
+import jakarta.persistence.*;
 
 @Entity
 @Table(name = "users")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String username;
 
     @Column(nullable = false)
+    @JsonIgnore // không trả về JSON
     private String password;
 
-    @Column(name = "reset_token")
-    private String resetToken;
 
-     // Nếu không dùng Lombok thì phải viết tay các getter/setter:
+    @Column(nullable = true, unique = true)
+
+    private String phone;
+
+    @Column(nullable = true, unique = true)
+    private String email;
+
+    @Column(nullable = false)
+    private String role = "USER"; // mặc định là USER
+
+    private String fullname;
+
+    @Column(nullable = true)
+    private String gender;
+
     
+    @Column(nullable = true)
+    @JsonFormat(pattern = "MM/dd/yyyy") // định dạng JSON input/output
+    private LocalDate birthdate;
+
+    @Column(name = "provider")
+     private String provider; // GOOGLE, FACEBOOK
+ 
+     @Column(name = "provider_id")
+     private String providerId; // ID do Google/Facebook cấp
+
+    // Getters và Setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     public String getUsername() {
         return username;
     }
@@ -48,24 +75,67 @@ public class User {
         this.password = password;
     }
 
-    public String getResetToken() {
-        return resetToken;
+    public String getEmail() {
+        return email;
     }
 
-    public void setResetToken(String resetToken) {
-        this.resetToken = resetToken;
+    public void setEmail(String email) {
+        this.email = email;
     }
-    
-    // Dùng cho login bằng Google / Facebook
-    private String email;
 
-    @Column(name = "provider")
-    private String provider; // GOOGLE, FACEBOOK
+    public String getPhone() {
+        return phone;
+    }
 
-    @Column(name = "provider_id")
-    private String providerId; // ID do Google/Facebook cấp
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
 
-    // Bạn có thể tùy chọn thêm name, avatar URL nếu cần
-    private String name;
+    public String getFullname() {
+        return fullname;
+    }
+
+    public void setFullname(String fullname) {
+        this.fullname = fullname;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+    public String getGender() {
+        return gender;
+    }
+
+    public void setGender(String gender) {
+        this.gender = gender;
+    }
+
+    public LocalDate getBirthdate() {
+        return birthdate;
+    }
+
+    public void setBirthdate(LocalDate birthdate) {
+        this.birthdate = birthdate;
+    }
+    public String getProvider() {
+        return provider;
+    }
+
+    public void setProvider(String provider) {
+        this.provider = provider;
+    }
+
+    public String getProviderId() {
+        return providerId;
+    }
+
+    public void setProviderId(String providerId) {
+        this.providerId = providerId;
+    }
 
 }

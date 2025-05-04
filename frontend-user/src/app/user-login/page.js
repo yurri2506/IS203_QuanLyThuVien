@@ -38,13 +38,12 @@
 //       .min(6, "Mật khẩu phải có ít nhất 6 ký tự"),
 //   });
 
-
 //   const handleLogin = (e) => {
 //     e.preventDefault();
 //     // Handle login logic here
 //     console.log("Logging in with:", email, password);
 //   };
-   
+
 //   // Form đăng nhập
 //   const {
 //     register: registerLogin,
@@ -175,10 +174,13 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { motion } from "framer-motion";
 import { LogIn } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { use, useEffect } from "react";
+import { FaFacebook } from "react-icons/fa";
 import { Controller, useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import * as yup from "yup";
+import GoogleLoginButton from "../components/GoogleLoginButton";
+import FacebookLoginButton from "../components/FacebookLoginButton";
 
 const Page = () => {
   const router = useRouter();
@@ -190,7 +192,8 @@ const Page = () => {
       .string()
       .email("Email không hợp lệ")
       .required("Email không được để trống"),
-      matKhau: yup
+
+    matKhau: yup
       .string()
       .min(6, "Mật khẩu phải có ít nhất 6 ký tự")
       .required("Mật khẩu không được để trống"),
@@ -206,7 +209,8 @@ const Page = () => {
       .string()
       .email("Email không hợp lệ")
       .required("Email không được để trống"),
-      matKhau: yup
+
+    matKhau: yup
       .string()
       .min(6, "Mật khẩu phải có ít nhất 6 ký tự")
       .required("Mật khẩu không được để trống"),
@@ -235,62 +239,121 @@ const Page = () => {
   });
 
   // Xử lý đăng ký
-const onSubmitRegister = async (data) => {
-  try {
-    // Gửi yêu cầu POST đến backend để đăng ký
-    const response = await fetch('http://localhost:8081/signup', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
 
-    if (!response.ok) {
-      throw new Error('Đăng ký thất bại');
+  //   const onSubmitRegister = async (data) => {
+  //     try {
+  //       // Gửi yêu cầu POST đến backend để đăng ký
+  //       const response = await fetch("http://localhost:8081/signup", {
+  //         method: "POST",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //         body: JSON.stringify(data),
+  //       });
+
+  //       if (!response.ok) {
+  //         throw new Error("Đăng ký thất bại");
+  //       }
+
+  //       const result = await response.json();
+  //       router.push("/");
+  //       toast.success("Đăng ký tài khoản thành công");
+  //     } catch (error) {
+  //       console.error(error);
+  //       toast.error("Có lỗi xảy ra");
+  //     }
+  //   };
+
+  //   // Xử lý đăng nhập
+  //   const onSubmitLogin = async (data) => {
+  //     try {
+  //       // Gửi yêu cầu POST đến backend để đăng nhập
+  //       const response = await fetch("http://localhost:8081/signin", {
+  //         method: "POST",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //         body: JSON.stringify(data),
+  //       });
+
+  //       if (!response.ok) {
+  //         throw new Error("Đăng nhập thất bại");
+  //       }
+
+  //       const result = await response.json();
+  //       // console.log(result); // Kiểm tra kết quả trả về từ backend
+  //       //  backend trả về JWT token
+  //       localStorage.setItem("jwt", result.jwt); // Lưu token vào localStorage hoặc sessionStorage
+  //       localStorage.setItem("id", result.id); // Lưu thông tin người dùng vào localStorage hoặc sessionStorage
+
+  //       // localStorage.setItem('userId', result.userId);
+
+  //       // Chuyển hướng người dùng sau khi đăng nhập thành công
+  //       router.push("/");
+  //       toast.success("Đăng nhập tài khoản thành công");
+  //     } catch (error) {
+  //       console.error(error);
+  //       toast.error("Có lỗi xảy ra");
+
+  const onSubmitRegister = async (data) => {
+    try {
+      // Gửi yêu cầu POST đến backend để đăng ký
+      const response = await fetch("http://localhost:8080/api/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: data.tenND,
+          email: data.email, 
+          password: data.matKhau,
+          birthdate: data.ngaySinh,
+          gender: data.gioiTinh,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Đăng ký thất bại");
+      }
+
+      const result = await response.json();
+      router.push("/");
+      toast.success("Đăng ký tài khoản thành công");
+    } catch (error) {
+      console.error(error);
+      toast.error("Có lỗi xảy ra");
     }
+  };
 
-    const result = await response.json();
-    router.push('/');
-    toast.success('Đăng ký tài khoản thành công');
-  } catch (error) {
-    console.error(error);
-    toast.error('Có lỗi xảy ra');
-  }
-};
-
-// Xử lý đăng nhập
-const onSubmitLogin = async (data) => {
-  try {
-    // Gửi yêu cầu POST đến backend để đăng nhập
-    const response = await fetch('http://localhost:8081/signin', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
-
-    if (!response.ok) {
-      throw new Error('Đăng nhập thất bại');
+  // Xử lý đăng nhập
+  const onSubmitLogin = async (data) => {
+    try {
+      const response = await fetch("http://localhost:8080/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: data.email, 
+          password: data.matKhau
+        }),
+      });
+  
+      if (!response.ok) {
+        throw new Error("Đăng nhập thất bại: " + response.statusText);
+      }
+  
+      const result = await response.json();
+      localStorage.setItem("jwt", result.accessToken);
+      localStorage.setItem("id", result.data.id);
+      router.push("/");
+      toast.success("Đăng nhập thành công");
+    } catch (error) {
+      console.error(error);
+      toast.error("Có lỗi xảy ra: " + error.message);
+      router.push("/user-login");
     }
-
-    const result = await response.json();
-    // console.log(result); // Kiểm tra kết quả trả về từ backend
-    //  backend trả về JWT token
-    localStorage.setItem('jwt', result.jwt); // Lưu token vào localStorage hoặc sessionStorage
-    localStorage.setItem('id', result.id); // Lưu thông tin người dùng vào localStorage hoặc sessionStorage
-
-    // localStorage.setItem('userId', result.userId);
-    
-    // Chuyển hướng người dùng sau khi đăng nhập thành công
-    router.push('/');
-    toast.success('Đăng nhập tài khoản thành công');
-  } catch (error) {
-    console.error(error);
-    toast.error('Có lỗi xảy ra');
-  }
-};
+  };
   
 
   // Reset form khi chuyển tab
@@ -312,15 +375,19 @@ const onSubmitLogin = async (data) => {
               <img src="/images/logo.jpg" alt="logo" className="w-30" />
             </CardTitle>
             <CardDescription className="text-center text-[#062D76]">
-            Mỗi cuốn sách là một cánh cửa mở ra thế giới tri thức
+              Mỗi cuốn sách là một cánh cửa mở ra thế giới tri thức
             </CardDescription>
           </CardHeader>
 
           <CardContent>
             <Tabs defaultValue="login" className="w-full">
               <TabsList className="grid w-full grid-cols-2 bg-slate-200">
-                <TabsTrigger value="login" className="cursor-pointer">Đăng nhập</TabsTrigger>
-                <TabsTrigger value="signup" className="cursor-pointer">Đăng ký</TabsTrigger>
+                <TabsTrigger value="login" className="cursor-pointer">
+                  Đăng nhập
+                </TabsTrigger>
+                <TabsTrigger value="signup" className="cursor-pointer">
+                  Đăng ký
+                </TabsTrigger>
               </TabsList>
 
               {/* Đăng nhập */}
@@ -328,7 +395,10 @@ const onSubmitLogin = async (data) => {
                 <form onSubmit={handleSubmitLogin(onSubmitLogin)}>
                   <div className="space-y-4">
                     <div className="space-y-2">
-                    <Label htmlFor="loginEmail" className="text-[#086280]">Email</Label>
+                      <Label htmlFor="loginEmail" className="text-[#086280]">
+                        Email
+                      </Label>
+
                       <Input
                         type="email"
                         {...registerLogin("email")}
@@ -336,11 +406,15 @@ const onSubmitLogin = async (data) => {
                         className="col-span-3 dark:border-gray-400 border-[#0E42D2] placeholder:text-gray-400"
                       />
                       {errorsLogin.email && (
-                        <p className="text-red-500">{errorsLogin.email.message}</p>
+                        <p className="text-red-500">
+                          {errorsLogin.email.message}
+                        </p>
                       )}
                     </div>
                     <div className="space-y-2">
-                    <Label htmlFor="loginPassword" className="text-[#086280]">Mật khẩu</Label>
+                      <Label htmlFor="loginPassword" className="text-[#086280]">
+                        Mật khẩu
+                      </Label>
                       <Input
                         type="password"
                         {...registerLogin("matKhau")}
@@ -348,17 +422,24 @@ const onSubmitLogin = async (data) => {
                         className="col-span-3 dark:border-gray-400 border-[#0E42D2] placeholder:text-gray-400"
                       />
                       {errorsLogin.password && (
-                        <p className="text-red-500">{errorsLogin.password.message}</p>
+                        <p className="text-red-500">
+                          {errorsLogin.password.message}
+                        </p>
                       )}
                     </div>
 
-                   
-
-                    <Button type="submit" className="w-full bg-[#062D76] text-white">
+                    <Button
+                      type="submit"
+                      className="w-full bg-[#062D76] text-white"
+                    >
                       <LogIn className="mr-2 w-4 h-4" /> Đăng nhập
                     </Button>
                   </div>
                 </form>
+                <div className="mt-4">
+                  {/* <FacebookLoginButton /> */}
+                  <GoogleLoginButton />
+                </div>
               </TabsContent>
 
               {/* Đăng ký */}
@@ -366,7 +447,10 @@ const onSubmitLogin = async (data) => {
                 <form onSubmit={handleSubmitSignUp(onSubmitRegister)}>
                   <div className="space-y-4">
                     <div className="space-y-2">
-                    <Label htmlFor="signupName" className="text-[#086280]">Tên người dùng</Label>
+                      <Label htmlFor="signupName" className="text-[#086280]">
+                        Tên người dùng
+                      </Label>
+
                       <Input
                         type="text"
                         {...registerSignUp("tenND")}
@@ -375,7 +459,10 @@ const onSubmitLogin = async (data) => {
                       />
                     </div>
                     <div className="space-y-2">
-                    <Label htmlFor="loginEmail" className="text-[#086280]">Email</Label>
+                      <Label htmlFor="loginEmail" className="text-[#086280]">
+                        Email
+                      </Label>
+
                       <Input
                         type="email"
                         {...registerSignUp("email")}
@@ -384,7 +471,10 @@ const onSubmitLogin = async (data) => {
                       />
                     </div>
                     <div className="space-y-2">
-                    <Label htmlFor="loginPassword" className="text-[#086280]">Mật khẩu</Label>
+                      <Label htmlFor="loginPassword" className="text-[#086280]">
+                        Mật khẩu
+                      </Label>
+
                       <Input
                         type="password"
                         {...registerSignUp("matKhau")}
@@ -394,30 +484,42 @@ const onSubmitLogin = async (data) => {
                     </div>
                     <div className="space-y-2">
                       <Label>Ngày sinh</Label>
-                      <Input type="date" {...registerSignUp("ngaySinh")}
-                      className="col-span-3 dark:border-gray-400 border-[#0E42D2]" />
+
+                      <Input
+                        type="date"
+                        {...registerSignUp("ngaySinh")}
+                        className="col-span-3 dark:border-gray-400 border-[#0E42D2]"
+                      />
                     </div>
                     <div className="space-y-2">
-                    <Label className="text-[#086280]">Giới tính</Label>
+                      <Label className="text-[#086280]">Giới tính</Label>
                       <Controller
                         name="gioiTinh"
                         control={control}
                         render={({ field }) => (
-                          <RadioGroup value={field.value} onValueChange={field.onChange} className="flex justify-between">
+                          <RadioGroup
+                            value={field.value}
+                            onValueChange={field.onChange}
+                            className="flex justify-between"
+                          >
                             <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="Nam" id="male" /> Nam
+                              <RadioGroupItem value="Nam" id="male" /> Nam
                             </div>
                             <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="Nu" id="female" /> Nữ
+                              <RadioGroupItem value="Nu" id="female" /> Nữ
                             </div>
                             <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="Khac" id="other" /> Khác
+                              <RadioGroupItem value="Khac" id="other" /> Khác
                             </div>
                           </RadioGroup>
                         )}
                       />
                     </div>
-                    <Button type="submit" className="w-full bg-[#062D76] text-white">
+
+                    <Button
+                      type="submit"
+                      className="w-full bg-[#062D76] text-white"
+                    >
                       Đăng ký
                     </Button>
                   </div>

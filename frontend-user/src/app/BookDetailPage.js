@@ -3,7 +3,8 @@ import React, { useState, useEffect } from "react";
 import LeftSideBar from "../components/LeftSideBar";
 import ChatBox from "../components/ChatBox";
 import Image from "next/image";
-import useSideBarStore from "@/store/sideBarStore";
+import useSidebarStore from "@store/sidebarStore";
+
 
 const BookDetailPage = () => {
   const [book, setBook] = useState(null);
