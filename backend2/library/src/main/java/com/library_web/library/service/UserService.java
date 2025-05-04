@@ -6,11 +6,12 @@ import com.library_web.library.repository.UserRepository;
 
 import java.util.Collections;
 
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 
 import com.library_web.library.security.JwtUtil;
+import com.library_web.library.service.TempStorage.PendingUser;
+
 import jakarta.transaction.Transactional;
 
 import org.apache.coyote.BadRequestException;
@@ -20,12 +21,9 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-
 import org.springframework.web.server.ResponseStatusException;
 
-
 import java.util.NoSuchElementException;
-
 
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -35,7 +33,6 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
-
 
 @Service
 @Transactional
@@ -71,7 +68,7 @@ public class UserService {
             throw new IllegalArgumentException("Giới tính không được để trống");
 
         if ((userDTO.getEmail() == null || userDTO.getEmail().isBlank()) &&
-            (userDTO.getPhone() == null || userDTO.getPhone().isBlank()))
+                (userDTO.getPhone() == null || userDTO.getPhone().isBlank()))
             throw new IllegalArgumentException("Phải cung cấp email hoặc số điện thoại");
 
         if (userDTO.getEmail() != null && userRepository.findByEmail(userDTO.getEmail()).isPresent())
@@ -95,8 +92,6 @@ public class UserService {
             return Map.of("message", "Đăng ký thành công bằng số điện thoại");
         }
 
-
-
         String otp = String.valueOf((int) (Math.random() * 900000) + 100000);
         LocalDateTime expiredAt = LocalDateTime.now().plusMinutes(5);
         TempStorage.savePendingUser(userDTO, otp, expiredAt);
@@ -106,7 +101,11 @@ public class UserService {
     }
 
     public Map<String, String> verifyOtpAndCreate(String email, String otp) {
-        TempStorage.PendingUser pending = TempStorage.getPendingUser(email);
+        //System.out.println("Lấy OTP với email: " + email);
+        PendingUser pending = TempStorage.getPendingUser(email);
+        //System.out.println("OTP trong hệ thống: " + (pending != null ? pending.getOtp() : "null"));
+
+        //TempStorage.PendingUser pending = TempStorage.getPendingUser(email);
         if (pending == null || !pending.getOtp().equals(otp) || LocalDateTime.now().isAfter(pending.getExpiredAt()))
             throw new IllegalArgumentException("OTP không chính xác hoặc đã hết hạn");
 
@@ -123,16 +122,16 @@ public class UserService {
         return Map.of("message", "Đăng ký thành công bằng email");
     }
 
-//     public UserDTO getUserInfo(String username) {
-//         // Lấy thông tin người dùng từ cơ sở dữ liệu
-//         User user = userRepository.findByUsername(username).orElseThrow(() -> new RuntimeException("Người dùng không tồn tại"));
-        
-//         // Chuyển User thành UserDTO
-//         UserDTO userDTO = new UserDTO(user.getUsername(), user.getEmail(), user.getPhone(), user.getFullname(), username);
-//         return userDTO;
-//     }
-    
-    
+    // public UserDTO getUserInfo(String username) {
+    // // Lấy thông tin người dùng từ cơ sở dữ liệu
+    // User user = userRepository.findByUsername(username).orElseThrow(() -> new
+    // RuntimeException("Người dùng không tồn tại"));
+
+    // // Chuyển User thành UserDTO
+    // UserDTO userDTO = new UserDTO(user.getUsername(), user.getEmail(),
+    // user.getPhone(), user.getFullname(), username);
+    // return userDTO;
+    // }
 
     public Map<String, Object> login(String username, String password) {
         Optional<User> userOpt = userRepository.findByUsername(username);
@@ -144,14 +143,11 @@ public class UserService {
         String refreshToken = JwtUtil.generateRefreshToken(user.getUsername());
 
         return Map.of(
-            "message", "Đăng nhập thành công",
-            "accessToken", accessToken,
-            "refreshToken", refreshToken,
-            "data", user
-        );
+                "message", "Đăng nhập thành công",
+                "accessToken", accessToken,
+                "refreshToken", refreshToken,
+                "data", user);
     }
-
-
 
     public Map<String, Object> refreshAccessToken(String refreshToken) {
         try {
@@ -166,13 +162,14 @@ public class UserService {
 
     public Map<String, String> forgotPassword(String emailOrPhone) {
         Optional<User> userOpt = userRepository.findByEmail(emailOrPhone);
-        if (userOpt.isEmpty()) userOpt = userRepository.findByPhone(emailOrPhone);
+        if (userOpt.isEmpty())
+            userOpt = userRepository.findByPhone(emailOrPhone);
         if (userOpt.isEmpty())
             throw new NoSuchElementException("Không tìm thấy người dùng");
-    
+
         String otp = String.valueOf((int) (Math.random() * 900000) + 100000);
         TempStorage.savePendingOtp(emailOrPhone, otp, LocalDateTime.now().plusMinutes(5));
-    
+
         if (emailOrPhone.contains("@")) {
             // Nếu là email
             sendOtpEmail(emailOrPhone, otp);
@@ -180,16 +177,17 @@ public class UserService {
             // Nếu là số điện thoại ➔ log OTP ra console
             System.out.println("Gửi SMS tới số " + emailOrPhone + ": Mã OTP của bạn là " + otp);
         }
-    
+
         return Map.of("message", "Đã gửi OTP để đặt lại mật khẩu");
     }
-    
+
     public Map<String, String> resetPassword(String emailOrPhone, String otp, String newPassword) {
         if (!TempStorage.isValidOtp(emailOrPhone, otp))
             throw new IllegalArgumentException("OTP không chính xác hoặc đã hết hạn");
 
         Optional<User> userOpt = userRepository.findByEmail(emailOrPhone);
-        if (userOpt.isEmpty()) userOpt = userRepository.findByPhone(emailOrPhone);
+        if (userOpt.isEmpty())
+            userOpt = userRepository.findByPhone(emailOrPhone);
         if (userOpt.isEmpty())
             throw new NoSuchElementException("Không tìm thấy người dùng");
 
@@ -202,23 +200,30 @@ public class UserService {
     }
 
     // Đăng nhập bằng Google
-public String getEmailFromGoogleIdToken(String idToken) {
-    try {
-        // Sử dụng GoogleIdTokenVerifier để xác thực idToken
-        GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), new GsonFactory())
-                .setAudience(Collections.singletonList("376530680599-mlb7pbrp0inmjnfqmit5q6v4a38e6t09.apps.googleusercontent.com")) // Thay bằng client ID của bạn
-                .build();
+    public String getEmailFromGoogleIdToken(String idToken) {
+        try {
+            // Sử dụng GoogleIdTokenVerifier để xác thực idToken
+            GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(),
+                    new GsonFactory())
+                    .setAudience(Collections
+                            .singletonList("376530680599-mlb7pbrp0inmjnfqmit5q6v4a38e6t09.apps.googleusercontent.com")) // Thay
+                                                                                                                        // bằng
+                                                                                                                        // client
+                                                                                                                        // ID
+                                                                                                                        // của
+                                                                                                                        // bạn
+                    .build();
 
-        GoogleIdToken idTokenObj = verifier.verify(idToken);
-        if (idTokenObj != null) {
-            GoogleIdToken.Payload payload = idTokenObj.getPayload();
-            return payload.getEmail();
+            GoogleIdToken idTokenObj = verifier.verify(idToken);
+            if (idTokenObj != null) {
+                GoogleIdToken.Payload payload = idTokenObj.getPayload();
+                return payload.getEmail();
+            }
+            return null;
+        } catch (Exception e) {
+            System.out.println("Lỗi xác thực idToken: " + e.getMessage());
+            return null;
         }
-        return null;
-    } catch (Exception e) {
-        System.out.println("Lỗi xác thực idToken: " + e.getMessage());
-        return null;
     }
-}
 
 }

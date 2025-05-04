@@ -20,8 +20,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-
-import com.library_web.library.security.CustomOAuth2SuccessHandler;
 import com.library_web.library.security.JwtAuthenticationFilter;
 
 import jakarta.servlet.http.HttpServletResponse;
@@ -30,7 +28,6 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
-
 
 @Configuration
 
@@ -43,59 +40,54 @@ public class SecurityConfig {
         this.tokenService = tokenService;
     }
 
-
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    // @Bean
+    // public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    // http
+    // .csrf(csrf -> csrf.disable())
+    // .authorizeHttpRequests(auth -> auth
+    // .requestMatchers("/api/auth/**", "/home").permitAll()
+    // .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
+    // .requestMatchers("/api/user/**").hasAuthority("USER")
+    // .anyRequest().authenticated())
+    // .exceptionHandling(exception -> exception
+    // .authenticationEntryPoint((request, response, authException) -> {
+    // response.setContentType("application/json");
+    // response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+    // response.getWriter().write("{\"message\": \"Unauthorized\"}");
+    // }))
+    // .sessionManagement(session -> session
+    // .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+    // .addFilterBefore(new JwtAuthenticationFilter(),
+    // UsernamePasswordAuthenticationFilter.class)
+    // .formLogin(form -> form.disable())
+    // .httpBasic(basic -> basic.disable())
+    // .oauth2Login(oauth2 -> oauth2.successHandler(customOAuth2SuccessHandler));
 
-//    @Bean
-// public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-//     http
-//         .csrf(csrf -> csrf.disable())
-//         .authorizeHttpRequests(auth -> auth
-//             .requestMatchers("/api/auth/**", "/home").permitAll()
-//             .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
-//             .requestMatchers("/api/user/**").hasAuthority("USER")
-//             .anyRequest().authenticated())
-//         .exceptionHandling(exception -> exception
-//             .authenticationEntryPoint((request, response, authException) -> {
-//                 response.setContentType("application/json");
-//                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-//                 response.getWriter().write("{\"message\": \"Unauthorized\"}");
-//             }))
-//         .sessionManagement(session -> session
-//             .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-//         .addFilterBefore(new JwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
-//         .formLogin(form -> form.disable())
-//         .httpBasic(basic -> basic.disable())
-//         .oauth2Login(oauth2 -> oauth2.successHandler(customOAuth2SuccessHandler));
-
-//     return http.build();
+    // return http.build();
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         JwtAuthenticationFilter jwtAuthenticationFilter = new JwtAuthenticationFilter(tokenService);
 
         http
-            .csrf(csrf -> csrf.disable())
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers(
-                    "/api/register",
-                    "/api/login",
-                    "/api/auth/google",
-                    "/api/auth/facebook",
-                    "/api/forgot-password",
-                    "/api/reset-password",
-                    "/api/refresh-token",
-                    "/home"
-                ).permitAll()
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // <- Cho phép CORS preflight
-                .anyRequest().authenticated()
-            )
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()));
+                .csrf(csrf -> csrf.disable())
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(
+                                "/api/auth/google",
+                                "/api/auth/facebook")
+                        .permitAll()
+                        .requestMatchers("/api/**", "/home").permitAll()
+                        .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
+                        .requestMatchers("/api/user/**").hasAuthority("USER")
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // <- Cho phép CORS preflight
+                        .anyRequest().authenticated())
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()));
 
         return http.build();
     }
@@ -115,4 +107,3 @@ public class SecurityConfig {
     }
 
 }
-
