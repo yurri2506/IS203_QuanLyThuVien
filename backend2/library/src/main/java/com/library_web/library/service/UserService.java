@@ -3,6 +3,13 @@ package com.library_web.library.service;
 import com.library_web.library.dto.UserDTO;
 import com.library_web.library.model.User;
 import com.library_web.library.repository.UserRepository;
+
+import java.util.Collections;
+
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+
 import com.library_web.library.security.JwtUtil;
 import jakarta.transaction.Transactional;
 
@@ -12,12 +19,23 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+
+import org.springframework.web.server.ResponseStatusException;
+
+
 import java.util.NoSuchElementException;
 
 
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
+
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.gson.GsonFactory;
+
 
 @Service
 @Transactional
@@ -77,6 +95,8 @@ public class UserService {
             return Map.of("message", "Đăng ký thành công bằng số điện thoại");
         }
 
+
+
         String otp = String.valueOf((int) (Math.random() * 900000) + 100000);
         LocalDateTime expiredAt = LocalDateTime.now().plusMinutes(5);
         TempStorage.savePendingUser(userDTO, otp, expiredAt);
@@ -102,6 +122,17 @@ public class UserService {
 
         return Map.of("message", "Đăng ký thành công bằng email");
     }
+
+//     public UserDTO getUserInfo(String username) {
+//         // Lấy thông tin người dùng từ cơ sở dữ liệu
+//         User user = userRepository.findByUsername(username).orElseThrow(() -> new RuntimeException("Người dùng không tồn tại"));
+        
+//         // Chuyển User thành UserDTO
+//         UserDTO userDTO = new UserDTO(user.getUsername(), user.getEmail(), user.getPhone(), user.getFullname(), username);
+//         return userDTO;
+//     }
+    
+    
 
     public Map<String, Object> login(String username, String password) {
         Optional<User> userOpt = userRepository.findByUsername(username);
@@ -169,4 +200,25 @@ public class UserService {
 
         return Map.of("message", "Đặt lại mật khẩu thành công");
     }
+
+    // Đăng nhập bằng Google
+public String getEmailFromGoogleIdToken(String idToken) {
+    try {
+        // Sử dụng GoogleIdTokenVerifier để xác thực idToken
+        GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), new GsonFactory())
+                .setAudience(Collections.singletonList("376530680599-mlb7pbrp0inmjnfqmit5q6v4a38e6t09.apps.googleusercontent.com")) // Thay bằng client ID của bạn
+                .build();
+
+        GoogleIdToken idTokenObj = verifier.verify(idToken);
+        if (idTokenObj != null) {
+            GoogleIdToken.Payload payload = idTokenObj.getPayload();
+            return payload.getEmail();
+        }
+        return null;
+    } catch (Exception e) {
+        System.out.println("Lỗi xác thực idToken: " + e.getMessage());
+        return null;
+    }
+}
+
 }
