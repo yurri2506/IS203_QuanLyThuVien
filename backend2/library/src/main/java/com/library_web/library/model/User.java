@@ -21,7 +21,9 @@ public class User {
     @Column(nullable = false)
     private String password;
 
+
     @Column(nullable = true, unique = true)
+
     private String phone;
 
     @Column(nullable = true, unique = true)
@@ -39,6 +41,12 @@ public class User {
     @Column(nullable = false)
     @JsonFormat(pattern = "MM/dd/yyyy") // định dạng JSON input/output
     private LocalDate birthdate;
+
+    @Column(name = "provider")
+     private String provider; // GOOGLE, FACEBOOK
+ 
+     @Column(name = "provider_id")
+     private String providerId; // ID do Google/Facebook cấp
 
     // Getters và Setters
     public Long getId() {
@@ -111,6 +119,21 @@ public class User {
 
     public void setBirthdate(LocalDate birthdate) {
         this.birthdate = birthdate;
+    }
+    public String getProvider() {
+        return provider;
+    }
+
+    public void setProvider(String provider) {
+        this.provider = provider;
+    }
+
+    public String getProviderId() {
+        return providerId;
+    }
+
+    public void setProviderId(String providerId) {
+        this.providerId = providerId;
     }
 
 }

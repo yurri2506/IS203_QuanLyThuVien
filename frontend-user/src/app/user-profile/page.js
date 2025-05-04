@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import LeftSideBar from "../components/LeftSideBar";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import useSidebarStore from "@/store/sidebarStore";
+import useSidebarStore from "@/store/sideBarStore";
 
 const ProfileCard = () => {
   const [isEditing, setIsEditing] = useState(false);
