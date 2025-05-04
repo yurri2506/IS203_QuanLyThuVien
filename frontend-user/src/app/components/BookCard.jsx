@@ -1,18 +1,29 @@
 "use client";
 import React from "react";
 import { useRouter } from "next/navigation";
-const StatusIndicator = ({ available }) => {
+
+const StatusIndicator = ({ status }) => {
+  let label, dotClass;
+  switch (status) {
+    case "DA_XOA":
+      label = "Đã xóa";
+      dotClass = "bg-[#F7302E]";
+      break;
+    case "DA_HET":
+      label = "Đã hết";
+      dotClass = "bg-[#F7302E]";
+      break;
+    default:
+      label = "Còn sẵn";
+      dotClass = "bg-green-400";
+  }
   return (
     <div className="flex gap-1.5 justify-center items-center self-start px-2 py-1 rounded bg-slate-200">
       <span className="self-stretch my-auto text-sm font-medium text-[#062D76]">
-        {available ? "Còn sẵn" : "Đã hết"}
+        {label}
       </span>
       <div className="self-stretch my-auto w-4">
-        <div
-          className={`flex shrink-0 w-4 h-4 ${
-            available ? "bg-green-400" : "bg-[#F7302E]"
-          } rounded-full`}
-        />
+        <div className={`flex shrink-0 w-4 h-4 ${dotClass} rounded-full`} />
       </div>
     </div>
   );
@@ -21,25 +32,15 @@ const StatusIndicator = ({ available }) => {
 const BookCard = ({
   id,
   imageSrc,
-  available,
+  status,      // thay prop `available` bằng `status`
   title,
   author,
   publisher,
   borrowCount,
 }) => {
   const router = useRouter();
-  const slugifyTitle = (str) => {
-    return str
-      .toLowerCase()
-      .replace(/\s+/g, '-')      // Thay dấu cách thành dấu "-"
-      .replace(/[^\w\-]+/g, '')  // Loại bỏ ký tự đặc biệt
-      .replace(/\-\-+/g, '-')    // Xử lý dấu gạch nối dư thừa
-      .replace(/^-+/, '')        // Loại bỏ dấu gạch nối ở đầu
-      .replace(/-+$/, '');       // Loại bỏ dấu gạch nối ở cuối
-  };
-
-  const handleCardClick = () => { 
-    router.push(`/book-detail/${id}`);  
+  const handleCardClick = () => {
+    router.push(`/book-detail/${id}`);
   };
 
   return (
@@ -53,7 +54,9 @@ const BookCard = ({
         className="object-cover shrink rounded-sm aspect-[0.67] w-[100px]"
       />
       <div className="flex flex-col flex-1 shrink self-end basis-0">
-        <StatusIndicator available={available} />
+        {/* Hiển thị badge 3 trạng thái */}
+        <StatusIndicator status={status} />
+
         <h3 className="flex-1 shrink gap-2.5 self-stretch mt-2 w-full text-[1.125rem] font-medium text-black basis-0">
           {title}
         </h3>
