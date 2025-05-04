@@ -29,11 +29,54 @@ public class User {
 
     private String fullname;
 
-    @Column(name = "otp")
-    private String otp;
+    @Column(name = "provider")
+     private String provider; // GOOGLE, FACEBOOK
+ 
+     @Column(name = "provider_id")
+     private String providerId; // ID do Google/Facebook cấp
 
-    @Column(name = "otp_expired_at")
-    private LocalDateTime otpExpiredAt;
+     @Column(nullable = false)
+     private String gender; // Giới tính của người dùng (nam, nữ, khác)
+
+     @Column(nullable = false)
+     private String birthdate; // Ngày sinh của người dùng (định dạng YYYY-MM-DD)
+
+     public String getGender() {
+        return gender;
+    }
+    
+    public void setGender(String gender){
+        this.gender = gender;
+    }
+
+
+    public String getBirthdate() {
+        return birthdate;
+    }
+
+    public void setBirthdate(String birthdate) {
+        this.birthdate = birthdate;
+    }
+
+
+    public String getProvider() {
+        return provider;
+    }
+
+    public void setProvider(String provider) {
+        this.provider = provider;
+    }
+
+    public String getProviderId() {
+        return providerId;
+    }
+
+    public void setProviderId(String providerId) {
+        this.providerId = providerId;
+    }
+
+
+
 
     // Getters và Setters
     public Long getId() {
@@ -90,23 +133,6 @@ public class User {
 
     public void setRole(String role) {
         this.role = role;
-    }
-
-    public String getOtp() {
-        return otp;
-    }
-
-    public void setOtp(String otp) {
-        this.otp = otp;
-    }
-
-    public LocalDateTime getOtpExpiredAt() {
-        return otpExpiredAt;
-    }
-
-    public void setOtpExpiredAt(LocalDateTime otpExpiredAt) {
-        this.otpExpiredAt = otpExpiredAt;
-    }
-    
+    }    
     
 }

@@ -1,4 +1,4 @@
-package com.library_web.library.model;
+package com.library_web.library.dto;
 
 public class UserDTO {
     private String username;
@@ -6,22 +6,9 @@ public class UserDTO {
     private String fullname;
     private String phone;
     private String password;
-    // Constructor không tham số (bắt buộc cho Spring Boot xài @RequestBody)
-public UserDTO() {
-}
-
-// Constructor đầy đủ tham số
-public UserDTO(String username, String email, String fullname, String phone, String password) {
-    this.username = username;
-    this.email = email;
-    this.fullname = fullname;
-    this.phone = phone;
-    this.password = password;
-}
-
-
     private String role = "USER"; // mặc định là USER
-
+    private String gender;     // mới thêm
+    private String birthdate;  // mới thêm (dạng dd/MM/yyyy)
 
     // Getters và Setters
     public String getUsername() {
@@ -65,5 +52,17 @@ public UserDTO(String username, String email, String fullname, String phone, Str
     }
     public void setRole(String role) {
         this.role = role;
+    }
+    public String getGender() {
+        return gender;
+    }
+    public void setGender  (String gender){
+        this.gender = gender;
+    }
+    public String getBirthdate() {
+        return birthdate;
+    }
+    public void setBirthdate(String birthdate) {
+        this.birthdate = birthdate;
     }
 }

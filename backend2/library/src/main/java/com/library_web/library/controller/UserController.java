@@ -1,7 +1,7 @@
 package com.library_web.library.controller;
 
+import com.library_web.library.dto.UserDTO;
 import com.library_web.library.model.User;
-import com.library_web.library.model.UserDTO;
 import com.library_web.library.repository.UserRepository;
 import com.library_web.library.service.TempStorage;
 import com.library_web.library.service.UserService;
@@ -118,7 +118,7 @@ public class UserController {
         }
 
         // Xác thực đúng → cập nhật email
-        String currentUsername = pending.getUserDTO().getUsername(); // Lấy username từ TempStorage
+        String currentUsername = ((UserDTO) pending.getUserDTO()).getUsername(); // Lấy username từ TempStorage
         User user = userRepository.findByUsername(currentUsername)
                 .orElseThrow(() -> new NoSuchElementException("Không tìm thấy người dùng"));
 
