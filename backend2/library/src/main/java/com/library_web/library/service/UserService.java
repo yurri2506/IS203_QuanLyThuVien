@@ -1,7 +1,7 @@
 package com.library_web.library.service;
 
+import com.library_web.library.dto.UserDTO;
 import com.library_web.library.model.User;
-import com.library_web.library.model.UserDTO;
 import com.library_web.library.repository.UserRepository;
 import com.library_web.library.security.JwtUtil;
 import jakarta.transaction.Transactional;
@@ -45,6 +45,12 @@ public class UserService {
             throw new IllegalArgumentException("Username không được để trống");
         if (userDTO.getPassword() == null || userDTO.getPassword().isBlank())
             throw new IllegalArgumentException("Password không được để trống");
+        if (userDTO.getPassword().length() < 6)
+            throw new IllegalArgumentException("Password phải có ít nhất 6 ký tự");
+        if (userDTO.getBirthdate() == null)
+            throw new IllegalArgumentException("Ngày sinh không được để trống");
+        if (userDTO.getGender() == null || userDTO.getGender().isBlank())
+            throw new IllegalArgumentException("Giới tính không được để trống");
 
         if ((userDTO.getEmail() == null || userDTO.getEmail().isBlank()) &&
             (userDTO.getPhone() == null || userDTO.getPhone().isBlank()))
@@ -54,13 +60,16 @@ public class UserService {
             throw new IllegalArgumentException("Email đã tồn tại");
         if (userDTO.getPhone() != null && userRepository.findByPhone(userDTO.getPhone()).isPresent())
             throw new IllegalArgumentException("Số điện thoại đã tồn tại");
+        if (userRepository.findByUsername(userDTO.getUsername()).isPresent())
+            throw new IllegalArgumentException("Tên đăng nhập đã tồn tại");
 
         if (userDTO.getPhone() != null && (userDTO.getEmail() == null || userDTO.getEmail().isBlank())) {
             User user = new User();
             user.setUsername(userDTO.getUsername());
             user.setPhone(userDTO.getPhone());
-            user.setFullname(userDTO.getFullname());
             user.setEmail("unknown");
+            user.setGender(userDTO.getGender());
+            user.setBirthdate(userDTO.getBirthdate());
             user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
             user.setRole(userDTO.getRole() != null ? userDTO.getRole() : "USER");
 
@@ -84,8 +93,8 @@ public class UserService {
         User user = new User();
         user.setUsername(pending.getUserDTO().getUsername());
         user.setEmail(pending.getUserDTO().getEmail());
-        user.setPhone("unknown");
-        user.setFullname(pending.getUserDTO().getFullname());
+        user.setGender(pending.getUserDTO().getGender());
+        user.setBirthdate(pending.getUserDTO().getBirthdate());
         user.setPassword(passwordEncoder.encode(pending.getUserDTO().getPassword()));
         user.setRole(pending.getUserDTO().getRole() != null ? pending.getUserDTO().getRole() : "USER");
         userRepository.save(user);
@@ -100,7 +109,7 @@ public class UserService {
             throw new IllegalArgumentException("Sai tài khoản hoặc mật khẩu");
 
         User user = userOpt.get();
-        String accessToken = JwtUtil.generateAccessToken(user);
+        String accessToken = JwtUtil.generateAccessToken(user.getUsername());
         String refreshToken = JwtUtil.generateRefreshToken(user.getUsername());
 
         return Map.of(
@@ -117,7 +126,7 @@ public class UserService {
         try {
             String username = JwtUtil.validateToken(refreshToken);
             User user = userRepository.findByUsername(username).orElseThrow();
-            String newAccessToken = JwtUtil.generateAccessToken(user);
+            String newAccessToken = JwtUtil.generateAccessToken(user.getUsername());
             return Map.of("accessToken", newAccessToken);
         } catch (Exception e) {
             throw new IllegalArgumentException("Refresh Token không hợp lệ hoặc đã hết hạn");

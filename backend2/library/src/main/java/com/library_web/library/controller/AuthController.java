@@ -1,6 +1,6 @@
 package com.library_web.library.controller;
 
-import com.library_web.library.model.UserDTO;
+import com.library_web.library.dto.UserDTO;
 import com.library_web.library.security.JwtUtil;
 import com.library_web.library.service.UserService;
 
@@ -14,13 +14,13 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/auth")
 public class AuthController {
 
     @Autowired
     private UserService userService;
 
-    @PostMapping("/user-signup")
+    @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody UserDTO userDTO) {
         return ResponseEntity.ok(userService.register(userDTO));
     }
