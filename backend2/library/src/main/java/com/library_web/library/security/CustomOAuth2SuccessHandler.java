@@ -52,7 +52,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
             user = userOpt.get();
         }
 
-        String accessToken = JwtUtil.generateAccessToken(user);
+        String accessToken = JwtUtil.generateAccessToken(user.getUsername());
         String refreshToken = JwtUtil.generateRefreshToken(user.getUsername());
 
         response.setContentType("application/json");
