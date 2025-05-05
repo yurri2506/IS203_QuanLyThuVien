@@ -1,4 +1,5 @@
 import { Geist, Geist_Mono } from "next/font/google";
+import RequireAuth from "@/components/RequireAuth";
 import "./globals.css";
 import Header from "./components/Header";
 import { GoogleOAuthProvider } from "@react-oauth/google";
@@ -32,8 +33,10 @@ export default function RootLayout({ children }) {
         >
           <FacebookSDK />
           <div className="flex-1 bg-[#EFF3FB]">
-            <Header />
-            {children}
+            <RequireAuth>
+              {/* <Header /> */}
+              {children}
+            </RequireAuth>
           </div>
         </GoogleOAuthProvider>
       </body>
