@@ -181,9 +181,13 @@ import toast from "react-hot-toast";
 import * as yup from "yup";
 import GoogleLoginButton from "../components/GoogleLoginButton";
 import FacebookLoginButton from "../components/FacebookLoginButton";
+import Cookies from "js-cookie";
+import { useDispatch } from "react-redux";
+import { updateUser } from "@/store/slices/userSlice";
 
 const Page = () => {
   const router = useRouter();
+  const dispatch = useDispatch();
 
   // Schema kiểm tra đầu vào
   const registerSchema = yup.object().shape({
@@ -305,7 +309,7 @@ const Page = () => {
         },
         body: JSON.stringify({
           username: data.tenND,
-          email: data.email, 
+          email: data.email,
           password: data.matKhau,
           birthdate: data.ngaySinh,
           gender: data.gioiTinh,
@@ -327,6 +331,7 @@ const Page = () => {
 
   // Xử lý đăng nhập
   const onSubmitLogin = async (data) => {
+    // console.log(data);
     try {
       const response = await fetch("http://localhost:8080/api/login", {
         method: "POST",
@@ -334,18 +339,39 @@ const Page = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          email: data.email, 
-          password: data.matKhau
+          email: data.email,
+          password: data.matKhau,
         }),
       });
-  
+
       if (!response.ok) {
         throw new Error("Đăng nhập thất bại: " + response.statusText);
       }
-  
+
       const result = await response.json();
-      localStorage.setItem("jwt", result.accessToken);
+      console.log(result); // Kiểm tra kết quả trả về từ backend
+
+      // Lưu Access Token vào localStorage
+      localStorage.setItem("accessToken", result.accessToken);
       localStorage.setItem("id", result.data.id);
+      localStorage.setItem("username", result.data.username);
+
+      // Lưu Refresh Token vào Cookies
+      Cookies.set("refreshToken", result.refreshToken, {
+        expires: 7, // Token có hiệu lực trong 7 ngày
+        secure: true,
+        sameSite: "Strict",
+      });
+
+      // Cập nhật thông tin người dùng vào Redux
+      dispatch(
+        updateUser({
+          ...result?.data,
+          access_token: result.accessToken,
+          refreshToken: result.refreshToken,
+        })
+      );
+
       router.push("/");
       toast.success("Đăng nhập thành công");
     } catch (error) {
@@ -354,7 +380,6 @@ const Page = () => {
       router.push("/user-login");
     }
   };
-  
 
   // Reset form khi chuyển tab
   useEffect(() => {
