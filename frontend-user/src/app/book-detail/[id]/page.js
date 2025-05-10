@@ -66,10 +66,15 @@ const BookDetailsPage = () => {
 
       // gửi yêu cầu mượn sách
       const response = await axios.post(
-        `http://localhost:8080/api/borrow/${user.id}/${details.maSach}`,
+        `http://localhost:8080/api/borrow-cards`,
         {
           userId: user.id,
           bookIds: [id],
+          borrowDate: new Date().toISOString(),
+          status: "REQUESTED",
+          dueDate: new Date(
+            new Date().setDate(new Date().getDate() + 14)
+          ).toISOString(), // Ngày trả sách là 14 ngày sau
         }
       );
 
