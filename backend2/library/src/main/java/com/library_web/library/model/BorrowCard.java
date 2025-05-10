@@ -1,46 +1,76 @@
 package com.library_web.library.model;
 
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import org.springframework.data.annotation.Id;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Document
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Entity
+@Table(name = "borrow_cards")
 public class BorrowCard {
-    @Id
-    private String id; // id của phiếu mượn
-    private String userId; // id của người mượn sách
-    private List<String> bookIds; // danh sách id của sách được mượn
-    private LocalDateTime borrowDate; // ngày mượn sách
-    private LocalDateTime dueDate; // ngày trả 
-    private LocalDateTime getDateBook; // ngày lấy sách
-    private String status; // trạng thái của phiếu mượn
 
-    // Enum cho trạng thái của phiếu mượn
-    public enum Status {
-      REQUESTED("Đã yêu cầu"),
-      BORROWED("Đang mượn"),
-      EXPIRED("Đã hết hạn"),
-      RETURNED("Đã trả"),
-      CANCELLED("Đã hủy"),
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id; // id tự tăng
 
-      private final String statusDescription;
+  @Column(name = "user_id", nullable = false)
+  private String userId;
 
-      Status(String statusDescription) {
-          this.statusDescription = statusDescription;
-      }
-      public String getStatusDescription() {
-          return statusDescription;
-      }
+  @ElementCollection
+  @CollectionTable(name = "borrowed_books", joinColumns = @JoinColumn(name = "borrow_card_id"))
+  @Column(name = "book_id")
+  private List<String> bookIds;
+
+  @Column(name = "borrow_date", nullable = false)
+  private LocalDateTime borrowDate;
+
+  @Column(name = "due_date")
+  private LocalDateTime dueDate;
+
+  @Column(name = "get_book_date")
+  private LocalDateTime getBookDate;
+
+  @Column(name = "status", nullable = false)
+  private String status;
+
+  public enum Status {
+    REQUESTED("Đã yêu cầu"),
+    BORROWED("Đang mượn"),
+    EXPIRED("Đã hết hạn"),
+    RETURNED("Đã trả"),
+    CANCELLED("Đã hủy");
+
+    private final String statusDescription;
+
+    Status(String statusDescription) {
+      this.statusDescription = statusDescription;
     }
 
-    public 
+    public String getStatusDescription() {
+      return statusDescription;
+    }
+  }
 
-    
+  public void updateStatus(Status status) {
+    this.status = status.getStatusDescription();
+    if (status == Status.BORROWED && dueDate != null && LocalDateTime.now().isAfter(dueDate)) {
+      this.status = Status.EXPIRED.getStatusDescription();
+    }
+  }
+
+  // Constructor để khởi tạo phiếu mượn mới
+  public BorrowCard(String userId, LocalDateTime borrowDate, List<String> bookIds) {
+    this.userId = userId;
+    this.borrowDate = borrowDate;
+    this.getBookDate = borrowDate.plusDays(3);
+    this.dueDate = borrowDate.plusDays(14);
+    this.bookIds = bookIds;
+    this.status = Status.REQUESTED.getStatusDescription();
+  }
 }
