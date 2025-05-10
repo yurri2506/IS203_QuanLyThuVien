@@ -27,18 +27,20 @@ const HomePage = () => {
       console.error(err);
     }
   };
-
-const normalize = (arr) =>
-  arr.map((b) => ({
-    id: b.maSach,
-    imageSrc: b.hinhAnh?.[0] || "",
-    status: b.trangThai,
-    remaining: b.soLuongCon,  
-    title: b.tenSach,
-    author: b.tenTacGia,
-    publisher: b.nxb,
-    borrowCount: b.soLuongMuon,
-  }));
+  const normalize = (arr) =>
+    arr
+      ?.filter((b) => b.trangThai !== "DA_XOA")
+      .map((b) => ({
+        id: b.maSach,
+        imageSrc: b.hinhAnh?.[0] || "",
+        status: b.trangThai,
+        remaining: b.soLuongCon,
+        title: b.tenSach,
+        author: b.tenTacGia,
+        publisher: b.nxb,
+        borrowCount: b.soLuongMuon,
+      }));
+  
 
   const handleSearch = async (e) => {
     e.preventDefault();
