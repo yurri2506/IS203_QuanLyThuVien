@@ -108,8 +108,8 @@ const Page = () => {
         <p><strong>Năm xuất bản:</strong> {book.nam}</p>
         <p><strong>Tổng số lượng:</strong> {book.tongSoLuong}</p>
         <p><strong>Còn sẵn:</strong> {availableCount}</p>
-        <p><strong>Thể loại chính:</strong> {book.categoryChild?.categoryName}</p>
-        <p><strong>Thể loại phụ:</strong> {book.categoryChild?.name}</p>
+        <p><strong>Thể loại chính:</strong> {book.categoryParentName}</p>
+        <p><strong>Thể loại phụ:</strong> {book.categoryChildName}</p>
         <p><strong>Đã mượn:</strong> {book.soLuongMuon}</p>
         <p><strong>Đã xóa:</strong> {book.soLuongXoa}</p>
       </div>
@@ -164,13 +164,6 @@ const Page = () => {
         {/* Book details */}
         {book && <BookCard book={book} />}
         <div className="mt-6">
-        <Button
-          disabled={actionLoading}
-          onClick={handleAddChild}
-          className="bg-[#062D76] hover:bg-gray-700"
-        >
-          Tạo bản sao mới
-        </Button>
       </div>
         {/* Child books grid */}
         <div className="grid grid-cols-4 gap-4 mt-8">
