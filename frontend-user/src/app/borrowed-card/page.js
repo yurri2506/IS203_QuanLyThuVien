@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import LeftSideBar from "../components/LeftSideBar";
-import ChatBotButton from "../components/ChatBotButton";
+import ChatBotButton from "../components/ChatBoxButton";
 import { useRouter } from "next/navigation";
 import { TbListDetails } from "react-icons/tb";
 import { LuTimerOff, LuBookCheck } from "react-icons/lu";
@@ -19,7 +19,7 @@ const page = () => {
       try {
         const user = JSON.parse(localStorage.getItem("persist:root")); // lấy thông tin người dùng từ localStorage
         const response = await axios.get(
-          `http://localhost:8080/borrow-card/user/${user.id}` // lấy thông tin phiếu mượn của người dùng
+          `http://localhost:8080/api/borrow-cards/user/${user.id}` // lấy thông tin phiếu mượn của người dùng
         );
         setAllBorrowCards(response.data);
       } catch (error) {
