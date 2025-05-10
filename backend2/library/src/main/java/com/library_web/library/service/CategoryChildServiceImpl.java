@@ -38,28 +38,23 @@ public CategoryChild addChild(Long categoryId, String name) {
             HttpStatus.BAD_REQUEST,
             "Đã tồn tại thể loại con '" + name + "' trong danh mục này."); });
 
-    int size = parent.getChildren().size();
-    String suffix = generateSuffix(size);
+            int size = parent.getChildren().size();
+    String parentIdStr = String.valueOf(parent.getId()); // Chuyển Long sang String
+    String childId;
+    do {
+        String suffix = generateSuffix(size);
+        childId = parentIdStr + suffix;
+        size++; 
+    } while (childRepo.existsById(childId));
+
+    String suffix = childId.substring(parentIdStr.length());
     CategoryChild child = new CategoryChild(parent, suffix, name);
     parent.addChild(child);
+    parent.setSoLuongDanhMuc(parent.getChildren().size());
     categoryRepo.save(parent);
     return child;
 }
 
-    
-/*
- *  @Override
-    public CategoryChild updateChild(String id, String newName) {
-        CategoryChild child = childRepo.findById(id)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy danh mục con: " + id));
-        childRepo.findByNameAndParentId(name, categoryId)
-            .ifPresent(c -> { throw new ResponseStatusException(
-                HttpStatus.BAD_REQUEST,
-                "Đã tồn tại thể loại con '" + name + "' trong danh mục này."); });
-    
-        child.setName(newName);
-        return childRepo.save(child);
- */
 @Override
 @Transactional
 public CategoryChild updateChild(String id, String newName) {
@@ -86,6 +81,7 @@ public CategoryChild updateChild(String id, String newName) {
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy danh mục con: " + id));
         Category category = child.getParent();
         category.removeChild(child);
+        category.setSoLuongDanhMuc(category.getChildren().size());
         childRepo.delete(child);
         categoryRepo.save(category);
     }

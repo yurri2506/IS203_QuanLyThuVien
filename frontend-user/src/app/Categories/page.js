@@ -1,4 +1,4 @@
-// src/app/Categories/page.js
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -7,7 +7,6 @@ import ChatBotButton from "../components/ChatBoxButton";
 import BookCard from "../components/BookCard";
 import LeftSideBar from "../components/LeftSideBar";
 
-// tạo instance axios
 const api = axios.create({
   baseURL: "http://localhost:8080/api",
   timeout: 5000,
@@ -21,7 +20,6 @@ export default function CategoriesPage() {
   const [activeCategoryChildId, setActiveCategoryChildId] = useState(null);
   const [loadingBooks, setLoadingBooks] = useState(false);
 
-  // 1️⃣ Load category cha khi mount, tự chọn category đầu
   useEffect(() => {
     api
       .get("/category")
@@ -35,7 +33,6 @@ export default function CategoriesPage() {
       .catch((err) => console.error("Lỗi fetch categories:", err));
   }, []);
 
-  // 2️⃣ Khi activeCategoryId thay đổi, load category-child
   useEffect(() => {
     if (!activeCategoryId) return;
 
@@ -51,17 +48,21 @@ export default function CategoriesPage() {
       .catch((err) => console.error("Lỗi fetch category-child:", err));
   }, [activeCategoryId]);
 
-  // 3️⃣ Khi activeCategoryChildId thay đổi, load books
+
   useEffect(() => {
     if (!activeCategoryChildId) return;
-
+  
     setLoadingBooks(true);
     api
       .get(`/book/category/${activeCategoryChildId}`)
-      .then((res) => setBooks(res.data))
+      .then((res) => {
+        const filteredBooks = res.data.filter((b) => b.trangThai !== "DA_XOA");
+        setBooks(filteredBooks);
+      })
       .catch((err) => console.error("Lỗi fetch books:", err))
       .finally(() => setLoadingBooks(false));
   }, [activeCategoryChildId]);
+  
 
   return (
     <div className="flex flex-col min-h-screen text-foreground">
@@ -119,8 +120,10 @@ export default function CategoriesPage() {
                 {books.map((book) => (
                   <BookCard
                     key={book.maSach}
+                    id={book.maSach}
                     imageSrc={book.hinhAnh?.[0] || "/placeholder.png"}
-                    available={book.trangThai === "CON_SAN"}
+                    status={book.trangThai} 
+                    available={book.trangThai === "CON_SAN"|| book.trangThai === "DA_HET"}
                     title={book.tenSach}
                     author={book.tenTacGia}
                     publisher={`${book.nxb} (${book.nam})`}
