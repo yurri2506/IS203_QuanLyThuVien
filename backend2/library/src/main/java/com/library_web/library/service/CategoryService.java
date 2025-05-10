@@ -10,4 +10,5 @@ public interface CategoryService {
     Category addCategory(CategoryWithChildrenNames payload);
     Category updateCategory(Long id, Map<String, String> updates);
     void deleteCategory(Long id);
+    Category findById(Long id);
 }

@@ -1,50 +1,59 @@
 package com.library_web.library.controller;
 
+import com.library_web.library.dto.BookChildDTO;
 import com.library_web.library.model.BookChild;
 import com.library_web.library.service.BookChildService;
+
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpStatus;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @CrossOrigin
 @RestController
 @RequestMapping("/api/bookchild")
 public class BookChildController {
     private final BookChildService service;
-    public BookChildController(BookChildService service) { this.service = service; }
-
+    public BookChildController(BookChildService service) {
+        this.service = service;
+    }
     @PostMapping("/book/{bookId}/add")
-    public BookChild addOne(@PathVariable Long bookId) {
-        return service.addChild(bookId);
+    public BookChildDTO addOne(@PathVariable Long bookId) {
+        BookChild c = service.addChild(bookId);
+        return new BookChildDTO(c.getId(), c.getStatus().name(), c.getBook().getMaSach());
     }
-// lay tat ca sach con theo sach cha
+
     @GetMapping("/book/{bookId}")
-    public List<BookChild> getByBook(@PathVariable Long bookId) {
-        return service.getChildrenByBook(bookId);
+    public List<BookChildDTO> getByBook(@PathVariable Long bookId) {
+        return service.getChildrenByBook(bookId).stream()
+            .map(c -> new BookChildDTO(c.getId(), c.getStatus().name(), c.getBook().getMaSach()))
+            .collect(Collectors.toList());
     }
-/*
-    @PatchMapping("/{id}")
-    public BookChild updateChild(@PathVariable String id, @RequestBody Map<String, Object> updates) {
-        return service.updateChild(id, updates);
+
+    @PatchMapping("/borrow/{id}")
+    public BookChildDTO borrow(@PathVariable String id) {
+        BookChild c = service.borrowChild(id);
+        return new BookChildDTO(c.getId(), c.getStatus().name(), c.getBook().getMaSach());
     }
-*/
+
+    @PatchMapping("/return/{id}")
+    public BookChildDTO returnBook(@PathVariable String id) {
+        BookChild c = service.returnChild(id);
+        return new BookChildDTO(c.getId(), c.getStatus().name(), c.getBook().getMaSach());
+    }
+
+    @GetMapping("/borrowed")
+    public List<BookChildDTO> getBorrowed() {
+        return service.findByStatus(BookChild.Status.BORROWED).stream()
+            .map(c -> new BookChildDTO(c.getId(), c.getStatus().name(), c.getBook().getMaSach()))
+            .collect(Collectors.toList());
+    }
+
     @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteChild(@PathVariable String id) {
         service.deleteChild(id);
     }
 
-    @PatchMapping("/borrow/{id}")
-    public BookChild borrow(@PathVariable String id) {
-        return service.borrowChild(id);
-    }
-
-    @PatchMapping("/return/{id}")
-    public BookChild returnBook(@PathVariable String id) {
-        return service.returnChild(id);
-    }
-    
-    @GetMapping("/borrowed")
-    public List<BookChild> getBorrowed() {
-        return service.findByStatus(BookChild.Status.BORROWED);
-    }
 }

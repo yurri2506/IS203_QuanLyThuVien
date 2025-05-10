@@ -20,11 +20,7 @@ const StatisticsCard = ({ icon, title, value, percentage }) => {
           {value}
         </p>
       </section>
-      <footer className="flex gap-3 items-end p-3 w-full text-[1.125rem] text-white">
-        <p className="flex-1 shrink gap-2.5 self-stretch w-full basis-0 min-w-60">
-          Tăng {percentage}%
-        </p>
-      </footer>
+      
     </article>
   );
 };
