@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
 import java.util.*;
 
 @Service
@@ -69,33 +70,24 @@ public void delBook(Long maSach) {
             countDeleted++;
         }
     }
-    book.setSoLuongXoa(countDeleted);
-
-    
+    book.setSoLuongXoa((book.getSoLuongXoa() == null ? 0 : book.getSoLuongXoa()) + countDeleted);
+    book.setTongSoLuong(0); 
+    book.updateTrangThai();
     repo.save(book);
     bookChildRepository.saveAll(listChild);
 }
 
 
-    @Override
-    public Book getBookbyID(Long maSach) {
-        return repo.findById(maSach)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy sách có mã: " + maSach));
-    }
-/*
- * @Override
-    public Book addBook(Book book, int initialQuantity) {
-        book.setTongSoLuong(initialQuantity);
-        // Lưu trước để sinh ra maSach (ID)
-        Book savedBook = repo.save(book);
-        for (int i = 0; i < initialQuantity; i++) {
-            char suffix = (char) ('a' + i);
-            BookChild child = new BookChild(savedBook, String.valueOf(suffix));
-            savedBook.addChild(child);
-        }
-        return repo.save(savedBook);
+@Override
+public Book getBookbyID(Long maSach) {
+    Book book = repo.findById(maSach)
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "Không tìm thấy sách có mã: " + maSach
+        ));
+    book.updateTrangThai();
+    return book;
 }
- */
+
 @Override
 @Transactional
 public Book addBook(Book book, int initialQuantity) {
@@ -126,9 +118,11 @@ public Book addBook(Book book, int initialQuantity) {
     Book saved = repo.save(book);
     for (int i = 0; i < initialQuantity; i++) {
         String suffix = generateSuffix(i);
-        BookChild bc = new BookChild(saved, suffix);
+        BookChild bc = new BookChild(book, suffix);
         saved.addChild(bc);
     }
+    saved.setTongSoLuong(initialQuantity);
+    saved.updateTrangThai();
     return repo.save(saved);
 }
 
@@ -148,59 +142,78 @@ public Book addBook(Book book, int initialQuantity) {
 @Override
 @Transactional
 public Book updateBook(Long maSach, Map<String, Object> updates) {
-    Book book = getBookbyID(maSach);
-    updates.forEach((key, value) -> {
-        if (value == null) return;
+        try {
+            Book book = getBookbyID(maSach);
+            if (updates == null || updates.isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Không có dữ liệu cập nhật nào được cung cấp.");
+            }
+
+            updates.forEach((key, value) -> {
+                if (value == null) return;
 
         switch (key) {
             case "tenSach" -> book.setTenSach((String) value);
             case "moTa" -> book.setMoTa((String) value);
-
             case "tenTacGia" -> book.setTenTacGia((String) value);
             case "nxb" -> book.setNxb((String) value);
-
             case "nam" -> {
-                if (value instanceof Number) {
-                    book.setNam(((Number) value).intValue());
-                }
-            }
-
+                 try {
+                     if (value instanceof Number) {
+                                book.setNam(((Number) value).intValue());
+                            } else if (value instanceof String) {
+                                book.setNam(Integer.parseInt((String) value));
+                            }
+                        } catch (NumberFormatException e) {
+                            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Năm xuất bản không hợp lệ: " + value);
+                        }
+                    }
             case "trongLuong" -> {
-                if (value instanceof Number) {
-                    book.setTrongLuong(((Number) value).intValue());
-                }
-            }
+                try {
+                    if (value instanceof Number) {
+                                book.setTrongLuong(((Number) value).intValue());
+                            } else if (value instanceof String) {
+                                book.setTrongLuong(Integer.parseInt((String) value));
+                            }
+                        } catch (NumberFormatException e) {
+                            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Trọng lượng không hợp lệ: " + value);
+                        }
+                    }
 
             case "tongSoLuong" -> {
-                int newQty = ((Number) value).intValue();
-                int currentCount = book.getChildren().size();
-                int delta = newQty - currentCount;
-                if (delta > 0) {
-                    for (int i = 0; i < delta; i++) {
-                        String suffix = generateSuffix(currentCount + i);
-                        BookChild child = new BookChild(book, suffix);
-                        book.addChild(child);
-                    }
-                }else if (delta < 0) {
+                int newQty = ((Number) value).intValue(); 
+                if (newQty < 0) {
                     throw new ResponseStatusException(
-                        HttpStatus.BAD_REQUEST, "Không thể cập nhật, số sách đang bị giảm. " +
-                        "Để xóa, vui lòng chuyển qua chi tiết sách.");
+                        HttpStatus.BAD_REQUEST,
+                        "Số lượng bản sách mới phải lớn hơn hoặc bằng 0."
+                    );
                 }
-                
-            
+
+                long activeCount = bookChildRepository.countActiveByBookMaSach(maSach);
+                long totalCount = bookChildRepository.countByBookMaSach(maSach);
+                for (int i = 0; i < newQty; i++) {
+                    String suffix = generateSuffix((int) totalCount + i);
+                    BookChild child = new BookChild(book, suffix);
+                    bookChildRepository.save(child);
+                   // book.addChild(child);
+                }
+                book.setTongSoLuong((int) activeCount + newQty);
+                book.updateTrangThai(); 
             }
+            
+            
 
             case "donGia" -> {
-                if (value instanceof Number) {
-                    book.setDonGia(((Number) value).intValue());
-                }
-            }
+                        try {
+                            if (value instanceof Number) {
+                                book.setDonGia(((Number) value).intValue());
+                            } else if (value instanceof String) {
+                                book.setDonGia(Integer.parseInt((String) value));
+                            }
+                        } catch (NumberFormatException e) {
+                            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Đơn giá không hợp lệ: " + value);
+                        }
+                    }
 
-            case "soLuongMuon" -> {
-                if (value instanceof Number) {
-                    book.setSoLuongMuon(((Number) value).intValue());
-                }
-            }
 
             case "trangThai" -> {
                 try {
@@ -220,29 +233,34 @@ public Book updateBook(Long maSach, Map<String, Object> updates) {
                 }
             }
 
-            case "hinhAnh" -> {
-                if (value instanceof List<?>) {
-                    List<String> imgs = ((List<?>) value).stream()
-                        .map(Object::toString)
-                        .toList();
-                    book.setHinhAnh(imgs);
-                }
-            }
+             case "hinhAnh" -> {
+                        if (value instanceof List<?>) {
+                            List<String> imgs = ((List<?>) value).stream()
+                                .map(Object::toString)
+                                .toList();
+                            book.setHinhAnh(imgs);
+                        } else {
+                            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Danh sách hình ảnh không hợp lệ: " + value);
+                        }
+                    }
             case "categoryChildId" -> {
-                // value là String
-                String childId = value.toString();
-                CategoryChild child = childRepo.findById(childId)
-                    .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.BAD_REQUEST,
-                        "Không tìm thấy thể loại con với ID: " + childId
-                    ));
-                book.setCategoryChild(child);
-            }
-        }
-    });
+                        String childId = value.toString();
+                        CategoryChild child = childRepo.findById(childId)
+                            .orElseThrow(() -> new ResponseStatusException(
+                                HttpStatus.BAD_REQUEST,
+                                "Không tìm thấy thể loại con với ID: " + childId
+                            ));
+                        book.setCategoryChild(child);
+                    }
+                    default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Trường không hợp lệ: " + key);
+                }
+            });
 
-    return repo.save(book);
-}
+            return repo.save(book);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Lỗi khi cập nhật sách: " + e.getMessage(), e);
+        }
+    }
 
 @Override
 public List<Book> searchBooks(String author, String category, String publisher, Integer year, String title, boolean sortByBorrowCount) {
@@ -283,9 +301,29 @@ public List<Book> searchBooks(String author, String category, String publisher, 
             .sorted(Comparator.comparing(Book::getSoLuongMuon).reversed())
             .toList();
     }
-
+    for (Book book : books) {
+        book.updateTrangThai();
+    }
     return books;
 }
-    
+      @Override
+    public long getTotalBooks() {
+        return repo.findByTrangThaiNot(Book.TrangThai.DA_XOA).size();
+    }
+
+    @Override
+    public long getTotalBookQuantity() {
+        return repo.findByTrangThaiNot(Book.TrangThai.DA_XOA).stream()
+            .mapToLong(book -> book.getTongSoLuong() != null ? book.getTongSoLuong() : 0)
+            .sum();
+    }
+
+    @Override
+    public long getNewBooksThisWeek() {
+        LocalDate startOfWeek = LocalDate.now().minusDays(7);
+        return repo.findByCreatedAtAfterAndTrangThaiNot(startOfWeek, Book.TrangThai.DA_XOA).size();
+    }
+
+
 
 }
