@@ -54,11 +54,15 @@ const Page = () => {
     identifier: yup
       .string()
       .required("Email hoặc số điện thoại không được để trống")
-      .test("valid-identifier", "Email hoặc số điện thoại không hợp lệ", (value) => {
-        if (!value) return false;
-        const { type } = determineInputType(value);
-        return type !== "invalid";
-      }),
+      .test(
+        "valid-identifier",
+        "Email hoặc số điện thoại không hợp lệ",
+        (value) => {
+          if (!value) return false;
+          const { type } = determineInputType(value);
+          return type !== "invalid";
+        }
+      ),
     matKhau: yup
       .string()
       .min(6, "Mật khẩu phải có ít nhất 6 ký tự")
@@ -70,11 +74,15 @@ const Page = () => {
     identifier: yup
       .string()
       .required("Email hoặc số điện thoại không được để trống")
-      .test("valid-identifier", "Email hoặc số điện thoại không hợp lệ", (value) => {
-        if (!value) return false;
-        const { type } = determineInputType(value);
-        return type !== "invalid";
-      }),
+      .test(
+        "valid-identifier",
+        "Email hoặc số điện thoại không hợp lệ",
+        (value) => {
+          if (!value) return false;
+          const { type } = determineInputType(value);
+          return type !== "invalid";
+        }
+      ),
     matKhau: yup
       .string()
       .min(6, "Mật khẩu phải có ít nhất 6 ký tự")
@@ -125,7 +133,7 @@ const Page = () => {
   // Handle registration
   const onSubmitRegister = async (data) => {
     const { type, value } = determineInputType(data.identifier);
-    
+
     try {
       const payload = {
         username: data.tenND,
@@ -142,7 +150,6 @@ const Page = () => {
         },
 
         body: JSON.stringify(payload),
-
       });
 
       const result = await response.json();
@@ -177,22 +184,22 @@ const Page = () => {
     }
   };
 
-
   // Handle OTP verification
   const onSubmitOTP = async (data) => {
-
     try {
-      const verifyResponse = await fetch("http://localhost:8080/register/verify-otp", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-
-          email: otpEmail,
-          otp: data.otp,
-        }),
-      });
+      const verifyResponse = await fetch(
+        "http://localhost:8080/register/verify-otp",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: otpEmail,
+            otp: data.otp,
+          }),
+        }
+      );
 
       const verifyResult = await verifyResponse.json();
 
@@ -207,9 +214,12 @@ const Page = () => {
           style: { background: "#fee2e2", color: "#b91c1c" },
         });
       } else if (verifyResponse.status === 500) {
-        toast.error(verifyResult.message || "Lỗi máy chủ, vui lòng thử lại sau", {
-          style: { background: "#fef3c7", color: "#d97706" },
-        });
+        toast.error(
+          verifyResult.message || "Lỗi máy chủ, vui lòng thử lại sau",
+          {
+            style: { background: "#fef3c7", color: "#d97706" },
+          }
+        );
       } else {
         toast.error(verifyResult.message || "Có lỗi xảy ra", {
           style: { background: "#fee2e2", color: "#b91c1c" },
@@ -225,7 +235,7 @@ const Page = () => {
   // Handle login
   const onSubmitLogin = async (data) => {
     const { type, value } = determineInputType(data.identifier);
-    
+
     try {
       const payload = {
         [type]: value,
@@ -281,15 +291,15 @@ const Page = () => {
         });
         router.push("/user-login");
       }
-
     } catch (error) {
       toast.error(error.message || "Có lỗi xảy ra", {
         style: { background: "#fee2e2", color: "#b91c1c" },
       });
-      router.push("/user-login");
     }
   };
-  
+
+  // Handle login
+  // (Duplicate declaration removed)
 
   // Reset forms when switching tabs
   useEffect(() => {
