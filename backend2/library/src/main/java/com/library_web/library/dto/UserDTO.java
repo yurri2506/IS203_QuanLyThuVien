@@ -1,6 +1,7 @@
 package com.library_web.library.dto;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
@@ -29,8 +30,10 @@ public UserDTO(String username, String email, String fullname, String phone, Str
     private String role = "USER"; // mặc định là USER
     private String gender;     
 
-    @JsonFormat(pattern = "MM/dd/yyyy") // định dạng JSON input/output
-    private LocalDate birthdate;
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSX")
+private LocalDateTime birthdate;
+
+
 
 
     // Getters và Setters
@@ -82,10 +85,10 @@ public UserDTO(String username, String email, String fullname, String phone, Str
     public void setGender  (String gender){
         this.gender = gender;
     }
-    public LocalDate getBirthdate() {
+    public LocalDateTime getBirthdate() {
         return birthdate;
-    }
-    public void setBirthdate(LocalDate birthdate) {
+    }   
+    public void setBirthdate(LocalDateTime birthdate) {
         this.birthdate = birthdate;
     }
 }
