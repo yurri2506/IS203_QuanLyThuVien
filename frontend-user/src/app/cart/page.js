@@ -67,35 +67,36 @@ const books = [
 
 const page = () => {
   const [selected, setSelected] = useState([]);
-  // const [books, setBooks] = useState(""); // Giỏ hàng
-  // const [loading, setLoading] = useState(true); // Trạng thái loading
-  // const userId = "67fbfc0b6a8328377edee149"; // Thay bằng userId thực tế của bạn
-  // let cartId = "";
+  const [books, setBooks] = useState(""); // Giỏ hàng
+  const [loading, setLoading] = useState(true); // Trạng thái loading
+  const user = JSON.parse(localStorage.getItem("persist:root")); // lấy thông tin người dùng từ localStorage
+  let cartId = "";
 
-  // // Lấy giỏ hàng từ API theo userId
-  // const fetchCart = async () => {
-  //   try {
-  //     setLoading(true); // Bắt đầu tải dữ liệu
-  //     const response = await fetch(
-  //       `http://localhost:8081/carts/user/${userId}`
-  //     ); // Endpoint API lấy giỏ hàng theo userId
-  //     if (response.ok) {
-  //       const data = await response.json();
-  //       cartId=data.id; 
-  //       setBooks(data.books); // Giả sử API trả về đối tượng có key 'books'
-  //     } else {
-  //       console.error("Lỗi khi lấy giỏ hàng");
-  //     }
-  //   } catch (error) {
-  //     console.error("Có lỗi xảy ra:", error);
-  //   } finally {
-  //     setLoading(false); // Hoàn tất việc gọi API
-  //   }
-  // };
+  // Lấy giỏ hàng từ API theo userId
+  const fetchCart = async () => {
+    try {
+      setLoading(true); // Bắt đầu tải dữ liệu
+      const response = await fetch(
+        `http://localhost:8080/api/cart/${user.id}` // Endpoint API lấy giỏ hàng theo userId
+      ); // Endpoint API lấy giỏ hàng theo userId
 
-  // useEffect(() => {
-  //   fetchCart();
-  // }, [userId]);
+      if (response.ok) {
+        const data = await response.json();
+        cartId=data.id; 
+        setBooks(data.data); // Giả sử API trả về đối tượng có key 'books'
+      } else {
+        console.error("Lỗi khi lấy giỏ hàng");
+      }
+    } catch (error) {
+      console.error("Có lỗi xảy ra:", error);
+    } finally {
+      setLoading(false); // Hoàn tất việc gọi API
+    }
+  };
+
+  useEffect(() => {
+    fetchCart();
+  }, [user.id]);
 
   // tick / bỏ tick 1 cuốn
   const toggleBook = (idx, checked) => {
@@ -105,7 +106,7 @@ const page = () => {
   };
 
   // tick / bỏ tick tất cả
-  const allChecked = selected.length === books.length;
+  const allChecked = selected.length === books?.length;
   const toggleAll = (checked) =>
     setSelected(checked ? books.map((_, i) => i) : []);
   return (
@@ -123,10 +124,10 @@ const page = () => {
               {Array.isArray(books) &&
                 books.map((book, index) => (
                   <BookCard
-                    key={book.id}
-                    id={book.id}
-                    // imageSrc={book.hinhAnh[0]}
-                    // available={(book.tongSoLuong - book.soLuongMuon - book.soLuongXoa) > 0 ? "Còn sẵn" : "Hết sách"}
+                    key={book.bookId}
+                    id={book.bookId}
+                    imageSrc={book.hinhAnh[0]}
+                    available={(book.tongSoLuong - book.soLuongMuon - book.soLuongXoa) > 0 ? "Còn sẵn" : "Hết sách"}
                     title={book.tenSach}
                     author={book.tenTacGia}
                     publisher={book.nxb}
