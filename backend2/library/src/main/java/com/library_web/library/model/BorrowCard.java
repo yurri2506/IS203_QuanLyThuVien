@@ -65,10 +65,10 @@ public class BorrowCard {
   }
 
   // Constructor để khởi tạo phiếu mượn mới
-  public BorrowCard(Long userId, LocalDateTime borrowDate, List<String> bookIds) {
+  public BorrowCard(Long userId, LocalDateTime borrowDate,int waitingToTake, List<String> bookIds) {
     this.userId = userId;
-    this.borrowDate = borrowDate;
-    this.getBookDate = borrowDate.plusDays(3);
+    this.borrowDate = LocalDateTime.now();
+    this.getBookDate = borrowDate.plusDays(waitingToTake);
     this.dueDate = borrowDate.plusDays(14);
     this.bookIds = bookIds;
     this.status = Status.REQUESTED.getStatusDescription();

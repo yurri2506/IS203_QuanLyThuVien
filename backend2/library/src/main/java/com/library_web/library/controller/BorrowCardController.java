@@ -16,27 +16,32 @@ public class BorrowCardController {
   @Autowired
   private BorrowCardService service;
 
-  @GetMapping
-  public ResponseEntity<List<BorrowCardDTO>> getAll() {
-    return ResponseEntity.ok(service.getAll());
-  }
+  // @GetMapping
+  // public ResponseEntity<List<BorrowCardDTO>> getAll() {
+  // return ResponseEntity.ok(service.getAll());
+  // }
 
   @GetMapping("/{id}")
-  public ResponseEntity<BorrowCardDTO> getById(@PathVariable Long id) {
-    BorrowCardDTO dto = service.getById(id);
-    return dto != null ? ResponseEntity.ok(dto) : ResponseEntity.notFound().build();
+  public ResponseEntity<BorrowCardDTO> getBorrowCardDetails(@PathVariable Long id) {
+    BorrowCardDTO details = service.getBorrowCardDetails(id);
+    return ResponseEntity.ok(details);
   }
 
   @PostMapping
-  public ResponseEntity<BorrowCardDTO> create(@RequestBody BorrowCardDTO dto) {
-    return ResponseEntity.ok(service.create(dto));
+  public ResponseEntity<BorrowCard> create(@RequestBody BorrowCard BorrowCardRequest) {
+    BorrowCard borrowCard = service.create(
+        BorrowCardRequest.getUserId(),
+        BorrowCardRequest.getBookIds());
+    return ResponseEntity.ok(borrowCard);
   }
 
-  @PutMapping("/{id}")
-  public ResponseEntity<BorrowCardDTO> update(@PathVariable Long id, @RequestBody BorrowCardDTO dto) {
-    BorrowCardDTO updated = service.update(id, dto);
-    return updated != null ? ResponseEntity.ok(updated) : ResponseEntity.notFound().build();
-  }
+  // @PutMapping("/{id}")
+  // public ResponseEntity<BorrowCardDTO> update(@PathVariable Long id,
+  // @RequestBody BorrowCardDTO dto) {
+  // BorrowCardDTO updated = service.update(id, dto);
+  // return updated != null ? ResponseEntity.ok(updated) :
+  // ResponseEntity.notFound().build();
+  // }
 
   @DeleteMapping("/{id}")
   public ResponseEntity<Void> delete(@PathVariable Long id) {
@@ -44,11 +49,11 @@ public class BorrowCardController {
   }
 
   @PostMapping("/user/{userId}")
-   public ResponseEntity<List<BorrowCard>> getBorrowCardsByUserId(@PathVariable Long userId) {
-        List<BorrowCard> borrowCards = service.getBorrowCardsByUserId(userId);
-        if (borrowCards.isEmpty()) {
-            return ResponseEntity.status(204).build(); // Trả về trạng thái 204 nếu không có dữ liệu
-        }
-        return ResponseEntity.ok(borrowCards); // Trả về danh sách phiếu mượn của người dùng
+  public ResponseEntity<List<BorrowCard>> getBorrowCardsByUserId(@PathVariable Long userId) {
+    List<BorrowCard> borrowCards = service.getBorrowCardsByUserId(userId);
+    if (borrowCards.isEmpty()) {
+      return ResponseEntity.status(204).build(); // Trả về trạng thái 204 nếu không có dữ liệu
     }
+    return ResponseEntity.ok(borrowCards); // Trả về danh sách phiếu mượn của người dùng
+  }
 }
