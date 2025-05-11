@@ -15,12 +15,31 @@ const ProfileCard = () => {
     phone: "0868882744",
     joinDate: "20/08/2023",
   });
+  // useEffect(() => {
+  //   const savedData = localStorage.getItem("profileData");
+  //   if (savedData) {
+  //     setFormData(JSON.parse(savedData));
+  //   }
+  // }, []);
+
   useEffect(() => {
-    const savedData = localStorage.getItem("profileData");
-    if (savedData) {
-      setFormData(JSON.parse(savedData));
+    const persistedRoot = localStorage.getItem("persist:root");
+    
+    if (persistedRoot) {
+      const user = JSON.parse(persistedRoot);
+      if (user) {
+        setFormData({
+          fullName: user.fullname?.replace(/^"|"$/g, '') || "Chưa cập nhật",
+          studentId: user.id || "Chưa cập nhật",
+          email: user.email?.replace(/^"|"$/g, '') || "Chưa cập nhật",
+          birthDate: user.birthDay?.replace(/^"|"$/g, '') || "Chưa cập nhật",
+          phone: user.phone?.replace(/^"|"$/g, '') || "Chưa cập nhật",
+          joinDate: (user.joinDate || "01/01/2024")?.replace(/^"|"$/g, '') || "Chưa cập nhật",
+        });
+      }
     }
   }, []);
+  
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
