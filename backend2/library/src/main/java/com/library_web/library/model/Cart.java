@@ -3,7 +3,6 @@ package com.library_web.library.model;
 import jakarta.persistence.*;
 import java.util.*;
 
-
 @Entity
 public class Cart {
      @Id
