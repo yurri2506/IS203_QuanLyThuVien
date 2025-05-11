@@ -12,16 +12,18 @@ import axios from "axios";
 const page = () => {
   const [allBorrowCards, setAllBorrowCards] = useState([]);
 
-  const [selectedButton, setSelectedButton] = useState("Đang yêu cầu");
+  const [selectedButton, setSelectedButton] = useState("Đã yêu cầu");
 
   useEffect(() => {
     const fetchBorrowCards = async () => {
       try {
         const user = JSON.parse(localStorage.getItem("persist:root")); // lấy thông tin người dùng từ localStorage
-        const response = await axios.get(
+        
+        const response = await axios.post(
           `http://localhost:8080/api/borrow-cards/user/${user.id}` // lấy thông tin phiếu mượn của người dùng
         );
         setAllBorrowCards(response.data);
+        console.log(response.data);
       } catch (error) {
         console.error("Lỗi khi fetch phiếu mượn:", error);
       }
@@ -31,8 +33,8 @@ const page = () => {
   }, []);
 
   const filteredCards = allBorrowCards.filter((card) => {
-    if (selectedButton === "Đang yêu cầu")
-      return card.status === "Đang yêu cầu";
+    if (selectedButton === "Đã yêu cầu")
+      return card.status === "Đã yêu cầu";
     if (selectedButton === "Đang mượn") return card.status === "Đang mượn";
     if (selectedButton === "Hết hạn") return card.status === "Hết hạn";
     return false;
@@ -62,11 +64,11 @@ const page = () => {
               {/* Current Borrowings Status */}
               <Button
                 className={`flex flex-1 gap-2 justify-center items-center text-[1.125rem] max-md:text-[1rem] rounded-md py-5 max-md:py-2 cursor-pointer ${
-                  selectedButton === "Đang yêu cầu"
+                  selectedButton === "Đã yêu cầu"
                     ? "bg-[#062D76] text-white hover:bg-[#062D76] hover:text-white"
                     : "bg-gray-300 text-[#131313] hover:bg-[#062D76] hover:text-white"
                 }`}
-                onClick={() => handleButtonClick("Đang yêu cầu")}
+                onClick={() => handleButtonClick("Đã yêu cầu")}
               >
                 <FiLoader
                   style={{
@@ -75,7 +77,7 @@ const page = () => {
                   }}
                   className="size-6"
                 />
-                Đang yêu cầu
+                Đã yêu cầu
               </Button>
 
               <Button
@@ -177,7 +179,7 @@ const page = () => {
                           </>
                         )}
 
-                        {selectedButton === "Đang yêu cầu" && (
+                        {selectedButton === "Đã yêu cầu" && (
                           <>
                             Hạn lấy sách:{" "}
                             <span className="text-[#131313] font-medium">

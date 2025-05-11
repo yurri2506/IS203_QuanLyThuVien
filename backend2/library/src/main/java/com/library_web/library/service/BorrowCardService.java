@@ -69,4 +69,8 @@ public class BorrowCardService {
     dto.setStatus(card.getStatus());
     return dto;
   }
+
+  public List<BorrowCard> getBorrowCardsByUserId(Long userId) {
+    return repository.findByUserId(userId); // Trả về tất cả phiếu mượn của userId
+  }
 }

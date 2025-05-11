@@ -1,6 +1,7 @@
 package com.library_web.library.controller;
 
 import com.library_web.library.dto.BorrowCardDTO;
+import com.library_web.library.model.BorrowCard;
 import com.library_web.library.service.BorrowCardService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -41,4 +42,13 @@ public class BorrowCardController {
   public ResponseEntity<Void> delete(@PathVariable Long id) {
     return service.delete(id) ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
   }
+
+  @PostMapping("/user/{userId}")
+   public ResponseEntity<List<BorrowCard>> getBorrowCardsByUserId(@PathVariable Long userId) {
+        List<BorrowCard> borrowCards = service.getBorrowCardsByUserId(userId);
+        if (borrowCards.isEmpty()) {
+            return ResponseEntity.status(204).build(); // Trả về trạng thái 204 nếu không có dữ liệu
+        }
+        return ResponseEntity.ok(borrowCards); // Trả về danh sách phiếu mượn của người dùng
+    }
 }
