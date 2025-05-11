@@ -1,9 +1,10 @@
 package com.library_web.library.controller;
 
 
+import com.library_web.library.dto.CartItemDTO;
 import com.library_web.library.dto.UserDTO;
 import com.library_web.library.model.User;
-
+import com.library_web.library.model.Cart;
 import com.library_web.library.model.GoogleLoginRequest;
 import com.library_web.library.repository.UserRepository;
 import com.library_web.library.security.JwtUtil;
@@ -23,7 +24,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 
@@ -234,7 +238,7 @@ public class AuthController {
     }
 */
     // Tui fix lại cái phương thức post, code của ông/bà là cmt ở trên í.
-    @PostMapping("/login")
+   @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> request) {
         Map<String, Object> response = userService.login(request.get("email"), request.get("password"));
         // Tạo hoặc lấy giỏ hàng nếu đăng nhập thành công

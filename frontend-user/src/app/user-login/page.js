@@ -349,8 +349,8 @@ const Page = () => {
       if (!response.ok) {
         throw new Error("Đăng nhập thất bại: " + response.statusText);
       }
-      const text = await response.text();
-      console.log(text);
+      // const text = await response.text();
+      // console.log(text);
       const result = await response.json();
       console.log(result); // Kiểm tra kết quả trả về từ backend
 
