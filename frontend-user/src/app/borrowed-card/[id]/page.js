@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import LeftSideBar from "@/app/components/LeftSideBar";
-import ChatBotButton from "@/app/components/ChatBotButton";
+import ChatBotButton from "../../components/ChatBoxButton";
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
@@ -185,7 +185,7 @@ const ChiTietPhieuMuon = () => {
               Danh sách sách mượn
             </h2>
             <section className="grid grid-cols-1 max-sm:grid-cols-1 gap-5 items-start mt-2 w-full max-md:max-w-full">
-              {borrowDetail.books.map((book, index) => (
+              {borrowDetail?.books?.map((book, index) => (
                 <BookCard
                   key={index}
                   imageSrc={book.image}
