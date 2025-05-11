@@ -244,17 +244,17 @@ function Page() {
     }
 
    // Upload ảnh nếu có
-let newImgs = [];
-try {
-  newImgs = await uploadImagesToCloudinary();
-  // Chỉ gán hinhAnh khi upload thực sự có file mới
-  if (Array.isArray(newImgs) && newImgs.length > 0) {
-    bookUpdates.hinhAnh = newImgs;
-  }
-} catch {
-  toast.error("Upload ảnh thất bại");
-  return;
-}
+    let newImgs = [];
+    try {
+      newImgs = await uploadImagesToCloudinary();
+      // Chỉ gán hinhAnh khi upload thực sự có file mới
+      if (Array.isArray(newImgs) && newImgs.length > 0) {
+        bookUpdates.hinhAnh = newImgs;
+      }
+    } catch {
+      toast.error("Upload ảnh thất bại");
+      return;
+    }
 
     setLoading(true);
     try {
