@@ -28,7 +28,7 @@ import java.util.Map;
 @RestController
 
 @RequestMapping("/api")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin
 public class AuthController {
     @Autowired
     private GoogleAuthService googleAuthService;
