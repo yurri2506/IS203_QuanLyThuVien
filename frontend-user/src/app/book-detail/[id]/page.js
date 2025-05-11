@@ -15,10 +15,17 @@ const BookDetailsPage = () => {
 
   // map enum sang label
   const statusMap = {
-
-    CON_SAN: { label: "Còn sẵn", icon: <CheckCircle className="text-green-500" />, available: true },
-    DA_HET:  { label: "Đã hết",   icon: <XCircle className="text-red-500" />,   available: false },
-   // DA_XOA:  { label: "Đã xóa",   icon: <XCircle className="text-red-500" />,   available: false },
+    CON_SAN: {
+      label: "Còn sẵn",
+      icon: <CheckCircle className="text-green-500" />,
+      available: true,
+    },
+    DA_HET: {
+      label: "Đã hết",
+      icon: <XCircle className="text-red-500" />,
+      available: false,
+    },
+    // DA_XOA:  { label: "Đã xóa",   icon: <XCircle className="text-red-500" />,   available: false },
   };
 
   useEffect(() => {
@@ -44,9 +51,6 @@ const BookDetailsPage = () => {
       </div>
     );
   }
-
-  const { label, icon, available } =
-    statusMap[details.trangThai] || statusMap.CON_SAN;
 
   const handleBorrowBook = async () => {
     try {
@@ -82,11 +86,10 @@ const BookDetailsPage = () => {
   // Tính trạng thái ưu tiên trangThai, nếu null thì dựa vào children
   let key = details.trangThai;
   if (!key) {
-    const anyAvailable = details.children?.some(c => c.available);
+    const anyAvailable = details.children?.some((c) => c.available);
     key = anyAvailable ? "CON_SAN" : "DA_HET";
   }
   const { label, icon, available } = statusMap[key] || statusMap.CON_SAN;
-
 
   return (
     <div className="flex flex-col min-h-screen text-foreground">
@@ -109,10 +112,6 @@ const BookDetailsPage = () => {
               </p>
               <p>
                 <span className="font-semibold">Thể loại:</span>{" "}
-
-//                 {details.categoryChild?.tenTheLoaiCon ||
-//                   details.categoryChild?.name ||
-//                   "—"}
                 {details.categoryChildName ?? "—"}
               </p>
               <p>
@@ -152,17 +151,16 @@ const BookDetailsPage = () => {
                 <span className="font-semibold">Năm XB:</span> {details.nam}
               </p>
               <p>
-                <span className="font-semibold">Trọng lượng:</span> {details.trongLuong} g
+                <span className="font-semibold">Trọng lượng:</span>{" "}
+                {details.trongLuong} g
               </p>
               <p>
-//                 <span className="font-semibold">Đơn giá:</span> {details.donGia}{" "}
-//                 đ
-
-                <span className="font-semibold">Đơn giá:</span> {details.donGia} đ
-
+                <span className="font-semibold">Đơn giá:</span> {details.donGia}{" "}
+                đ
               </p>
               <p>
-                <span className="font-semibold">Tổng số lượng:</span> {details.tongSoLuong}
+                <span className="font-semibold">Tổng số lượng:</span>{" "}
+                {details.tongSoLuong}
               </p>
             </div>
           </div>
@@ -179,10 +177,7 @@ const BookDetailsPage = () => {
 
           {/* Reviews */}
           <div className="mt-6">
-//             <BookReview bookId={details.maSach} />{" "}
-
             <BookReview bookId={details.maSach} />
-
           </div>
         </section>
         <ChatBotButton />
