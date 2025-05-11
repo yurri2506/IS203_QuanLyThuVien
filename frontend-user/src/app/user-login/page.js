@@ -331,7 +331,7 @@ const Page = () => {
 
   // Xử lý đăng nhập
   const onSubmitLogin = async (data) => {
-    // console.log(data);
+    console.log(data);
     try {
       const response = await fetch("http://localhost:8080/api/login", {
         method: "POST",
@@ -347,7 +347,8 @@ const Page = () => {
       if (!response.ok) {
         throw new Error("Đăng nhập thất bại: " + response.statusText);
       }
-
+      const text = await response.text();
+      console.log(text);
       const result = await response.json();
       console.log(result); // Kiểm tra kết quả trả về từ backend
 
