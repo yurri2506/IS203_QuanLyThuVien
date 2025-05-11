@@ -20,7 +20,7 @@ public class BorrowCard {
   private Long id; // id tự tăng
 
   @Column(name = "user_id", nullable = false)
-  private String userId;
+  private Long userId;
 
   @ElementCollection
   @CollectionTable(name = "borrowed_books", joinColumns = @JoinColumn(name = "borrow_card_id"))
@@ -65,7 +65,7 @@ public class BorrowCard {
   }
 
   // Constructor để khởi tạo phiếu mượn mới
-  public BorrowCard(String userId, LocalDateTime borrowDate, List<String> bookIds) {
+  public BorrowCard(Long userId, LocalDateTime borrowDate, List<String> bookIds) {
     this.userId = userId;
     this.borrowDate = borrowDate;
     this.getBookDate = borrowDate.plusDays(3);
