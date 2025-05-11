@@ -3,6 +3,8 @@ package com.library_web.library.model;
 import jakarta.persistence.*;
 import java.util.*;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 @Entity
 public class Cart {
      @Id
@@ -11,6 +13,7 @@ public class Cart {
 
     @OneToOne
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonManagedReference
     private User user;
 
     @Column(name = "so_luong_sach")
