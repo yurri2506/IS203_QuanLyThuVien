@@ -14,6 +14,7 @@ import java.util.Optional;
 public interface BookRepository extends JpaRepository<Book, Long> {
     Optional<Book> findByTenSachAndTenTacGia(String tenSach, String tenTacGia);
     List<Book> findByCategoryChild_Id(String categoryChildId);
+    // List<Book> findAllById(List<Long> bookIds);
     List<Book> findByCreatedAtAfter(LocalDate date);
     List<Book> findByTrangThaiNot(TrangThai trangThai);
     List<Book> findByCreatedAtAfterAndTrangThaiNot(LocalDate date, TrangThai trangThai);
