@@ -2,7 +2,6 @@ package com.library_web.library.model;
 
 import jakarta.persistence.*;
 
-
 @Entity
 public class CartItem {
     @Id
