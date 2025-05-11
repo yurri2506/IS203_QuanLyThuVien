@@ -12,5 +12,7 @@ public interface BookService {
     Book getBookbyID(Long maSach);
     Book updateBook(Long maSach, Map<String, Object> updates);
     List<Book> searchBooks(String author, String category, String publisher, Integer year, String title, boolean sortByBorrowCount);
-
+    long getTotalBooks();
+    long getTotalBookQuantity();
+    long getNewBooksThisWeek();
 }

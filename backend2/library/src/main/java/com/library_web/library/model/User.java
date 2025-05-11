@@ -2,7 +2,9 @@ package com.library_web.library.model;
 
 import java.time.LocalDate;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.time.LocalDateTime;
+
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
@@ -22,6 +24,10 @@ public class User {
     @Column(nullable = false)
     @JsonIgnore // không trả về JSON
     private String password;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private Cart cart;
+
 
 
     @Column(nullable = true, unique = true)
@@ -50,7 +56,10 @@ public class User {
      @Column(name = "provider_id")
      private String providerId; // ID do Google/Facebook cấp
 
-    // Getters và Setters
+
+    public Cart getCart() { return cart; }
+    public void setCart(Cart cart) { this.cart = cart; }
+
     public Long getId() {
         return id;
     }
