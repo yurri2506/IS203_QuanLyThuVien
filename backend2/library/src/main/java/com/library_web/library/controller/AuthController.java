@@ -10,6 +10,7 @@ import com.library_web.library.security.JwtUtil;
 import com.library_web.library.service.GoogleAuthService;
 import com.library_web.library.service.UserService;
 import com.library_web.library.service.FacebookAuthService;
+import com.library_web.library.service.CartService;
 
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,31 +22,29 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestParam;
-
 
 import java.util.Map;
 
 @RestController
 
 @RequestMapping("/api")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin
 public class AuthController {
     @Autowired
     private GoogleAuthService googleAuthService;
 
     private final UserService userService;
     private final UserRepository userRepository;
+    private final CartService cartService;
 
     @Autowired
     private FacebookAuthService facebookAuthService;
 
 
-    public AuthController(UserService userService, UserRepository userRepository) {
+    public AuthController(UserService userService, UserRepository userRepository, CartService cartService) {
         this.userService = userService;
         this.userRepository = userRepository;
+        this.cartService = cartService;
     }
 
     // Đăng ký tài khoản
@@ -111,29 +110,79 @@ public class AuthController {
 //     }
 
     // Đăng nhập bằng Google
+    // @PostMapping("/auth/google")
+    // public ResponseEntity<?> loginWithGoogle(@RequestBody Map<String, String> body) {
+    //     String accessToken = body.get("googleAccessToken");
+
+    // try {
+    //     Map<String, Object> response = googleAuthService.signInWithGoogle(accessToken);
+    //     if (response.containsKey("accessToken")) {
+    //             String email = (String) response.get("email");
+    //             User user = userRepository.findByEmail(email)
+    //                 .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
+    //             cartService.getOrCreateCart(user);
+    //  }return ResponseEntity.ok(response);
+    // }catch (Exception ex) {
+    //     return ResponseEntity.status(401).body(Map.of("error", "Google Login thất bại: " + ex.getMessage()));
+    // }
+    // }
+
     @PostMapping("/auth/google")
     public ResponseEntity<?> loginWithGoogle(@RequestBody Map<String, String> body) {
         String accessToken = body.get("googleAccessToken");
 
-    try {
-        Map<String, Object> response = googleAuthService.signInWithGoogle(accessToken);
-        return ResponseEntity.ok(response);
-    } catch (Exception ex) {
-        return ResponseEntity.status(401).body(Map.of("error", "Google Login thất bại: " + ex.getMessage()));
-    }
+        try {
+            Map<String, Object> response = googleAuthService.signInWithGoogle(accessToken);
+
+            //tạo giỏ hàng tự động
+            if (response.containsKey("accessToken")) {
+                String email = (String) response.get("email");
+                if (email != null) { 
+                    User user = userRepository.findByEmail(email)
+                        .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng sau khi đăng nhập bằng Google"));
+                    cartService.getOrCreateCart(user);
+                }
+            }
+
+            return ResponseEntity.ok(response);
+        } catch (Exception ex) {
+            return ResponseEntity.status(401).body(Map.of("error", "Google Login thất bại: " + ex.getMessage()));
+        }
     }
 
     // Đăng nhập bằng Facebook
+//     @PostMapping("/auth/facebook")
+//     public ResponseEntity<?> loginWithFacebook(@RequestBody Map<String, String> body) {
+//     String accessToken = body.get("accessToken");
+//     try {
+//         Map<String, Object> result = facebookAuthService.signInWithFacebook(accessToken);
+//         return ResponseEntity.ok(result);
+//     } catch (Exception e) {
+//         return ResponseEntity.status(401).body(Map.of("status", "FAIL", "message", e.getMessage()));
+//     }
+// }
+
+
     @PostMapping("/auth/facebook")
     public ResponseEntity<?> loginWithFacebook(@RequestBody Map<String, String> body) {
-    String accessToken = body.get("accessToken");
-    try {
-        Map<String, Object> result = facebookAuthService.signInWithFacebook(accessToken);
-        return ResponseEntity.ok(result);
-    } catch (Exception e) {
-        return ResponseEntity.status(401).body(Map.of("status", "FAIL", "message", e.getMessage()));
+        String accessToken = body.get("accessToken");
+        try {
+            Map<String, Object> result = facebookAuthService.signInWithFacebook(accessToken);
+            if (result.containsKey("accessToken")) {
+                String username = (String) result.get("username");
+                if (username != null) {
+                    User user = userRepository.findByUsername(username)
+                        .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng sau khi đăng nhập bằng Facebook"));
+                    cartService.getOrCreateCart(user);
+                }
+            }
+
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.status(401).body(Map.of("status", "FAIL", "message", e.getMessage()));
+        }
     }
-}
+    
 
 
     // Làm mới Access Token
@@ -178,10 +227,23 @@ public class AuthController {
     public ResponseEntity<?> verifyOtp(@RequestBody Map<String, String> request) {
         return ResponseEntity.ok(userService.verifyOtpAndCreate(request.get("email"), request.get("otp")));
     }
-
+/*
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> request) {
         return ResponseEntity.ok(userService.login(request.get("email"), request.get("password")));
+    }
+*/
+    // Tui fix lại cái phương thức post, code của ông/bà là cmt ở trên í.
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody Map<String, String> request) {
+        Map<String, Object> response = userService.login(request.get("email"), request.get("password"));
+        // Tạo hoặc lấy giỏ hàng nếu đăng nhập thành công
+        if (response.containsKey("accessToken")) {
+            User user = userRepository.findByEmail(request.get("email"))
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
+            cartService.getOrCreateCart(user);
+        }
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/refresh-token")
