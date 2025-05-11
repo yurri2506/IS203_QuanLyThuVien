@@ -82,7 +82,7 @@ const page = () => {
 
       if (response.ok) {
         const data = await response.json();
-        cartId=data.id; 
+        cartId = data.id;
         setBooks(data.data); // Giả sử API trả về đối tượng có key 'books'
       } else {
         console.error("Lỗi khi lấy giỏ hàng");
@@ -109,6 +109,60 @@ const page = () => {
   const allChecked = selected.length === books?.length;
   const toggleAll = (checked) =>
     setSelected(checked ? books.map((_, i) => i) : []);
+  
+  // Xóa sách trong giỏ hàng
+  const handleDeleteBooks = async () => {
+    try {
+      const response = await axios.delete(
+        `http://localhost:8080/api/cart/${cartId}`, // Endpoint API xóa sách trong giỏ hàng
+        {
+          data: selected,
+        }
+      )
+
+      setBooks(response.data.data); // Cập nhật lại giỏ hàng sau khi xóa
+      console.log("Xóa sách thành công:", response.data);
+      alert("Xóa sách thành công!");
+      setSelected([]); // Reset lại danh sách đã chọn
+    } catch (error) {
+      console.error("Lỗi khi xóa sách:", error);
+      alert("Đã có lỗi khi xóa sách!");
+    }
+  }
+
+  // Đăng ký mượn sách
+  const handleBorrowBooks = async () => {
+    try {
+      const booksInCart = selected; // Các sách đã chọn trong giỏ hàng
+  
+      // Gửi yêu cầu đến backend để tạo phiếu mượn
+      const response = await axios.post("http://localhost:8080/api/borrow-cards", {
+        userId: user.id,
+        bookIds: booksInCart,
+      });
+  
+      if (response.status === 200) {
+        alert("Phiếu mượn đã được tạo!");
+        console.log(response.data); // Xem chi tiết phiếu mượn
+
+        const deleteResponse = await axios.delete(
+          `http://localhost:8080/api/carts/user/${userId}`,
+          {
+            data: booksInCart, 
+          }
+        );
+
+        console.log(deleteResponse.data); // Xem sách đã xóa khỏi giỏ hàng
+        window.location.href = "/borrowed-card";
+      } else {
+        alert("Không thể tạo phiếu mượn");
+      }
+    } catch (error) {
+      console.error("Lỗi khi mượn sách:", error);
+      alert("Có lỗi xảy ra khi mượn sách.");
+    }
+  };
+
   return (
     <div className="flex flex-col min-h-screen text-foreground">
       <main className="pt-16 flex">
@@ -127,7 +181,11 @@ const page = () => {
                     key={book.bookId}
                     id={book.bookId}
                     imageSrc={book.hinhAnh[0]}
-                    available={(book.tongSoLuong - book.soLuongMuon - book.soLuongXoa) > 0 ? "Còn sẵn" : "Hết sách"}
+                    available={
+                      book.tongSoLuong - book.soLuongMuon - book.soLuongXoa > 0
+                        ? "Còn sẵn"
+                        : "Hết sách"
+                    }
                     title={book.tenSach}
                     author={book.tenTacGia}
                     publisher={book.nxb}
@@ -151,9 +209,21 @@ const page = () => {
                   Chọn tất cả ({books.length})
                 </span>
               </div>
-              <button className="px-4 py-2 bg-[#062D76] text-white rounded">
-                Đăng ký mượn ({selected.length})
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleDeleteBooks}
+                  className="px-4 py-2 bg-[#F44336] hover:bg-[#FFA9A2] text-white rounded cursor-pointer"
+                >
+                  Xóa sách ({selected.length})
+                </button>
+
+                <button
+                  onClick={handleBorrowBooks}
+                  className="px-4 py-2 bg-[#062D76] text-white rounded cursor-pointer hover:bg-[#6C8299] transition duration-200 ease-in-out"
+                >
+                  Đăng ký mượn ({selected.length})
+                </button>
+              </div>
             </footer>
           )}
         </section>
