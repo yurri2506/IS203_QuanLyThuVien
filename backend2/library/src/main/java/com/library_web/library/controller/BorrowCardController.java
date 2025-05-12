@@ -27,6 +27,7 @@ public class BorrowCardController {
     return ResponseEntity.ok(details);
   }
 
+  // Tạo phiếu mượn
   @PostMapping
   public ResponseEntity<BorrowCard> create(@RequestBody BorrowCard BorrowCardRequest) {
     BorrowCard borrowCard = service.create(
@@ -55,5 +56,12 @@ public class BorrowCardController {
       return ResponseEntity.status(204).build(); // Trả về trạng thái 204 nếu không có dữ liệu
     }
     return ResponseEntity.ok(borrowCards); // Trả về danh sách phiếu mượn của người dùng
+  }
+
+  // Cập nhật phiếu mượn khi người dùng đến lấy sách
+  @PutMapping("/borrow/{id}")
+  public ResponseEntity<BorrowCard> borrowBooks(@PathVariable Long id, @RequestBody List<String> childBookIds) {
+    BorrowCard borrowCard = service.updateBorrowCardToBorrowing(id, childBookIds);
+    return ResponseEntity.ok(borrowCard);
   }
 }
