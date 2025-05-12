@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/borrow-cards")
@@ -27,11 +28,14 @@ public class BorrowCardController {
     return ResponseEntity.ok(details);
   }
 
+  // Tạo phiếu mượn
   @PostMapping
   public ResponseEntity<BorrowCard> create(@RequestBody BorrowCard BorrowCardRequest) {
-    BorrowCard borrowCard = service.create(
-        BorrowCardRequest.getUserId(),
-        BorrowCardRequest.getBookIds());
+    System.out.println("BorrowCardRequest: " + BorrowCardRequest);
+    List<Long> bookIds = BorrowCardRequest.getBorrowedBooks().stream()
+        .map(borrowedBook -> borrowedBook.getBookId())
+        .collect(Collectors.toList());
+    BorrowCard borrowCard = service.create(BorrowCardRequest.getUserId(), bookIds);
     return ResponseEntity.ok(borrowCard);
   }
 
@@ -55,5 +59,12 @@ public class BorrowCardController {
       return ResponseEntity.status(204).build(); // Trả về trạng thái 204 nếu không có dữ liệu
     }
     return ResponseEntity.ok(borrowCards); // Trả về danh sách phiếu mượn của người dùng
+  }
+
+  // Cập nhật phiếu mượn khi người dùng đến lấy sách
+  @PutMapping("/borrow/{id}")
+  public ResponseEntity<BorrowCard> borrowBooks(@PathVariable Long id, @RequestBody List<String> childBookIds) {
+    BorrowCard borrowCard = service.updateBorrowCardToBorrowing(id, childBookIds);
+    return ResponseEntity.ok(borrowCard);
   }
 }
