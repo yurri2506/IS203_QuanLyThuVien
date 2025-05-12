@@ -54,7 +54,7 @@ const BorrowingInfo = ({ info }) => {
           <p className="text-[1rem] font-semibold text-[#131313]/50">
             ID Phiếu:{" "}
             <span className="text-[#131313] font-medium ">
-              {info.borrowCardId}
+              {info.id}
             </span>
           </p>
           <p className="text-[1rem] font-semibold text-[#131313]/50">
@@ -116,6 +116,7 @@ const ChiTietPhieuMuon = () => {
           `http://localhost:8080/api/borrow-cards/${id}`
         );
         setBorrowDetail(response.data);
+        console.log(response.data);
       } catch (error) {
         console.error("Lỗi khi fetch chi tiết phiếu mượn:", error);
         toast.error("Không thể tải dữ liệu phiếu mượn");
@@ -185,7 +186,7 @@ const ChiTietPhieuMuon = () => {
               Danh sách sách mượn
             </h2>
             <section className="grid grid-cols-1 max-sm:grid-cols-1 gap-5 items-start mt-2 w-full max-md:max-w-full">
-              {borrowDetail?.books?.map((book, index) => (
+              {borrowDetail?.bookIds?.map((book, index) => (
                 <BookCard
                   key={index}
                   imageSrc={book.image}
@@ -221,7 +222,7 @@ const ChiTietPhieuMuon = () => {
                   Hủy
                 </Button>
                 <Button
-                  className="bg-red-500 hover:bg-red-700 justify-center  text-white cursor-pointer"
+                  className="bg-red-500 hover:bg-red-700 justify-center text-white cursor-pointer"
                   onClick={() => handleDelete(borrowDetail)}
                 >
                   Xóa

@@ -55,13 +55,18 @@ const BookDetailsPage = () => {
   const handleBorrowBook = async () => {
     try {
       const user = JSON.parse(localStorage.getItem("persist:root")); // lấy thông tin người dùng từ localStorage
-
+      console.log(id);
       // gửi yêu cầu mượn sách
       const response = await axios.post(
         `http://localhost:8080/api/borrow-cards`,
         {
           userId: user.id,
-          bookIds: [id],
+          borrowedBooks: [
+            {
+              bookId: id,
+              childBookId: null,
+            },
+          ],
           borrowDate: new Date().toISOString(),
           status: "REQUESTED",
           dueDate: new Date(
