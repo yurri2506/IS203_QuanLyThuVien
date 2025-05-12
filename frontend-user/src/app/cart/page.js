@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import LeftSideBar from "../components/LeftSideBar";
 import BookCard from "./book";
+import axios from "axios";
 const books = [
   {
     id: "DRPN001",
@@ -109,7 +110,7 @@ const page = () => {
   const allChecked = selected.length === books?.length;
   const toggleAll = (checked) =>
     setSelected(checked ? books.map((_, i) => i) : []);
-  
+
   // Xóa sách trong giỏ hàng
   const handleDeleteBooks = async () => {
     try {
@@ -118,7 +119,7 @@ const page = () => {
         {
           data: selected,
         }
-      )
+      );
 
       setBooks(response.data.data); // Cập nhật lại giỏ hàng sau khi xóa
       console.log("Xóa sách thành công:", response.data);
@@ -128,19 +129,30 @@ const page = () => {
       console.error("Lỗi khi xóa sách:", error);
       alert("Đã có lỗi khi xóa sách!");
     }
-  }
+  };
 
   // Đăng ký mượn sách
   const handleBorrowBooks = async () => {
     try {
       const booksInCart = selected; // Các sách đã chọn trong giỏ hàng
-  
+      console.log(booksInCart);
       // Gửi yêu cầu đến backend để tạo phiếu mượn
-      const response = await axios.post("http://localhost:8080/api/borrow-cards", {
-        userId: user.id,
-        bookIds: booksInCart,
-      });
-  
+      const response = await axios.post(
+        "http://localhost:8080/api/borrow-cards",
+        {
+         userId: user.id,
+          borrowedBooks: booksInCart.map((bookId) => ({
+            bookId: bookId,
+            childBookId: null,
+          })),
+          borrowDate: new Date().toISOString(),
+          status: "REQUESTED",
+          dueDate: new Date(
+            new Date().setDate(new Date().getDate() + 14)
+          ).toISOString(), // Ngày trả sách là 14 ngày sau
+        }
+      );
+
       if (response.status === 200) {
         alert("Phiếu mượn đã được tạo!");
         console.log(response.data); // Xem chi tiết phiếu mượn
@@ -148,7 +160,7 @@ const page = () => {
         const deleteResponse = await axios.delete(
           `http://localhost:8080/api/carts/user/${userId}`,
           {
-            data: booksInCart, 
+            data: booksInCart,
           }
         );
 
@@ -190,8 +202,8 @@ const page = () => {
                     author={book.tenTacGia}
                     publisher={book.nxb}
                     borrowCount={book.soLuongMuon}
-                    checked={selected.includes(index)}
-                    onCheck={(c) => toggleBook(index, c)}
+                    checked={selected.includes(book.bookId)}
+                    onCheck={(c) => toggleBook(book.bookId, c)}
                   />
                 ))}
             </div>
