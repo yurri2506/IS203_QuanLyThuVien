@@ -31,8 +31,9 @@ public class BorrowCardController {
   // Tạo phiếu mượn
   @PostMapping
   public ResponseEntity<BorrowCard> create(@RequestBody BorrowCard BorrowCardRequest) {
-    List<Long> bookIds = BorrowCardRequest.getBookIds().stream()
-        .map(Long::valueOf) // Convert String to Long
+    System.out.println("BorrowCardRequest: " + BorrowCardRequest);
+    List<Long> bookIds = BorrowCardRequest.getBorrowedBooks().stream()
+        .map(borrowedBook -> borrowedBook.getBookId())
         .collect(Collectors.toList());
     BorrowCard borrowCard = service.create(BorrowCardRequest.getUserId(), bookIds);
     return ResponseEntity.ok(borrowCard);
