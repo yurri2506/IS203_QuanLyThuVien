@@ -174,16 +174,20 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { motion } from "framer-motion";
 import { LogIn } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { use, useEffect } from "react";
 import { FaFacebook } from "react-icons/fa";
 import { Controller, useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import * as yup from "yup";
 import GoogleLoginButton from "../components/GoogleLoginButton";
 import FacebookLoginButton from "../components/FacebookLoginButton";
+import Cookies from "js-cookie";
+import { useDispatch } from "react-redux";
+import { updateUser } from "@/store/slices/userSlice";
 
 const Page = () => {
   const router = useRouter();
+  const dispatch = useDispatch();
 
   // Schema kiểm tra đầu vào
   const registerSchema = yup.object().shape({
@@ -324,32 +328,52 @@ const Page = () => {
     console.log("Dữ liệu gửi đăng nhập:", data);
     try {
       // Gửi yêu cầu POST đến backend để đăng nhập
+
       const response = await fetch("http://localhost:8080/api/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          email: data.email,
+          password: data.matKhau,
+        }),
       });
 
       if (!response.ok) {
-        throw new Error("Đăng nhập thất bại");
+        throw new Error("Đăng nhập thất bại: " + response.statusText);
       }
 
       const result = await response.json();
-      // console.log(result); // Kiểm tra kết quả trả về từ backend
-      //  backend trả về JWT token
-      localStorage.setItem("jwt", result.jwt); // Lưu token vào localStorage hoặc sessionStorage
-      localStorage.setItem("id", result.id); // Lưu thông tin người dùng vào localStorage hoặc sessionStorage
+      console.log(result); // Kiểm tra kết quả trả về từ backend
 
-      // localStorage.setItem('userId', result.userId);
+      // Lưu Access Token vào localStorage
+      localStorage.setItem("accessToken", result.accessToken);
+      localStorage.setItem("id", result.data.id);
+      localStorage.setItem("username", result.data.username);
 
-      // Chuyển hướng người dùng sau khi đăng nhập thành công
+      // Lưu Refresh Token vào Cookies
+      Cookies.set("refreshToken", result.refreshToken, {
+        expires: 7, // Token có hiệu lực trong 7 ngày
+        secure: true,
+        sameSite: "Strict",
+      });
+
+      // Cập nhật thông tin người dùng vào Redux
+      dispatch(
+        updateUser({
+          ...result?.data,
+          access_token: result.accessToken,
+          refreshToken: result.refreshToken,
+        })
+      );
+
       router.push("/");
-      toast.success("Đăng nhập tài khoản thành công");
+      toast.success("Đăng nhập thành công");
     } catch (error) {
       console.error(error);
-      toast.error("Có lỗi xảy ra");
+      toast.error("Có lỗi xảy ra: " + error.message);
+      router.push("/user-login");
     }
   };
 

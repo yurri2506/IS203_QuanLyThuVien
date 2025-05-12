@@ -1,5 +1,11 @@
 package com.library_web.library.dto;
 
+import java.time.LocalDate;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+
+import jakarta.persistence.Column;
+
 public class UserDTO {
     private String username;
     private String email;
@@ -7,8 +13,12 @@ public class UserDTO {
     private String phone;
     private String password;
     private String role = "USER"; // mặc định là USER
-    private String gender;     // mới thêm
-    private String birthdate;  // mới thêm (dạng dd/MM/yyyy)
+
+    private String gender;     
+
+    @JsonFormat(pattern = "MM/dd/yyyy") // định dạng JSON input/output
+    private LocalDate birthdate;
+
 
     // Getters và Setters
     public String getUsername() {
@@ -59,10 +69,10 @@ public class UserDTO {
     public void setGender  (String gender){
         this.gender = gender;
     }
-    public String getBirthdate() {
+    public LocalDate getBirthdate() {
         return birthdate;
     }
-    public void setBirthdate(String birthdate) {
+    public void setBirthdate(LocalDate birthdate) {
         this.birthdate = birthdate;
     }
 }

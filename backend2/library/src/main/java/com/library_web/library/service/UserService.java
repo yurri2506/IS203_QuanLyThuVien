@@ -6,11 +6,12 @@ import com.library_web.library.repository.UserRepository;
 
 import java.util.Collections;
 
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 
 import com.library_web.library.security.JwtUtil;
+import com.library_web.library.service.TempStorage.PendingUser;
+
 import jakarta.transaction.Transactional;
 
 import org.apache.coyote.BadRequestException;
@@ -19,12 +20,9 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-
 import org.springframework.web.server.ResponseStatusException;
 
-
 import java.util.NoSuchElementException;
-
 
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -34,7 +32,6 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
-
 
 @Service
 @Transactional
@@ -70,7 +67,7 @@ public class UserService {
             throw new IllegalArgumentException("Giới tính không được để trống");
 
         if ((userDTO.getEmail() == null || userDTO.getEmail().isBlank()) &&
-            (userDTO.getPhone() == null || userDTO.getPhone().isBlank()))
+                (userDTO.getPhone() == null || userDTO.getPhone().isBlank()))
             throw new IllegalArgumentException("Phải cung cấp email hoặc số điện thoại");
 
         if (userDTO.getEmail() != null && userRepository.findByEmail(userDTO.getEmail()).isPresent())
@@ -193,23 +190,30 @@ public class UserService {
 
     
     // Đăng nhập bằng Google
-public String getEmailFromGoogleIdToken(String idToken) {
-    try {
-        // Sử dụng GoogleIdTokenVerifier để xác thực idToken
-        GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), new GsonFactory())
-                .setAudience(Collections.singletonList("376530680599-mlb7pbrp0inmjnfqmit5q6v4a38e6t09.apps.googleusercontent.com")) // Thay bằng client ID của bạn
-                .build();
+    public String getEmailFromGoogleIdToken(String idToken) {
+        try {
+            // Sử dụng GoogleIdTokenVerifier để xác thực idToken
+            GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(),
+                    new GsonFactory())
+                    .setAudience(Collections
+                            .singletonList("376530680599-mlb7pbrp0inmjnfqmit5q6v4a38e6t09.apps.googleusercontent.com")) // Thay
+                                                                                                                        // bằng
+                                                                                                                        // client
+                                                                                                                        // ID
+                                                                                                                        // của
+                                                                                                                        // bạn
+                    .build();
 
-        GoogleIdToken idTokenObj = verifier.verify(idToken);
-        if (idTokenObj != null) {
-            GoogleIdToken.Payload payload = idTokenObj.getPayload();
-            return payload.getEmail();
+            GoogleIdToken idTokenObj = verifier.verify(idToken);
+            if (idTokenObj != null) {
+                GoogleIdToken.Payload payload = idTokenObj.getPayload();
+                return payload.getEmail();
+            }
+            return null;
+        } catch (Exception e) {
+            System.out.println("Lỗi xác thực idToken: " + e.getMessage());
+            return null;
         }
-        return null;
-    } catch (Exception e) {
-        System.out.println("Lỗi xác thực idToken: " + e.getMessage());
-        return null;
     }
-}
 
 }
