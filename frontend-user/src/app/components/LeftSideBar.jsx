@@ -1,8 +1,9 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import useSidebarStore from "@/store/sideBarStore";
-import { Bell, BookText, CircleAlert, LockKeyhole, User } from "lucide-react";
+import useSidebarStore from "@/store/sidebarStore.js";
+import { Bell, BookText, CircleAlert, LockKeyhole, User, ClipboardList } from "lucide-react";
+
 import { useRouter, usePathname } from "next/navigation";
 import React from "react";
 import { supabase } from "@/lib/supabaseClient";
@@ -19,6 +20,13 @@ const LeftSideBar = () => {
       toggleSidebar();
     }
   };
+
+  const getButtonClass = (path) => {
+    return pathname.includes(path)
+      ? "bg-[#062D76] text-white hover:bg-[#062D76] hover:text-white" 
+      : "active:bg-[#062D76] active:text-white"; // 
+  };
+
   const handlelogout = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
@@ -26,6 +34,9 @@ const LeftSideBar = () => {
     } else {
       localStorage.removeItem("jwt");
       localStorage.removeItem("id");
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
       router.push("/user-login");
       toast.success("Đăng xuất thành công!");
     }
@@ -73,6 +84,14 @@ const LeftSideBar = () => {
             onClick={() => handleNavigation("/overdue-books")}
           >
             <CircleAlert className="mr-4" /> Sách quá hạn
+          </Button>
+
+          <Button
+            variant="ghost"
+            className={`flex justify-start py-5 items-center cursor-pointer w-full text-[1.125rem] font-normal ${getButtonClass("/borrowed-card")}`}
+            onClick={() => handleNavigation("/borrowed-card")}
+          >
+            <ClipboardList style={{ width: "1.5rem", height: "1.5rem", strokeWidth: "1.5px" }} className="mr-2" /> Phiếu mượn
           </Button>
 
           <Button

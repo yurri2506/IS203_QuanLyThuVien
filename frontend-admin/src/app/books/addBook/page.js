@@ -15,14 +15,17 @@ function Page() {
   const handleGoBack = () => {
     route.back();
   };
-  const [bookname, setBookname] = useState(""); // Tên sách
-  const [author, setAuthor] = useState(""); // Tên tác giả
-  const [publisher, setPublisher] = useState(""); // NXB
-  const [year, setYear] = useState(""); // Năm XB
-  const [quantity, setQuantity] = useState(""); // SL
-  const [description, setDescription] = useState(""); // Mô tả
+  const [bookname, setBookname] = useState(""); 
+  const [author, setAuthor] = useState(""); 
+  const [publisher, setPublisher] = useState(""); 
+  const [year, setYear] = useState(""); 
+  const [quantity, setQuantity] = useState(""); 
+  const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
   const [category2, setCategory2] = useState("");
+  const [weight, setWeight] = useState("");
+  const [price, setPrice]     = useState("");
+
   const fileInputRef = useRef(null);
   const fileInputRef1 = useRef(null);
   const fileInputRef2 = useRef(null);
@@ -95,7 +98,7 @@ function Page() {
     });
     try {
       const res = await axios.post("http://localhost:8080/upload/image", formData);
-      return res.data; // Giả định backend trả về danh sách URL
+      return res.data; 
     } catch (error) {
       console.error("Error uploading images:", error);
       toast.error("Upload hình ảnh thất bại");
@@ -135,6 +138,15 @@ const handleValidation = () => {
       toast.error("Số lượng sách phải lớn hơn 0");
       return;
     }
+    if (weight === "" || isNaN(+weight) || +weight <= 0) {
+      toast.error("Nhập trọng lượng (> 0)");
+      return;
+    }
+    if (price === "" || isNaN(+price) || +price <= 0) {
+      toast.error("Nhập đơn giá (> 0)");
+      return;
+    }
+
     setLoading(true);
     try {
       let finalImageURLs = [];
@@ -163,6 +175,8 @@ const handleValidation = () => {
           nxb: publisher,
           nam: parseInt(year),
           hinhAnh: finalImageURLs,
+          trongLuong: parseInt(weight),   
+          donGia: parseInt(price),
           categoryChild: { id: childId },
           trangThai: "CON_SAN"
         },
@@ -170,9 +184,9 @@ const handleValidation = () => {
       };
 
       const res = await axios.post("http://localhost:8080/api/book", bookData);
-      console.log("Sách đã thêm:", res.data);
       toast.success("Thêm sách thành công");
-      handleGoBack();
+      const newId = res.data.maSach; 
+      route.push(`/books/details/${newId}`);
     } catch (error) {
       console.error("Lỗi:", error.message);
       toast.error("Thêm sách thất bại");
@@ -319,6 +333,31 @@ const handleValidation = () => {
               )}
             </div>
           </div>
+
+           <div className="flex w-full justify-between gap-10">
+              <div className="flex flex-col w-2/3 gap-[5px] md:gap-[10px]">
+                  <p className="font-semibold text-lg mt-3">Trọng Lượng (gram)<span className="text-red-500"> *</span></p>
+                  <Input
+                      type="number"
+                      placeholder="Nhập trọng lượng"
+                      className="font-semibold rounded-lg w-full h-10 px-5 bg-white"
+                      value={weight}
+                      onChange={(e) => setWeight(e.target.value)}
+                    />
+              </div>
+              <div className="flex flex-col w-full gap-[5px] md:gap-[10px]">
+                    <p className="font-semibold text-lg mt-3">Đơn Giá (VND)<span className="text-red-500"> *</span></p>
+                    <Input
+                      type="number"
+                      placeholder="Nhập đơn giá"
+                      className="font-semibold rounded-lg w-full h-10 px-5 bg-white"
+                      value={price}
+                      onChange={(e) => setPrice(e.target.value)}
+                    />
+              </div>
+            </div> 
+        
+
           {/*Dòng mô tả*/}
           <div className="flex flex-col w-full gap-[5px] md:gap-[10px]">
             <p className="font-semibold text-lg mt-3">Mô Tả<span className="text-red-500"> *</span></p>
