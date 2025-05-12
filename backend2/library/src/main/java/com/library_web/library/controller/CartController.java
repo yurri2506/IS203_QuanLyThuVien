@@ -43,28 +43,28 @@ public class CartController {
             .orElseThrow(() -> new RuntimeException("Không tìm thấy user"));
     }
 */
-    @PostMapping("/{userId}/add/{bookId}")
-    public ResponseEntity<?> addBookToCart(
+    @PostMapping("/{userId}/add/books")
+    public ResponseEntity<?> addBooksToCart(
             @PathVariable Long userId,
-            @PathVariable Long bookId) {
+            @RequestBody List<Long> bookIds) {
         try {
             User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
-            cartService.addBookToCart(user, bookId);
+            cartService.addBooksToCart(user, bookIds);
             return ResponseEntity.ok(Map.of("message", "Đã thêm sách vào giỏ"));
         } catch (RuntimeException e) {
             return ResponseEntity.status(400).body(Map.of("error", e.getMessage()));
         }
     }
 
-    @DeleteMapping("/{userId}/remove/{bookId}")
-    public ResponseEntity<?> removeBookFromCart(
+    @DeleteMapping("/{userId}/remove/books")
+    public ResponseEntity<?> removeBooksFromCart(
             @PathVariable Long userId,
-            @PathVariable Long bookId) {
+            @RequestBody List<Long> bookIds){
         try {
             User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
-            cartService.removeBookFromCart(user, bookId);
+            cartService.removeBooksFromCart(user, bookIds);
             return ResponseEntity.ok(Map.of("message", "Đã xóa sách khỏi giỏ"));
         } catch (RuntimeException e) {
             return ResponseEntity.status(400).body(Map.of("error", e.getMessage()));

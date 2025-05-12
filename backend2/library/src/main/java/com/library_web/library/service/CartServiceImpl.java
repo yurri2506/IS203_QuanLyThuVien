@@ -47,34 +47,40 @@ public class CartServiceImpl implements CartService{
 
     @Override    
     @Transactional
-    public void addBookToCart(User user, Long bookId) {
+    public void addBooksToCart(User user, List<Long> bookIds) {
         Cart cart = getOrCreateCart(user);
-        Book book = bookRepository.findById(bookId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy sách"));
+        for (Long bookId : bookIds) {
+            Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new ResponseStatusException(
+                    HttpStatus.NOT_FOUND, "Không tìm thấy sách với id " + bookId));
         CartItem existingItem = cartItemRepository.findByCartAndBook(cart, book);
         if (existingItem != null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Sách đã tồn tại trong giỏ");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Có sách đã tồn tại trong giỏ");
         }
         CartItem item = new CartItem();
         item.setCart(cart);
         item.setBook(book);
         cart.addItem(item);
         cartItemRepository.save(item);
-        cartRepository.save(cart);
+        }
+    cartRepository.save(cart);
     }
 
      @Override
     @Transactional
-    public void removeBookFromCart(User user, Long bookId) {
+    public void removeBooksFromCart(User user, List<Long> bookIds) {
         Cart cart = getOrCreateCart(user);
-        Book book = bookRepository.findById(bookId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy sách"));
+        for (Long bookId : bookIds) {
+            Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new ResponseStatusException(
+                    HttpStatus.NOT_FOUND, "Không tìm thấy sách với id " + bookId));
         CartItem item = cartItemRepository.findByCartAndBook(cart, book);
         if (item != null) {
-            cart.removeItem(item);
-            cartItemRepository.delete(item);
-            cartRepository.save(cart);
+                cart.removeItem(item);
+                cartItemRepository.delete(item);
+            }
         }
+        cartRepository.save(cart);
     }
 
      @Override
