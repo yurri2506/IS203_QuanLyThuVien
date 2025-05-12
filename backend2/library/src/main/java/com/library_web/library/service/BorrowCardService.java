@@ -50,7 +50,7 @@ public class BorrowCardService {
         .orElseThrow(() -> new RuntimeException("Phiếu mượn không tồn tại"));
 
     // Cập nhật trạng thái trước khi trả về
-    borrowCard.updateStatus(Status.BORROWED);
+    // borrowCard.updateStatus(Status.BORROWED);
     repository.save(borrowCard);
     User user = UserRepository.findById(borrowCard.getUserId())
         .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại"));
@@ -86,6 +86,7 @@ public class BorrowCardService {
   }
 
   public BorrowCard create(Long userId, List<Long> bookIds) {
+    System.out.println("dữ liệu: " + bookIds);
     LocalDateTime borrowDate = LocalDateTime.now();
     // int waitingToTake = settingService.getSetting().getWaitingToTake();
     int waitingToTake = 3;
