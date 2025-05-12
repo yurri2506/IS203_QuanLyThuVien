@@ -135,12 +135,12 @@ const page = () => {
   const handleBorrowBooks = async () => {
     try {
       const booksInCart = selected; // Các sách đã chọn trong giỏ hàng
-      console.log(booksInCart);
+      // console.log(booksInCart);
       // Gửi yêu cầu đến backend để tạo phiếu mượn
       const response = await axios.post(
         "http://localhost:8080/api/borrow-cards",
         {
-         userId: user.id,
+          userId: user.id,
           borrowedBooks: booksInCart.map((bookId) => ({
             bookId: bookId,
             childBookId: null,
@@ -158,7 +158,7 @@ const page = () => {
         console.log(response.data); // Xem chi tiết phiếu mượn
 
         const deleteResponse = await axios.delete(
-          `http://localhost:8080/api/carts/user/${userId}`,
+          `http://localhost:8080/api/cart/${user.id}/remove/books`,
           {
             data: booksInCart,
           }
