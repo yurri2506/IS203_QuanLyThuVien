@@ -28,7 +28,7 @@ public class Cart {
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
-    public User getUser() { return user; }
+    //public User getUser() { return user; }
     public void setUser(User user) { this.user = user; }
     public Integer getSoLuongSach() { return soLuongSach; }
     public void setSoLuongSach(Integer soLuongSach) { this.soLuongSach = soLuongSach; }

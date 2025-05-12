@@ -8,8 +8,8 @@ import com.library_web.library.model.User;
 
 public interface CartService {
     Cart getOrCreateCart(User user);
-    void addBookToCart(User user, Long bookId);
-    void removeBookFromCart(User user, Long bookId);
+    void addBooksToCart(User user, List<Long> bookIds);
+    void removeBooksFromCart(User user, List<Long> bookIds);
     List<CartItemDTO> getCartDetails(User user);
     //void updateQuantity (User user, Long bookId, int quantity);
 
