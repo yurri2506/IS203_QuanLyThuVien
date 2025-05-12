@@ -38,7 +38,7 @@ const Page = () => {
     fetchBook();
   }, []);
 
-  // reset search input when mode changes
+
   useEffect(() => {
     setSearchQuery("");
     setFilterBooks([]);

@@ -1,5 +1,6 @@
 package com.library_web.library.dto;
 
+import java.util.Collections;
 import java.util.List;
 
 public class CategoryWithChildrenNames {
@@ -11,6 +12,10 @@ public class CategoryWithChildrenNames {
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 
-    public List<String> getChildrenNames() { return childrenNames; }
-    public void setChildrenNames(List<String> childrenNames) { this.childrenNames = childrenNames; }
+    public List<String> getChildrenNames() {
+        return childrenNames == null ? Collections.emptyList() : childrenNames;
+    }
+    public void setChildrenNames(List<String> childrenNames) {
+        this.childrenNames = childrenNames;
+    }
 }
