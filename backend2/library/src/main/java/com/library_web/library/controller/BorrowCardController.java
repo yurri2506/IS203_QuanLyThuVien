@@ -29,10 +29,8 @@ public class BorrowCardController {
 
   // Tạo phiếu mượn
   @PostMapping
-  public ResponseEntity<BorrowCard> create(@RequestBody BorrowCard BorrowCardRequest) {
-    BorrowCard borrowCard = service.create(
-        BorrowCardRequest.getUserId(),
-        BorrowCardRequest.getBookIds());
+  public ResponseEntity<BorrowCard> create(@PathVariable Long id, @RequestBody List<Long> bookIds) {
+    BorrowCard borrowCard = service.create(id, bookIds);
     return ResponseEntity.ok(borrowCard);
   }
 

@@ -9,6 +9,7 @@ import com.library_web.library.model.BorrowCard;
 import com.library_web.library.model.Category;
 import com.library_web.library.model.CategoryChild;
 import com.library_web.library.model.BorrowCard.Status;
+import com.library_web.library.model.BorrowedBook;
 import com.library_web.library.repository.BookChildRepository;
 import com.library_web.library.repository.BookRepository;
 import com.library_web.library.repository.BorrowCardRepository;
@@ -54,11 +55,13 @@ public class BorrowCardService {
     User user = UserRepository.findById(borrowCard.getUserId())
         .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại"));
 
-    List<Long> bookIds = borrowCard.getBookIds().stream()
-        .map(Long::valueOf)
-        .collect(Collectors.toList());
-    List<Book> books = BookRepository.findAllById(bookIds);
+    List<BorrowedBook> borrowedBooks = borrowCard.getBorrowedBooks();
+    List<Long> bookIds = borrowedBooks.stream()
+        .map(BorrowedBook::getBookId)
+        .distinct()
+        .toList();
 
+    List<Book> books = BookRepository.findAllById(bookIds);
     List<BorrowCardDTO.BookInfo> bookInfos = books.stream().map(book -> {
       CategoryChild categoryChild = CategoryChildRepository.findChildById(book.getCategoryChild().getId())
           .orElseThrow(() -> new RuntimeException("Thể loại không tồn tại"));
@@ -82,16 +85,20 @@ public class BorrowCardService {
         bookInfos.size());
   }
 
-  public BorrowCard create(Long userId, List<String> bookIds) {
+  public BorrowCard create(Long userId, List<Long> bookIds) {
     LocalDateTime borrowDate = LocalDateTime.now();
     // int waitingToTake = settingService.getSetting().getWaitingToTake();
     int waitingToTake = 3;
-    BorrowCard borrowCard = new BorrowCard(userId, borrowDate, waitingToTake, bookIds);
-    for (String bookId : bookIds) {
-      Book book = BookRepository.findById(Long.valueOf(bookId))
+    List<BorrowedBook> borrowedBooks = bookIds.stream()
+        .map(id -> new BorrowedBook(id, null))
+        .toList();
+    BorrowCard borrowCard = new BorrowCard(userId, borrowDate, waitingToTake, borrowedBooks);
+    for (Long bookId : bookIds) {
+      Book book = BookRepository.findById(bookId)
           .orElseThrow(() -> new RuntimeException("Không tìm thấy sách với id: " + bookId));
+
       book.setSoLuongMuon(book.getSoLuongMuon() + 1);
-      BookRepository.save(book); // lưu lại từng sách
+      BookRepository.save(book);
     }
     return repository.save(borrowCard);
   }
@@ -133,28 +140,83 @@ public class BorrowCardService {
     return repository.findByUserId(userId); // Trả về tất cả phiếu mượn của userId
   }
 
+  // Cập nhật phiếu mượn khi người dùng đến lấy sách
   public BorrowCard updateBorrowCardToBorrowing(Long id, List<String> childBookIds) {
     BorrowCard borrowCard = repository.findById(id)
         .orElseThrow(() -> new RuntimeException("Phiếu mượn không tồn tại"));
 
-    // Cập nhật trạng thái phiếu mượn thành "Đang mượn"
-    borrowCard.setStatus("Đang mượn");
-    // Cập nhật ngày mượn
+    // Cập nhật trạng thái và ngày giờ
+    borrowCard.setStatus(BorrowCard.Status.BORROWED.getStatusDescription());
     borrowCard.setGetBookDate(LocalDateTime.now());
-    // Tính toán ngày trả sách (theo setting)
-    // int borrowDay = settingService.getSetting().getBorrowDay();
-    int borrowDay = 7; // Ví dụ: 7 ngày
+    int borrowDay = 7; // giả định
     borrowCard.setDueDate(LocalDateTime.now().plusDays(borrowDay));
-    // Thêm danh sách sách con
-    borrowCard.setBookIds(childBookIds);
-    // Cập nhật sách con
+
+    // Lấy danh sách BorrowedBook hiện có
+    List<BorrowedBook> borrowedBooks = borrowCard.getBorrowedBooks();
+
     for (String childId : childBookIds) {
-      BookChild child = childBookRepo.findById(childId)
-          .orElseThrow(() -> new RuntimeException("Không tìm thấy sách con với id: " + childId));
-      child.setStatus(BookChild.Status.BORROWED);
-      childBookRepo.save(child); // lưu lại từng sách con
+        BookChild child = childBookRepo.findById(childId)
+            .orElseThrow(() -> new RuntimeException("Không tìm thấy sách con với id: " + childId));
+
+        Long parentId = child.getBook().getMaSach(); // lấy id sách cha thực tế từ sách con
+
+        // Tìm BorrowedBook phù hợp với sách cha này và chưa có sách con
+        BorrowedBook matched = borrowedBooks.stream()
+            .filter(bb -> bb.getBookId().equals(parentId) && (bb.getChildBookId() == null || bb.getChildBookId().isEmpty()))
+            .findFirst()
+            .orElseThrow(() -> new RuntimeException("Không tìm thấy sách cha phù hợp cho sách con id: " + childId));
+
+        // Gán childBookId vào BorrowedBook
+        matched.setChildBookId(childId);
+
+        // Đánh dấu sách con là đã được mượn
+        child.setStatus(BookChild.Status.BORROWED);
+        childBookRepo.save(child);
     }
-    // Lưu phiếu mượn đã cập nhật
+
+    borrowCard.setBorrowedBooks(borrowedBooks); // cập nhật lại danh sách
     return repository.save(borrowCard);
-  }
+}
+
+  // Cập nhật phiếu mượn khi người dùng trả sách
+  public BorrowCard updateBorrowCardOnReturn(Long id) {
+    BorrowCard borrowCard = repository.findById(id)
+        .orElseThrow(() -> new RuntimeException("Phiếu mượn không tồn tại"));
+
+    // Kiểm tra và cập nhật trạng thái phiếu mượn
+    if (borrowCard.getStatus().equals(BorrowCard.Status.BORROWED.getStatusDescription())) {
+        borrowCard.setStatus(BorrowCard.Status.RETURNED.getStatusDescription());
+    }
+
+    // Cập nhật ngày trả sách
+    borrowCard.setDueDate(LocalDateTime.now());
+
+    // Cập nhật trạng thái sách con
+    List<String> childBookIds = borrowCard.getBookIds(); // lấy danh sách sách con
+    for (String childId : childBookIds) {
+        BookChild child = childBookRepo.findById(childId)
+            .orElseThrow(() -> new RuntimeException("Không tìm thấy sách con với id: " + childId));
+
+        // Đánh dấu sách con là đã trả, trạng thái là AVAILABLE
+        child.setStatus(BookChild.Status.AVAILABLE);
+        childBookRepo.save(child); // lưu lại trạng thái của sách con
+    }
+
+    // Cập nhật số lượng sách trong kho
+    List<Long> bookIds = borrowCard.getBookIds().stream()
+        .map(Long::valueOf)
+        .collect(Collectors.toList());
+    
+    for (Long bookId : bookIds) {
+        Book book = BookRepository.findById(bookId)
+            .orElseThrow(() -> new RuntimeException("Không tìm thấy sách với id: " + bookId));
+
+        // Giảm số lượng sách mượn (SoLuongMuon)
+        book.setSoLuongMuon(book.getSoLuongMuon() - 1);
+        BookRepository.save(book); // lưu lại thông tin sách
+    }
+
+    // Lưu phiếu mượn sau khi cập nhật
+    return repository.save(borrowCard);
+}
 }
