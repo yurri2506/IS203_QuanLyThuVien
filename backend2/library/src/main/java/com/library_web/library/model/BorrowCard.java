@@ -85,6 +85,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -104,7 +105,7 @@ public class BorrowCard {
 
   @ElementCollection
   @CollectionTable(name = "borrowed_books", joinColumns = @JoinColumn(name = "borrow_card_id"))
-  private List<BorrowedBook> borrowedBooks;
+  private List<BorrowedBook> borrowedBooks = new ArrayList<>();
 
   @Column(name = "borrow_date", nullable = false)
   private LocalDateTime borrowDate;

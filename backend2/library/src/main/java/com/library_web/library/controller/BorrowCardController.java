@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/borrow-cards")
@@ -29,8 +30,11 @@ public class BorrowCardController {
 
   // Tạo phiếu mượn
   @PostMapping
-  public ResponseEntity<BorrowCard> create(@PathVariable Long id, @RequestBody List<Long> bookIds) {
-    BorrowCard borrowCard = service.create(id, bookIds);
+  public ResponseEntity<BorrowCard> create(@RequestBody BorrowCard BorrowCardRequest) {
+    List<Long> bookIds = BorrowCardRequest.getBookIds().stream()
+        .map(Long::valueOf) // Convert String to Long
+        .collect(Collectors.toList());
+    BorrowCard borrowCard = service.create(BorrowCardRequest.getUserId(), bookIds);
     return ResponseEntity.ok(borrowCard);
   }
 
