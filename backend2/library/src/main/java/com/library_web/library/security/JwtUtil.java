@@ -14,7 +14,9 @@ public class JwtUtil {
     private static final long ACCESS_TOKEN_EXPIRATION = 1000 * 60 * 5; // 5 phút
     private static final long REFRESH_TOKEN_EXPIRATION = 1000 * 60 * 60 * 24 * 7; // 1 tuần
 
+
     // Tạo Access Token
+
     public static String generateAccessToken(String username) {
 
         return Jwts.builder()

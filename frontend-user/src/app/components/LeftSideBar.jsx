@@ -1,7 +1,7 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import useSidebarStore from "@/store/sideBarStore";
+import useSidebarStore from "@/store/sidebarStore.js";
 import { Bell, BookText, CircleAlert, LockKeyhole, User } from "lucide-react";
 import { useRouter, usePathname } from "next/navigation";
 import React from "react";
@@ -26,6 +26,9 @@ const LeftSideBar = () => {
     } else {
       localStorage.removeItem("jwt");
       localStorage.removeItem("id");
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
       router.push("/user-login");
       toast.success("Đăng xuất thành công!");
     }

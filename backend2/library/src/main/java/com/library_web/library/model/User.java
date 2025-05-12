@@ -1,6 +1,10 @@
 package com.library_web.library.model;
 
+import java.time.LocalDate;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.time.LocalDateTime;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import jakarta.persistence.*;
 
@@ -16,12 +20,15 @@ public class User {
     private String username;
 
     @Column(nullable = false)
+    @JsonIgnore // không trả về JSON
     private String password;
 
-    @Column(nullable = true, unique = true, columnDefinition = "VARCHAR(255) DEFAULT 'unknown'")
+
+    @Column(nullable = true, unique = true)
+
     private String phone;
 
-    @Column(nullable = false, unique = true, columnDefinition = "VARCHAR(255) DEFAULT 'unknown'")
+    @Column(nullable = true, unique = true)
     private String email;
 
     @Column(nullable = false)
@@ -29,54 +36,19 @@ public class User {
 
     private String fullname;
 
+    @Column(nullable = true)
+    private String gender;
+
+    
+    @Column(nullable = true)
+    @JsonFormat(pattern = "MM/dd/yyyy") // định dạng JSON input/output
+    private LocalDate birthdate;
+
     @Column(name = "provider")
      private String provider; // GOOGLE, FACEBOOK
  
      @Column(name = "provider_id")
      private String providerId; // ID do Google/Facebook cấp
-
-     @Column(nullable = false)
-     private String gender; // Giới tính của người dùng (nam, nữ, khác)
-
-     @Column(nullable = false)
-     private String birthdate; // Ngày sinh của người dùng (định dạng YYYY-MM-DD)
-
-     public String getGender() {
-        return gender;
-    }
-    
-    public void setGender(String gender){
-        this.gender = gender;
-    }
-
-
-    public String getBirthdate() {
-        return birthdate;
-    }
-
-    public void setBirthdate(String birthdate) {
-        this.birthdate = birthdate;
-    }
-
-
-    public String getProvider() {
-        return provider;
-    }
-
-    public void setProvider(String provider) {
-        this.provider = provider;
-    }
-
-    public String getProviderId() {
-        return providerId;
-    }
-
-    public void setProviderId(String providerId) {
-        this.providerId = providerId;
-    }
-
-
-
 
     // Getters và Setters
     public Long getId() {
@@ -133,6 +105,37 @@ public class User {
 
     public void setRole(String role) {
         this.role = role;
-    }    
-    
+    }
+
+    public String getGender() {
+        return gender;
+    }
+
+    public void setGender(String gender) {
+        this.gender = gender;
+    }
+
+    public LocalDate getBirthdate() {
+        return birthdate;
+    }
+
+    public void setBirthdate(LocalDate birthdate) {
+        this.birthdate = birthdate;
+    }
+    public String getProvider() {
+        return provider;
+    }
+
+    public void setProvider(String provider) {
+        this.provider = provider;
+    }
+
+    public String getProviderId() {
+        return providerId;
+    }
+
+    public void setProviderId(String providerId) {
+        this.providerId = providerId;
+    }
+
 }
