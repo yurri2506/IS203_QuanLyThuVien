@@ -1,6 +1,5 @@
 package com.library_web.library.model;
 
-import java.time.LocalDate;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.time.LocalDateTime;
@@ -48,8 +47,9 @@ public class User {
 
     
     @Column(nullable = true)
-    @JsonFormat(pattern = "MM/dd/yyyy") // định dạng JSON input/output
-    private LocalDate birthdate;
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSX") // Cập nhật để khớp với frontend
+    private LocalDateTime birthdate;
+    
 
     @Column(name = "provider")
      private String provider; // GOOGLE, FACEBOOK
@@ -125,11 +125,10 @@ public class User {
         this.gender = gender;
     }
 
-    public LocalDate getBirthdate() {
+    public LocalDateTime getBirthdate() {
         return birthdate;
-    }
-
-    public void setBirthdate(LocalDate birthdate) {
+    }  
+    public void setBirthdate(LocalDateTime birthdate) {
         this.birthdate = birthdate;
     }
     public String getProvider() {
