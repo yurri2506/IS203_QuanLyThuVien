@@ -150,7 +150,12 @@ public class UserController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "OTP đã hết hạn");
         }
 
+      {/*<<<<<<< thuytrang
+        // Xác thực đúng → cập nhật email
+        String currentUsername = ((UserDTO) pending.getUserDTO()).getUsername(); // Lấy username từ TempStorage
+=======*/}
         String currentUsername = pending.getUserDTO().getUsername();
+
         User user = userRepository.findByUsername(currentUsername)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy người dùng với username: " + currentUsername));
 

@@ -1,11 +1,6 @@
 package com.library_web.library.controller;
 
-
-import com.library_web.library.dto.UserDTO;
-import com.library_web.library.service.UserService;
-
-
- import com.library_web.library.dto.CartItemDTO;
+import com.library_web.library.dto.CartItemDTO;
 import com.library_web.library.dto.UserDTO;
 import com.library_web.library.model.User;
 import com.library_web.library.model.Cart;
@@ -18,16 +13,12 @@ import com.library_web.library.service.FacebookAuthService;
 import com.library_web.library.service.CartService;
 
 
-// import jakarta.servlet.http.HttpServletRequest;
-
-
 // import org.apache.coyote.BadRequestException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
-
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -58,7 +49,6 @@ public class AuthController {
         String emailOrPhone = request.get("email") != null ? request.get("email") : request.get("phone");
         String password = request.get("password");
 
-
         if (emailOrPhone == null || emailOrPhone.isBlank() || password == null || password.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email hoặc số điện thoại và mật khẩu không được để trống");
         }
@@ -72,7 +62,6 @@ public class AuthController {
         this.userRepository = userRepository;
         this.cartService = cartService;
     }
-
 
     @PostMapping("/register")
     public Map<String, Object> register(@RequestBody UserDTO userDTO) {
@@ -107,6 +96,7 @@ public class AuthController {
 /*
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> request) {
+        return ResponseEntity.ok(userService.login(request.get("email"), request.get("matKhau")));
         return ResponseEntity.ok(userService.login(request.get("email"), request.get("password")));
 
     }
@@ -180,6 +170,14 @@ public class AuthController {
         }
     }
 
+    @PostMapping("/password/reset")
+    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> request) {
+        return ResponseEntity.ok(userService.resetPassword(
+                request.get("emailOrPhone"),
+                request.get("otp"),
+                request.get("newPassword")));
+    }
+}
     @GetMapping("/refresh-token")
     public Map<String, Object> refreshToken(HttpServletRequest request) {
         String authHeader = request.getHeader("Authorization");
