@@ -26,14 +26,27 @@ public class Cart {
         this.soLuongSach = 0;
     }
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    //public User getUser() { return user; }
-    public void setUser(User user) { this.user = user; }
-    public Integer getSoLuongSach() { return soLuongSach; }
-    public void setSoLuongSach(Integer soLuongSach) { this.soLuongSach = soLuongSach; }
-    public List<CartItem> getItems() { return items; }
-    public void setItems(List<CartItem> items) { this.items = items; }
+    public Long getId() {
+        return id; 
+    }
+    public void setId(Long id) {
+        this.id = id; 
+    }
+    public void setUser(User user) {
+        this.user = user; 
+    }
+    public Integer getSoLuongSach() {
+        return soLuongSach; 
+    }
+    public void setSoLuongSach(Integer soLuongSach) {
+        this.soLuongSach = soLuongSach; 
+    }
+    public List<CartItem> getItems() {
+        return items; 
+    }
+    public void setItems(List<CartItem> items) {
+        this.items = items; 
+    }
 
     public void addItem(CartItem item) {
         if (!items.stream().anyMatch(i -> i.getBook().getMaSach().equals(item.getBook().getMaSach()))) {
