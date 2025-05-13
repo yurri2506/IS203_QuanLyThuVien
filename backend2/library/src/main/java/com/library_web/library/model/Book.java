@@ -28,7 +28,7 @@ public class Book {
     @Enumerated(EnumType.STRING)
     private TrangThai trangThai;
 
-    @Column(name = "created_at", updatable = false) // Không cho phép cập nhật createdAt
+    @Column(name = "created_at", updatable = false)
     private LocalDate createdAt;
 
     @ElementCollection
@@ -48,11 +48,20 @@ public class Book {
         DA_HET("Đã hết"); 
 
         private final String moTa;
-        TrangThai(String moTa) { this.moTa = moTa; }
-        public String getMoTa() { return moTa; }
+        TrangThai(String moTa) { 
+            this.moTa = moTa; 
+        }
+        public String getMoTa() {
+             return moTa; 
+        }
+
         public static TrangThai fromString(String name) {
-            try { return TrangThai.valueOf(name.toUpperCase()); }
-            catch (IllegalArgumentException e) { throw new IllegalArgumentException("Trạng thái không hợp lệ: " + name); }
+            try {
+                return TrangThai.valueOf(name.toUpperCase()); 
+            }
+            catch (IllegalArgumentException e) {
+                 throw new IllegalArgumentException("Trạng thái không hợp lệ: " + name); 
+            }
         }
     }
 
@@ -62,40 +71,102 @@ public class Book {
     }
 
     // Getters & setters
-    public Long getMaSach() { return maSach; }
-    public void setMaSach(Long maSach) { this.maSach = maSach; }
-    public String getTenSach() { return tenSach; }
-    public void setTenSach(String tenSach) { this.tenSach = tenSach; }
-    public String getMoTa() { return moTa; }
-    public void setMoTa(String moTa) { this.moTa = moTa; }
-    public String getTenTacGia() { return tenTacGia; }
-    public void setTenTacGia(String tenTacGia) { this.tenTacGia = tenTacGia; }
-    public String getNxb() { return nxb; }
-    public void setNxb(String nxb) { this.nxb = nxb; }
-    public Integer getNam() { return nam; }
-    public void setNam(Integer nam) { this.nam = nam; }
-    public Integer getTrongLuong() { return trongLuong; }
-    public void setTrongLuong(Integer trongLuong) { this.trongLuong = trongLuong; }
-    public Integer getDonGia() { return donGia; }
-    public void setDonGia(Integer donGia) { this.donGia = donGia; }
-    public Integer getTongSoLuong() { return tongSoLuong; }
-    public void setTongSoLuong(Integer tongSoLuong) { this.tongSoLuong = tongSoLuong; }
-    public Integer getSoLuongMuon() { return soLuongMuon; }
-    public void setSoLuongMuon(Integer soLuongMuon) { this.soLuongMuon = soLuongMuon; }
-    public Integer getSoLuongXoa() { return soLuongXoa; }
-    public void setSoLuongXoa(Integer soLuongXoa) { this.soLuongXoa = soLuongXoa; }
-    public TrangThai getTrangThai() { return trangThai; }
-    public void setTrangThai(TrangThai trangThai) { this.trangThai = trangThai; }
-    public LocalDate getCreatedAt() { return createdAt; }
-    // Bỏ setter cho createdAt để không cho phép sửa đổi
-    public List<String> getHinhAnh() { return hinhAnh; }
-    public void setHinhAnh(List<String> hinhAnh) { this.hinhAnh = hinhAnh; }
-    public CategoryChild getCategoryChild() { return categoryChild; }
-    public void setCategoryChild(CategoryChild categoryChild) { this.categoryChild = categoryChild; }
-    public List<BookChild> getChildren() { return children; }
-    public void setChildren(List<BookChild> children) { this.children = children; }
+    public Long getMaSach() {
+         return maSach; 
+    }
+    public void setMaSach(Long maSach) {
+         this.maSach = maSach; 
+    }
+    public String getTenSach() {
+         return tenSach; 
+    }
+    public void setTenSach(String tenSach) {
+         this.tenSach = tenSach; 
+    }
+
+    public String getMoTa() {
+         return moTa; 
+    }
+    public void setMoTa(String moTa) {
+         this.moTa = moTa; 
+    }
+    public String getTenTacGia() {
+         return tenTacGia; 
+    }
+    public void setTenTacGia(String tenTacGia) {
+         this.tenTacGia = tenTacGia; 
+    }
+    public String getNxb() {
+         return nxb; 
+    }
+    public void setNxb(String nxb) {
+         this.nxb = nxb; 
+    }
+    public Integer getNam() {
+         return nam; 
+    }
+    public void setNam(Integer nam) {
+         this.nam = nam; 
+    }
+    public Integer getTrongLuong() {
+         return trongLuong; 
+    }
+    public void setTrongLuong(Integer trongLuong) {
+         this.trongLuong = trongLuong; 
+    }
+    public Integer getDonGia() {
+         return donGia; 
+    }
+    public void setDonGia(Integer donGia) {
+         this.donGia = donGia; 
+        }
+    public Integer getTongSoLuong() {
+         return tongSoLuong; 
+    }
+    public void setTongSoLuong(Integer tongSoLuong) {
+         this.tongSoLuong = tongSoLuong; 
+    }
+    public Integer getSoLuongMuon() {
+         return soLuongMuon; 
+    }
+    public void setSoLuongMuon(Integer soLuongMuon) {
+         this.soLuongMuon = soLuongMuon; 
+    }
+    public Integer getSoLuongXoa() {
+         return soLuongXoa; 
+    }
+    public void setSoLuongXoa(Integer soLuongXoa) {
+         this.soLuongXoa = soLuongXoa; 
+    }
+    public TrangThai getTrangThai() {
+         return trangThai; 
+    }
+    public void setTrangThai(TrangThai trangThai) {
+         this.trangThai = trangThai; 
+    }
+    public LocalDate getCreatedAt() {
+         return createdAt; 
+    }
+
+    public List<String> getHinhAnh() {
+         return hinhAnh; 
+    }
+    public void setHinhAnh(List<String> hinhAnh) {
+         this.hinhAnh = hinhAnh; 
+    }
+    public CategoryChild getCategoryChild() {
+         return categoryChild; 
+    }
+    public void setCategoryChild(CategoryChild categoryChild) {
+        this.categoryChild = categoryChild; 
+    }
+    public List<BookChild> getChildren() {
+         return children; 
+    }
+    public void setChildren(List<BookChild> children) {
+         this.children = children; 
+    }
     
-    // Helper methods
     public void addChild(BookChild c) {
         if (!children.contains(c)) {
             children.add(c);
