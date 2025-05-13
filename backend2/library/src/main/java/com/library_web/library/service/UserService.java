@@ -5,6 +5,9 @@ import com.library_web.library.model.User;
 import com.library_web.library.repository.UserRepository;
 import com.library_web.library.security.JwtUtil;
 import com.library_web.library.service.TempStorage.PendingUser;
+
+import org.apache.coyote.BadRequestException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.mail.SimpleMailMessage;
@@ -45,37 +48,41 @@ public class UserService {
         mailSender.send(message);
     }
 
-    public Map<String, Object> register(UserDTO userDTO) {
-        if (userDTO.getUsername() == null || userDTO.getUsername().isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tên đăng nhập không được để trống");
-        }
-        if (userDTO.getPassword() == null || userDTO.getPassword().isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mật khẩu không được để trống");
-        }
-        if (userDTO.getPassword().length() < 6) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mật khẩu phải có ít nhất 6 ký tự");
-        }
-        if (userDTO.getBirthdate() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ngày sinh không được để trống");
-        }
-        if (userDTO.getGender() == null || userDTO.getGender().isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Giới tính không được để trống");
-        }
+    public Map<String, String> register(UserDTO userDTO) {
+        // if (userDTO.getUsername() == null || userDTO.getUsername().isBlank())
+        // throw new IllegalArgumentException("Username không được để trống");
+        // if (userDTO.getPassword() == null || userDTO.getPassword().isBlank())
+        // throw new IllegalArgumentException("Password không được để trống");
+        // if (userDTO.getPassword().length() < 6)
+        // throw new IllegalArgumentException("Password phải có ít nhất 6 ký tự");
+        // if (userDTO.getBirthdate() == null || userDTO.getBirthdate().isBlank())
+        // throw new IllegalArgumentException("Ngày sinh không được để trống");
+        // if (userDTO.getGender() == null || userDTO.getGender().isBlank())
+        // throw new IllegalArgumentException("Giới tính không được để trống");
+
         if ((userDTO.getEmail() == null || userDTO.getEmail().isBlank()) &&
                 (userDTO.getPhone() == null || userDTO.getPhone().isBlank())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Phải cung cấp email hoặc số điện thoại");
         }
-        if (userDTO.getEmail() != null && !userDTO.getEmail().isBlank() && userRepository.findByEmail(userDTO.getEmail()).isPresent()) {
+        if (userDTO.getEmail() != null && !userDTO.getEmail().isBlank()
+                && userRepository.findByEmail(userDTO.getEmail()).isPresent()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email đã tồn tại");
         }
-        if (userDTO.getPhone() != null && !userDTO.getPhone().isBlank() && userRepository.findByPhone(userDTO.getPhone()).isPresent()) {
+        if (userDTO.getPhone() != null && !userDTO.getPhone().isBlank()
+                && userRepository.findByPhone(userDTO.getPhone()).isPresent()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Số điện thoại đã tồn tại");
         }
         if (userRepository.findByUsername(userDTO.getUsername()).isPresent()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tên đăng nhập đã tồn tại");
         }
 
-        if (userDTO.getPhone() != null && !userDTO.getPhone().isBlank() && (userDTO.getEmail() == null || userDTO.getEmail().isBlank())) {
+        if (userDTO.getEmail() != null && userRepository.findByEmail(userDTO.getEmail()).isPresent())
+            throw new IllegalArgumentException("Email đã tồn tại");
+        if (userDTO.getPhone() != null && userRepository.findByPhone(userDTO.getPhone()).isPresent())
+            throw new IllegalArgumentException("Số điện thoại đã tồn tại");
+        if (userRepository.findByUsername(userDTO.getUsername()).isPresent())
+            throw new IllegalArgumentException("Tên đăng nhập đã tồn tại");
+        if (userDTO.getPhone() != null && (userDTO.getEmail() == null || userDTO.getEmail().isBlank())) {
             User user = new User();
             user.setUsername(userDTO.getUsername());
             user.setPhone(userDTO.getPhone());
@@ -86,10 +93,7 @@ public class UserService {
             user.setRole(userDTO.getRole() != null ? userDTO.getRole() : "USER");
 
             userRepository.save(user);
-            return Map.of(
-                "message", "Đăng ký thành công bằng số điện thoại"
-            
-            );
+            return Map.of("message", "Đăng ký thành công bằng số điện thoại");
         }
 
         String otp = String.valueOf((int) (Math.random() * 900000) + 100000);
@@ -97,10 +101,7 @@ public class UserService {
         TempStorage.savePendingUser(userDTO, otp, expiredAt);
 
         sendOtpEmail(userDTO.getEmail(), otp);
-        return Map.of(
-            "message", "Đã gửi OTP tới email, vui lòng xác thực"
-        
-        );
+        return Map.of("message", "Đã gửi OTP tới email, vui lòng xác thực");
     }
 
     public Map<String, Object> verifyOtpAndCreate(String email, String otp) {
@@ -120,14 +121,15 @@ public class UserService {
         TempStorage.removePendingUser(email);
 
         return Map.of(
-            "message", "Đăng ký thành công bằng email"
-         
+                "message", "Đăng ký thành công bằng email"
+
         );
     }
 
     public Map<String, Object> login(String emailOrPhone, String password) {
         if (emailOrPhone == null || emailOrPhone.isBlank() || password == null || password.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email hoặc số điện thoại và mật khẩu không được để trống");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Email hoặc số điện thoại và mật khẩu không được để trống");
         }
 
         Optional<User> userOpt = userRepository.findByEmail(emailOrPhone);
@@ -146,29 +148,26 @@ public class UserService {
         String refreshToken = JwtUtil.generateRefreshToken(user.getUsername());
 
         return Map.of(
-            "message", "Đăng nhập thành công",
-            "data", Map.of(
-                "accessToken", accessToken,
-                "refreshToken", refreshToken,
-                "user", Map.of(
-                    "username", user.getUsername(),
-                    "email", user.getEmail() != null ? user.getEmail() : "",
-                    "phone", user.getPhone() != null ? user.getPhone() : "",
-                    "fullname", user.getFullname() != null ? user.getFullname() : ""
-                )
-            )
-        );
+                "message", "Đăng nhập thành công",
+                "data", Map.of(
+                        "accessToken", accessToken,
+                        "refreshToken", refreshToken,
+                        "user", Map.of(
+                                "username", user.getUsername(),
+                                "email", user.getEmail() != null ? user.getEmail() : "",
+                                "phone", user.getPhone() != null ? user.getPhone() : "",
+                                "fullname", user.getFullname() != null ? user.getFullname() : "")));
     }
 
     public Map<String, Object> refreshAccessToken(String refreshToken) {
         String username = JwtUtil.validateToken(refreshToken);
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Refresh Token không hợp lệ hoặc đã hết hạn"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Refresh Token không hợp lệ hoặc đã hết hạn"));
         String newAccessToken = JwtUtil.generateAccessToken(user.getUsername());
         return Map.of(
-            "message", "Làm mới access token thành công",
-            "data", Map.of("accessToken", newAccessToken)
-        );
+                "message", "Làm mới access token thành công",
+                "data", Map.of("accessToken", newAccessToken));
     }
 
     public Map<String, Object> forgotPassword(String emailOrPhone) {
@@ -181,7 +180,8 @@ public class UserService {
             userOpt = userRepository.findByPhone(emailOrPhone);
         }
         if (userOpt.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy người dùng với email hoặc số điện thoại này");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "Không tìm thấy người dùng với email hoặc số điện thoại này");
         }
 
         String otp = String.valueOf((int) (Math.random() * 900000) + 100000);
@@ -194,14 +194,15 @@ public class UserService {
         }
 
         return Map.of(
-            "message", "Đã gửi OTP để đặt lại mật khẩu",
-            "data", Map.of("emailOrPhone", emailOrPhone)
-        );
+                "message", "Đã gửi OTP để đặt lại mật khẩu",
+                "data", Map.of("emailOrPhone", emailOrPhone));
     }
 
     public Map<String, Object> resetPassword(String emailOrPhone, String otp, String newPassword) {
-        if (emailOrPhone == null || emailOrPhone.isBlank() || otp == null || otp.isBlank() || newPassword == null || newPassword.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email/số điện thoại, OTP và mật khẩu mới không được để trống");
+        if (emailOrPhone == null || emailOrPhone.isBlank() || otp == null || otp.isBlank() || newPassword == null
+                || newPassword.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Email/số điện thoại, OTP và mật khẩu mới không được để trống");
         }
         if (newPassword.length() < 6) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mật khẩu mới phải có ít nhất 6 ký tự");
@@ -215,7 +216,8 @@ public class UserService {
             userOpt = userRepository.findByPhone(emailOrPhone);
         }
         if (userOpt.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy người dùng với email hoặc số điện thoại này");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "Không tìm thấy người dùng với email hoặc số điện thoại này");
         }
 
         User user = userOpt.get();
@@ -224,9 +226,9 @@ public class UserService {
         TempStorage.removeOtp(emailOrPhone);
 
         return Map.of(
-            "message", "Đặt lại mật khẩu thành công",
-            "data", Map.of("username", user.getUsername())
-        );
+                "message", "Đặt lại mật khẩu thành công",
+                "data", Map.of("username", user.getUsername()));
+
     }
 
     public Map<String, Object> loginWithGoogle(String idToken) {
@@ -252,24 +254,23 @@ public class UserService {
         String refreshToken = JwtUtil.generateRefreshToken(user.getUsername());
 
         return Map.of(
-            "message", "Đăng nhập bằng Google thành công",
-            "data", Map.of(
-                "accessToken", accessToken,
-                "refreshToken", refreshToken,
-                "user", Map.of(
-                    "username", user.getUsername(),
-                    "email", user.getEmail() != null ? user.getEmail() : "",
-                    "phone", user.getPhone() != null ? user.getPhone() : "",
-                    "fullname", user.getFullname() != null ? user.getFullname() : ""
-                )
-            )
-        );
+                "message", "Đăng nhập bằng Google thành công",
+                "data", Map.of(
+                        "accessToken", accessToken,
+                        "refreshToken", refreshToken,
+                        "user", Map.of(
+                                "username", user.getUsername(),
+                                "email", user.getEmail() != null ? user.getEmail() : "",
+                                "phone", user.getPhone() != null ? user.getPhone() : "",
+                                "fullname", user.getFullname() != null ? user.getFullname() : "")));
     }
 
     public String getEmailFromGoogleIdToken(String idToken) {
         try {
-            GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), new GsonFactory())
-                    .setAudience(Collections.singletonList("376530680599-mlb7pbrp0inmjnfqmit5q6v4a38e6t09.apps.googleusercontent.com"))
+            GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(),
+                    new GsonFactory())
+                    .setAudience(Collections
+                            .singletonList("376530680599-mlb7pbrp0inmjnfqmit5q6v4a38e6t09.apps.googleusercontent.com"))
                     .build();
 
             GoogleIdToken idTokenObj = verifier.verify(idToken);

@@ -11,7 +11,7 @@ const initialState = {
   role: "",
   username: [],
   user_avt_img: "",
-  accessToken: localStorage.getItem("accessToken"),
+  accessToken: "",
   refreshToken: Cookies.get("refreshToken"),
   isAuthenticated: !!Cookies.get("accessToken"), // Check if accessToken exists
 };

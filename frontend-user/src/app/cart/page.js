@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import LeftSideBar from "../components/LeftSideBar";
 import BookCard from "./book";
+import axios from "axios";
 const books = [
   {
     id: "DRPN001",
@@ -67,35 +68,36 @@ const books = [
 
 const page = () => {
   const [selected, setSelected] = useState([]);
-  // const [books, setBooks] = useState(""); // Giỏ hàng
-  // const [loading, setLoading] = useState(true); // Trạng thái loading
-  // const userId = "67fbfc0b6a8328377edee149"; // Thay bằng userId thực tế của bạn
-  // let cartId = "";
+  const [books, setBooks] = useState(""); // Giỏ hàng
+  const [loading, setLoading] = useState(true); // Trạng thái loading
+  const user = JSON.parse(localStorage.getItem("persist:root")); // lấy thông tin người dùng từ localStorage
+  let cartId = "";
 
-  // // Lấy giỏ hàng từ API theo userId
-  // const fetchCart = async () => {
-  //   try {
-  //     setLoading(true); // Bắt đầu tải dữ liệu
-  //     const response = await fetch(
-  //       `http://localhost:8081/carts/user/${userId}`
-  //     ); // Endpoint API lấy giỏ hàng theo userId
-  //     if (response.ok) {
-  //       const data = await response.json();
-  //       cartId=data.id; 
-  //       setBooks(data.books); // Giả sử API trả về đối tượng có key 'books'
-  //     } else {
-  //       console.error("Lỗi khi lấy giỏ hàng");
-  //     }
-  //   } catch (error) {
-  //     console.error("Có lỗi xảy ra:", error);
-  //   } finally {
-  //     setLoading(false); // Hoàn tất việc gọi API
-  //   }
-  // };
+  // Lấy giỏ hàng từ API theo userId
+  const fetchCart = async () => {
+    try {
+      setLoading(true); // Bắt đầu tải dữ liệu
+      const response = await fetch(
+        `http://localhost:8080/api/cart/${user.id}` // Endpoint API lấy giỏ hàng theo userId
+      ); // Endpoint API lấy giỏ hàng theo userId
 
-  // useEffect(() => {
-  //   fetchCart();
-  // }, [userId]);
+      if (response.ok) {
+        const data = await response.json();
+        cartId = data.id;
+        setBooks(data.data); // Giả sử API trả về đối tượng có key 'books'
+      } else {
+        console.error("Lỗi khi lấy giỏ hàng");
+      }
+    } catch (error) {
+      console.error("Có lỗi xảy ra:", error);
+    } finally {
+      setLoading(false); // Hoàn tất việc gọi API
+    }
+  };
+
+  useEffect(() => {
+    fetchCart();
+  }, [user.id]);
 
   // tick / bỏ tick 1 cuốn
   const toggleBook = (idx, checked) => {
@@ -105,9 +107,74 @@ const page = () => {
   };
 
   // tick / bỏ tick tất cả
-  const allChecked = selected.length === books.length;
+  const allChecked = selected.length === books?.length;
   const toggleAll = (checked) =>
     setSelected(checked ? books.map((_, i) => i) : []);
+
+  // Xóa sách trong giỏ hàng
+  const handleDeleteBooks = async () => {
+    try {
+      const response = await axios.delete(
+        `http://localhost:8080/api/cart/${cartId}`, // Endpoint API xóa sách trong giỏ hàng
+        {
+          data: selected,
+        }
+      );
+
+      setBooks(response.data.data); // Cập nhật lại giỏ hàng sau khi xóa
+      console.log("Xóa sách thành công:", response.data);
+      alert("Xóa sách thành công!");
+      setSelected([]); // Reset lại danh sách đã chọn
+    } catch (error) {
+      console.error("Lỗi khi xóa sách:", error);
+      alert("Đã có lỗi khi xóa sách!");
+    }
+  };
+
+  // Đăng ký mượn sách
+  const handleBorrowBooks = async () => {
+    try {
+      const booksInCart = selected; // Các sách đã chọn trong giỏ hàng
+      // console.log(booksInCart);
+      // Gửi yêu cầu đến backend để tạo phiếu mượn
+      const response = await axios.post(
+        "http://localhost:8080/api/borrow-cards",
+        {
+          userId: user.id,
+          borrowedBooks: booksInCart.map((bookId) => ({
+            bookId: bookId,
+            childBookId: null,
+          })),
+          borrowDate: new Date().toISOString(),
+          status: "REQUESTED",
+          dueDate: new Date(
+            new Date().setDate(new Date().getDate() + 14)
+          ).toISOString(), // Ngày trả sách là 14 ngày sau
+        }
+      );
+
+      if (response.status === 200) {
+        alert("Phiếu mượn đã được tạo!");
+        console.log(response.data); // Xem chi tiết phiếu mượn
+
+        const deleteResponse = await axios.delete(
+          `http://localhost:8080/api/cart/${user.id}/remove/books`,
+          {
+            data: booksInCart,
+          }
+        );
+
+        console.log(deleteResponse.data); // Xem sách đã xóa khỏi giỏ hàng
+        window.location.href = "/borrowed-card";
+      } else {
+        alert("Không thể tạo phiếu mượn");
+      }
+    } catch (error) {
+      console.error("Lỗi khi mượn sách:", error);
+      alert("Có lỗi xảy ra khi mượn sách.");
+    }
+  };
+
   return (
     <div className="flex flex-col min-h-screen text-foreground">
       <main className="pt-16 flex">
@@ -123,16 +190,20 @@ const page = () => {
               {Array.isArray(books) &&
                 books.map((book, index) => (
                   <BookCard
-                    key={book.id}
-                    id={book.id}
-                    // imageSrc={book.hinhAnh[0]}
-                    // available={(book.tongSoLuong - book.soLuongMuon - book.soLuongXoa) > 0 ? "Còn sẵn" : "Hết sách"}
+                    key={book.bookId}
+                    id={book.bookId}
+                    imageSrc={book.hinhAnh[0]}
+                    available={
+                      book.tongSoLuong - book.soLuongMuon - book.soLuongXoa > 0
+                        ? "Còn sẵn"
+                        : "Hết sách"
+                    }
                     title={book.tenSach}
                     author={book.tenTacGia}
                     publisher={book.nxb}
                     borrowCount={book.soLuongMuon}
-                    checked={selected.includes(index)}
-                    onCheck={(c) => toggleBook(index, c)}
+                    checked={selected.includes(book.bookId)}
+                    onCheck={(c) => toggleBook(book.bookId, c)}
                   />
                 ))}
             </div>
@@ -150,9 +221,21 @@ const page = () => {
                   Chọn tất cả ({books.length})
                 </span>
               </div>
-              <button className="px-4 py-2 bg-[#062D76] text-white rounded">
-                Đăng ký mượn ({selected.length})
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleDeleteBooks}
+                  className="px-4 py-2 bg-[#F44336] hover:bg-[#FFA9A2] text-white rounded cursor-pointer"
+                >
+                  Xóa sách ({selected.length})
+                </button>
+
+                <button
+                  onClick={handleBorrowBooks}
+                  className="px-4 py-2 bg-[#062D76] text-white rounded cursor-pointer hover:bg-[#6C8299] transition duration-200 ease-in-out"
+                >
+                  Đăng ký mượn ({selected.length})
+                </button>
+              </div>
             </footer>
           )}
         </section>

@@ -5,7 +5,6 @@ import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
-import jakarta.persistence.Column;
 
 public class UserDTO {
     private String username;
@@ -13,21 +12,8 @@ public class UserDTO {
     private String fullname;
     private String phone;
     private String password;
-    // Constructor không tham số (bắt buộc cho Spring Boot xài @RequestBody)
-public UserDTO() {
-}
-
-// Constructor đầy đủ tham số
-public UserDTO(String username, String email, String fullname, String phone, String password) {
-    this.username = username;
-    this.email = email;
-    this.fullname = fullname;
-    this.phone = phone;
-    this.password = password;
-}
-
-
     private String role = "USER"; // mặc định là USER
+
     private String gender;     
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSX")

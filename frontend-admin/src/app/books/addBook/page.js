@@ -15,14 +15,17 @@ function Page() {
   const handleGoBack = () => {
     route.back();
   };
-  const [bookname, setBookname] = useState(""); // Tên sách
-  const [author, setAuthor] = useState(""); // Tên tác giả
-  const [publisher, setPublisher] = useState(""); // NXB
-  const [year, setYear] = useState(""); // Năm XB
-  const [quantity, setQuantity] = useState(""); // SL
-  const [description, setDescription] = useState(""); // Mô tả
+  const [bookname, setBookname] = useState(""); 
+  const [author, setAuthor] = useState(""); 
+  const [publisher, setPublisher] = useState(""); 
+  const [year, setYear] = useState(""); 
+  const [quantity, setQuantity] = useState(""); 
+  const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
   const [category2, setCategory2] = useState("");
+  const [weight, setWeight] = useState("");
+  const [price, setPrice]     = useState("");
+
   const fileInputRef = useRef(null);
   const fileInputRef1 = useRef(null);
   const fileInputRef2 = useRef(null);
@@ -43,7 +46,7 @@ function Page() {
         const response = await axios.get("http://localhost:8080/api/category");
         const data = response.data;
         setTotalCate(data);
-        setCateList(data.map((item) => item.name));
+        setCateList(data.map(item => item.name));
       } catch (error) {
         console.error("Error fetching categories:", error);
         toast.error("Không thể tải danh mục");
@@ -54,9 +57,9 @@ function Page() {
 
   useEffect(() => {
     if (category !== "") {
-      const selectedCate = totalCate.find((cate) => cate.name === category);
+      const selectedCate = totalCate.find(cate => cate.name === category);
       if (selectedCate) {
-        setCate2List(selectedCate.children.map((child) => child.name));
+        setCate2List(selectedCate.children.map(child => child.name));
       } else {
         setCate2List([]);
       }
@@ -86,41 +89,36 @@ function Page() {
     });
   };
 
-  /*  upload các ảnh lên cloudinary để lấy link => up hết */
   const uploadImagesToCloudinary = async () => {
     const formData = new FormData();
     image.forEach((img) => {
       if (img.selectedFile) {
-        formData.append("file", img.selectedFile); // gửi với key "file"
+        formData.append("file", img.selectedFile);
       }
     });
-    console.log("formData", formData);
-    const res = await fetch("http://localhost:8080/api/upload/image", {
-      method: "POST",
-      body: formData,
-    });
-
-    if (!res.ok) {
-      throw new Error("Upload thất bại");
+    try {
+      const res = await axios.post("http://localhost:8080/upload/image", formData);
+      return res.data; 
+    } catch (error) {
+      console.error("Error uploading images:", error);
+      toast.error("Upload hình ảnh thất bại");
+      throw error;
     }
-
-    const data = await res.json();
-    return data;
   };
-  const handleValidation = () => {
-    const newErrors = { ...errors };
-    newErrors.bookname = !bookname;
-    newErrors.author = !author;
-    newErrors.publisher = !publisher;
-    newErrors.year = !year;
-    newErrors.quantity = !quantity || parseInt(quantity) < 1;
-    newErrors.description = !description;
-    newErrors.category = !category;
-    newErrors.category2 = !category2;
+const handleValidation = () => {
+  const newErrors = { ...errors };
+  newErrors.bookname = !bookname;
+  newErrors.author = !author;
+  newErrors.publisher = !publisher;
+  newErrors.year = !year;
+  newErrors.quantity = !quantity || parseInt(quantity) < 1;
+  newErrors.description = !description;
+  newErrors.category = !category;
+  newErrors.category2 = !category2;
 
-    setErrors(newErrors);
-    return !Object.values(newErrors).includes(true);
-  };
+  setErrors(newErrors);
+  return !Object.values(newErrors).includes(true);
+};
 
   const handleSubmit = async () => {
     if (
@@ -140,61 +138,55 @@ function Page() {
       toast.error("Số lượng sách phải lớn hơn 0");
       return;
     }
-    if (!image[0].filePreview) {
-      toast.error("Vui lòng tải ít nhất hình ảnh bìa");
+    if (weight === "" || isNaN(+weight) || +weight <= 0) {
+      toast.error("Nhập trọng lượng (> 0)");
+      return;
+    }
+    if (price === "" || isNaN(+price) || +price <= 0) {
+      toast.error("Nhập đơn giá (> 0)");
       return;
     }
 
     setLoading(true);
-    const newImages = await uploadImagesToCloudinary();
-
-    const updatedImages = image.map((img) => {
-      if (img.selectedFile) {
-        return {
-          ...img,
-          filePreview: newImages.shift(), // lấy ra từng url
-          selectedFile: null,
-        };
-      }
-      return img;
-    });
-    const finalImageURLs = updatedImages
-      .filter((img) => img.filePreview)
-      .map((img) => img.filePreview);
-
-    const selectedParent = totalCate.find((cate) => cate.name === category);
-    if (!selectedParent) {
-      toast.error("Thể loại chính không hợp lệ");
-      return;
-    }
-    const selectedChild = selectedParent.children.find(
-      (child) => child.name === category2
-    );
-    if (!selectedChild) {
-      toast.error("Thể loại phụ không hợp lệ");
-      return;
-    }
-    const childId = selectedChild.id;
-
-    const bookData = {
-      book: {
-        tenSach: bookname,
-        moTa: description,
-        tenTacGia: author,
-        nxb: publisher,
-        nam: parseInt(year),
-        hinhAnh: finalImageURLs,
-        categoryChild: { id: childId },
-        trangThai: "CON_SAN",
-      },
-      quantity: parseInt(quantity),
-    };
-    console.log("Dữ liệu sách:", bookData);
     try {
+      let finalImageURLs = [];
+      if (image.some(img => img.selectedFile)) {
+        const newImages = await uploadImagesToCloudinary();
+        finalImageURLs = newImages;
+      }
+
+      const selectedParent = totalCate.find(cate => cate.name === category);
+      if (!selectedParent) {
+        toast.error("Thể loại chính không hợp lệ");
+        return;
+      }
+      const selectedChild = selectedParent.children.find(child => child.name === category2);
+      if (!selectedChild) {
+        toast.error("Thể loại phụ không hợp lệ");
+        return;
+      }
+      const childId = selectedChild.id;
+
+      const bookData = {
+        book: {
+          tenSach: bookname,
+          moTa: description,
+          tenTacGia: author,
+          nxb: publisher,
+          nam: parseInt(year),
+          hinhAnh: finalImageURLs,
+          trongLuong: parseInt(weight),   
+          donGia: parseInt(price),
+          categoryChild: { id: childId },
+          trangThai: "CON_SAN"
+        },
+        quantity: parseInt(quantity),
+      };
+
       const res = await axios.post("http://localhost:8080/api/book", bookData);
-      console.log("Sách đã thêm:", res.data);
       toast.success("Thêm sách thành công");
-      handleGoBack();
+      const newId = res.data.maSach; 
+      route.push(`/books/details/${newId}`);
     } catch (error) {
       console.error("Lỗi:", error.message);
       toast.error("Thêm sách thất bại");
@@ -230,9 +222,7 @@ function Page() {
           </div>
           {/*Dòng tên sách*/}
           <div className="flex flex-col w-full gap-[5px] md:gap-[10px]">
-            <p className="font-semibold text-lg mt-3">
-              Tên Sách<span className="text-red-500"> *</span>
-            </p>
+            <p className="font-semibold text-lg mt-3">Tên Sách<span className="text-red-500"> *</span></p>
             <Input
               type="text"
               placeholder="Nhập tên sách"
@@ -243,9 +233,7 @@ function Page() {
           </div>
           {/*Dòng tên tg*/}
           <div className="flex flex-col w-full gap-[5px] md:gap-[10px]">
-            <p className="font-semibold text-lg mt-3">
-              Tên Tác Giả<span className="text-red-500"> *</span>
-            </p>
+            <p className="font-semibold text-lg mt-3">Tên Tác Giả<span className="text-red-500"> *</span></p>
             <Input
               type="text"
               placeholder="Nhập tên tác giả"
@@ -257,9 +245,7 @@ function Page() {
           {/*Dòng năm xuất bản và nhà xuất bản */}
           <div className="flex w-full justify-between gap-10">
             <div className="flex flex-col w-2/3 gap-[5px] md:gap-[10px]">
-              <p className="font-semibold text-lg mt-3">
-                Năm Xuất Bản<span className="text-red-500"> *</span>
-              </p>
+              <p className="font-semibold text-lg mt-3">Năm Xuất Bản<span className="text-red-500"> *</span></p>
               <Input
                 type="number"
                 placeholder="Nhập năm xuất bản"
@@ -269,9 +255,7 @@ function Page() {
               />
             </div>
             <div className="flex flex-col w-full gap-[5px] md:gap-[10px]">
-              <p className="font-semibold text-lg mt-3">
-                Nhà Xuất Bản<span className="text-red-500"> *</span>
-              </p>
+              <p className="font-semibold text-lg mt-3">Nhà Xuất Bản<span className="text-red-500"> *</span></p>
               <Input
                 type="text"
                 placeholder="Nhập tên nhà xuất bản"
@@ -284,9 +268,7 @@ function Page() {
           {/*Dòng số lượng và thể loại */}
           <div className="flex w-full justify-between gap-10">
             <div className="flex flex-col w-2/3 gap-[5px] md:gap-[10px]">
-              <p className="font-semibold text-lg mt-3">
-                Số lượng<span className="text-red-500"> *</span>
-              </p>
+              <p className="font-semibold text-lg mt-3">Số lượng<span className="text-red-500"> *</span></p>
               <Input
                 type="number"
                 placeholder="Nhập số lượng"
@@ -296,9 +278,7 @@ function Page() {
               />
             </div>
             <div className="flex flex-col w-full gap-[5px] md:gap-[10px] space-y-2 relative inline-block text-left">
-              <p className="font-semibold text-lg mt-3">
-                Thể Loại Chính<span className="text-red-500"> *</span>
-              </p>
+              <p className="font-semibold text-lg mt-3">Thể Loại Chính<span className="text-red-500"> *</span></p>
               <Button
                 title={"Thể Loại Chính"}
                 className="bg-white text-black rounded-lg w-full h-10 hover:bg-gray-300 flex justify-between"
@@ -326,9 +306,7 @@ function Page() {
             </div>
             {/*Thể loại 2*/}
             <div className="flex flex-col w-full gap-[5px] md:gap-[10px] space-y-2 relative inline-block text-left">
-              <p className="font-semibold text-lg mt-3">
-                Thể Loại Phụ<span className="text-red-500"> *</span>
-              </p>
+              <p className="font-semibold text-lg mt-3">Thể Loại Phụ<span className="text-red-500"> *</span></p>
               <Button
                 title={"Thể Loại Phụ"}
                 className="bg-white text-black rounded-lg w-full h-10 hover:bg-gray-300 flex justify-between"
@@ -355,11 +333,34 @@ function Page() {
               )}
             </div>
           </div>
+
+           <div className="flex w-full justify-between gap-10">
+              <div className="flex flex-col w-2/3 gap-[5px] md:gap-[10px]">
+                  <p className="font-semibold text-lg mt-3">Trọng Lượng (gram)<span className="text-red-500"> *</span></p>
+                  <Input
+                      type="number"
+                      placeholder="Nhập trọng lượng"
+                      className="font-semibold rounded-lg w-full h-10 px-5 bg-white"
+                      value={weight}
+                      onChange={(e) => setWeight(e.target.value)}
+                    />
+              </div>
+              <div className="flex flex-col w-full gap-[5px] md:gap-[10px]">
+                    <p className="font-semibold text-lg mt-3">Đơn Giá (VND)<span className="text-red-500"> *</span></p>
+                    <Input
+                      type="number"
+                      placeholder="Nhập đơn giá"
+                      className="font-semibold rounded-lg w-full h-10 px-5 bg-white"
+                      value={price}
+                      onChange={(e) => setPrice(e.target.value)}
+                    />
+              </div>
+            </div> 
+        
+
           {/*Dòng mô tả*/}
           <div className="flex flex-col w-full gap-[5px] md:gap-[10px]">
-            <p className="font-semibold text-lg mt-3">
-              Mô Tả<span className="text-red-500"> *</span>
-            </p>
+            <p className="font-semibold text-lg mt-3">Mô Tả<span className="text-red-500"> *</span></p>
             <Input
               type="text"
               placeholder="Nhập mô tả sách"
