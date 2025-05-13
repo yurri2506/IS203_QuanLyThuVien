@@ -315,6 +315,9 @@ const Page = () => {
         headers: {
           "Content-Type": "application/json",
         },
+        {/*<<<<<<< thuytrang
+        body: JSON.stringify({ email: data.email, matKhau: data.matKhau }),
+=======*/}
 
 
         body: JSON.stringify(payload),
@@ -326,6 +329,7 @@ const Page = () => {
 //           birthdate: data.ngaySinh,
 //           gender: data.gioiTinh,
 //         }),
+
 
       });
 
@@ -411,6 +415,11 @@ const Page = () => {
 
   // Handle login
   const onSubmitLogin = async (data) => {
+    {/*<<<<<<< thuytrang
+    console.log("Dữ liệu gửi đăng nhập:", data);
+    try {
+      // Gửi yêu cầu POST đến backend để đăng nhập
+=======*/}
 
     const { type, value } = determineInputType(data.identifier);
 
@@ -422,6 +431,7 @@ const Page = () => {
         [type]: value,
         password: data.matKhau,
       };
+
 
       const response = await fetch("http://localhost:8080/api/login", {
         method: "POST",
@@ -603,10 +613,13 @@ const Page = () => {
                       <LogIn className="mr-2 w-4 h-4" /> Đăng nhập
                     </Button>
                   </div>
+
+
                   <div className="mt-4">
                     <GoogleLoginButton />
                   </div>
                 </TabsContent>
+
 
                 {/* Register Tab */}
                 <TabsContent value="signup">
