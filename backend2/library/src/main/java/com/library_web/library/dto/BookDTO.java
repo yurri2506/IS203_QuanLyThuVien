@@ -20,13 +20,14 @@ public class BookDTO {
     private String categoryChildName;
     private String categoryParentName;
 
-    public BookDTO() {}
+    public BookDTO() {
+    }
 
     public BookDTO(Long maSach, String tenSach, String moTa, String tenTacGia, String nxb,
-                   Integer nam, Integer trongLuong, Integer donGia,
-                   Integer tongSoLuong, Integer soLuongMuon, Integer soLuongXoa,
-                   String trangThai, List<String> hinhAnh,
-                   String categoryChildId, String categoryChildName, String categoryParentName) {
+            Integer nam, Integer trongLuong, Integer donGia,
+            Integer tongSoLuong, Integer soLuongMuon, Integer soLuongXoa,
+            String trangThai, List<String> hinhAnh,
+            String categoryChildId, String categoryChildName, String categoryParentName) {
         this.maSach = maSach;
         this.tenSach = tenSach;
         this.moTa = moTa;
@@ -45,51 +46,131 @@ public class BookDTO {
         this.categoryParentName = categoryParentName;
     }
 
-    public Long getMaSach() { return maSach; }
-    public void setMaSach(Long maSach) { this.maSach = maSach; }
+    public Long getMaSach() {
+        return maSach;
+    }
 
-    public String getTenSach() { return tenSach; }
-    public void setTenSach(String tenSach) { this.tenSach = tenSach; }
+    public void setMaSach(Long maSach) {
+        this.maSach = maSach;
+    }
 
-    public String getMoTa() { return moTa; }
-    public void setMoTa(String moTa) { this.moTa = moTa; }
+    public String getTenSach() {
+        return tenSach;
+    }
 
-    public String getTenTacGia() { return tenTacGia; }
-    public void setTenTacGia(String tenTacGia) { this.tenTacGia = tenTacGia; }
+    public void setTenSach(String tenSach) {
+        this.tenSach = tenSach;
+    }
 
-    public String getNxb() { return nxb; }
-    public void setNxb(String nxb) { this.nxb = nxb; }
+    public String getMoTa() {
+        return moTa;
+    }
 
-    public Integer getNam() { return nam; }
-    public void setNam(Integer nam) { this.nam = nam; }
+    public void setMoTa(String moTa) {
+        this.moTa = moTa;
+    }
 
-    public Integer getTrongLuong() { return trongLuong; }
-    public void setTrongLuong(Integer trongLuong) { this.trongLuong = trongLuong; }
+    public String getTenTacGia() {
+        return tenTacGia;
+    }
 
-    public Integer getDonGia() { return donGia; }
-    public void setDonGia(Integer donGia) { this.donGia = donGia; }
+    public void setTenTacGia(String tenTacGia) {
+        this.tenTacGia = tenTacGia;
+    }
 
-    public Integer getTongSoLuong() { return tongSoLuong; }
-    public void setTongSoLuong(Integer tongSoLuong) { this.tongSoLuong = tongSoLuong; }
+    public String getNxb() {
+        return nxb;
+    }
 
-    public Integer getSoLuongMuon() { return soLuongMuon; }
-    public void setSoLuongMuon(Integer soLuongMuon) { this.soLuongMuon = soLuongMuon; }
+    public void setNxb(String nxb) {
+        this.nxb = nxb;
+    }
 
-    public Integer getSoLuongXoa() { return soLuongXoa; }
-    public void setSoLuongXoa(Integer soLuongXoa) { this.soLuongXoa = soLuongXoa; }
+    public Integer getNam() {
+        return nam;
+    }
 
-    public String getTrangThai() { return trangThai; }
-    public void setTrangThai(String trangThai) { this.trangThai = trangThai; }
+    public void setNam(Integer nam) {
+        this.nam = nam;
+    }
 
-    public List<String> getHinhAnh() { return hinhAnh; }
-    public void setHinhAnh(List<String> hinhAnh) { this.hinhAnh = hinhAnh; }
+    public Integer getTrongLuong() {
+        return trongLuong;
+    }
 
-    public String getCategoryChildId() { return categoryChildId; }
-    public void setCategoryChildId(String categoryChildId) { this.categoryChildId = categoryChildId; }
+    public void setTrongLuong(Integer trongLuong) {
+        this.trongLuong = trongLuong;
+    }
 
-    public String getCategoryChildName() { return categoryChildName; }
-    public void setCategoryChildName(String categoryChildName) { this.categoryChildName = categoryChildName; }
+    public Integer getDonGia() {
+        return donGia;
+    }
 
-    public String getCategoryParentName() { return categoryParentName; }
-    public void setCategoryParentName(String categoryParentName) { this.categoryParentName = categoryParentName; }
+    public void setDonGia(Integer donGia) {
+        this.donGia = donGia;
+    }
+
+    public Integer getTongSoLuong() {
+        return tongSoLuong;
+    }
+
+    public void setTongSoLuong(Integer tongSoLuong) {
+        this.tongSoLuong = tongSoLuong;
+    }
+
+    public Integer getSoLuongMuon() {
+        return soLuongMuon;
+    }
+
+    public void setSoLuongMuon(Integer soLuongMuon) {
+        this.soLuongMuon = soLuongMuon;
+    }
+
+    public Integer getSoLuongXoa() {
+        return soLuongXoa;
+    }
+
+    public void setSoLuongXoa(Integer soLuongXoa) {
+        this.soLuongXoa = soLuongXoa;
+    }
+
+    public String getTrangThai() {
+        return trangThai;
+    }
+
+    public void setTrangThai(String trangThai) {
+        this.trangThai = trangThai;
+    }
+
+    public List<String> getHinhAnh() {
+        return hinhAnh;
+    }
+
+    public void setHinhAnh(List<String> hinhAnh) {
+        this.hinhAnh = hinhAnh;
+    }
+
+    public String getCategoryChildId() {
+        return categoryChildId;
+    }
+
+    public void setCategoryChildId(String categoryChildId) {
+        this.categoryChildId = categoryChildId;
+    }
+
+    public String getCategoryChildName() {
+        return categoryChildName;
+    }
+
+    public void setCategoryChildName(String categoryChildName) {
+        this.categoryChildName = categoryChildName;
+    }
+
+    public String getCategoryParentName() {
+        return categoryParentName;
+    }
+
+    public void setCategoryParentName(String categoryParentName) {
+        this.categoryParentName = categoryParentName;
+    }
 }

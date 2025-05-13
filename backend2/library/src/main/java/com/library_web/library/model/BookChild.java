@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public class BookChild {
     
     @Id
-    private String id;               // Ví dụ: "1a", "1b"…
+    private String id; 
 
     @Enumerated(EnumType.STRING)
     private Status status = Status.AVAILABLE;
@@ -30,15 +30,31 @@ public class BookChild {
         this.addedDate = LocalDate.now();
         this.status = Status.AVAILABLE;
     }
-    public String getId() { return id; }
-    public Status getStatus() { return status; }
-    public void setStatus(Status status) { this.status = status; }
-    public LocalDate getAddedDate() { return addedDate; }
-    public void setAddedDate(LocalDate addedDate) { this.addedDate = addedDate; }
-    public Book getBook() { return book; }
-    public void setBook(Book book) { this.book = book; }
+    public String getId() {
+        return id; 
+    }
+    public Status getStatus() {
+        return status; 
+    }
+    public void setStatus(Status status) {
+        this.status = status; 
+    }
+    public LocalDate getAddedDate() {
+        return addedDate; 
+    }
+    public void setAddedDate(LocalDate addedDate) { 
+        this.addedDate = addedDate; 
+    }
+    public Book getBook() {
+        return book; 
+    }
+    public void setBook(Book book) {
+        this.book = book; 
+    }
 
-    public boolean isAvailable() { return status == Status.AVAILABLE; }
+    public boolean isAvailable() {
+        return status == Status.AVAILABLE; 
+    }
     public void borrow() {
         if (status != Status.AVAILABLE) throw new IllegalStateException("Không thể mượn");
         status = Status.BORROWED;
