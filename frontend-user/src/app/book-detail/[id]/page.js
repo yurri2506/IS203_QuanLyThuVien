@@ -15,21 +15,28 @@ const BookDetailsPage = () => {
 
   // map enum sang label
   const statusMap = {
-    CON_SAN: { label: "Còn sẵn", icon: <CheckCircle className="text-green-500" />, available: true },
-    DA_HET:  { label: "Đã hết",   icon: <XCircle className="text-red-500" />,   available: false },
-    DA_XOA:  { label: "Đã xóa",   icon: <XCircle className="text-red-500" />,   available: false },
+    CON_SAN: {
+      label: "Còn sẵn",
+      icon: <CheckCircle className="text-green-500" />,
+      available: true,
+    },
+    DA_HET: {
+      label: "Đã hết",
+      icon: <XCircle className="text-red-500" />,
+      available: false,
+    },
+    // DA_XOA:  { label: "Đã xóa",   icon: <XCircle className="text-red-500" />,   available: false },
   };
 
   useEffect(() => {
     const fetchBook = async () => {
       try {
-        const { data: book } = await axios.get(
+        const { data } = await axios.get(
           `http://localhost:8080/api/book/${id}`
         );
-
-        setDetails({
-          ...book,
-        });
+        // nếu backend trả về mảng, lấy phần tử đầu
+        const book = Array.isArray(data) ? data[0] : data;
+        setDetails(book);
       } catch (err) {
         console.error("Lỗi khi fetch chi tiết sách:", err);
       }
@@ -45,7 +52,49 @@ const BookDetailsPage = () => {
     );
   }
 
-  const { label, icon, available } = statusMap[details.trangThai] || statusMap.CON_SAN;
+  const handleBorrowBook = async () => {
+    try {
+      const user = JSON.parse(localStorage.getItem("persist:root")); // lấy thông tin người dùng từ localStorage
+      console.log(id);
+      // gửi yêu cầu mượn sách
+      const response = await axios.post(
+        `http://localhost:8080/api/borrow-cards`,
+        {
+          userId: user.id,
+          borrowedBooks: [
+            {
+              bookId: id,
+              childBookId: null,
+            },
+          ],
+          borrowDate: new Date().toISOString(),
+          status: "REQUESTED",
+          dueDate: new Date(
+            new Date().setDate(new Date().getDate() + 14)
+          ).toISOString(), // Ngày trả sách là 14 ngày sau
+        }
+      );
+
+      if (response.status === 200) {
+        alert("Phiếu mượn đã được tạo");
+        console.log("Phiếu mượn đã được tạo:", response.data);
+        window.location.href = "/borrowed-card";
+      } else {
+        alert("Có lỗi xảy ra khi tạo phiếu mượn");
+      }
+    } catch (error) {
+      console.error("Lỗi khi mượn sách:", error);
+      alert("Có lỗi xảy ra khi mượn sách");
+    }
+  };
+
+  // Tính trạng thái ưu tiên trangThai, nếu null thì dựa vào children
+  let key = details.trangThai;
+  if (!key) {
+    const anyAvailable = details.children?.some((c) => c.available);
+    key = anyAvailable ? "CON_SAN" : "DA_HET";
+  }
+  const { label, icon, available } = statusMap[key] || statusMap.CON_SAN;
 
   return (
     <div className="flex flex-col min-h-screen text-foreground">
@@ -67,20 +116,27 @@ const BookDetailsPage = () => {
                 Tác giả: {details.tenTacGia}
               </p>
               <p>
-                <span className="font-semibold">Thể loại:</span> {details.categoryChild?.tenTheLoaiCon || details.categoryChild?.name || "—"}
+                <span className="font-semibold">Thể loại:</span>{" "}
+                {details.categoryChildName ?? "—"}
               </p>
               <p>
                 <span className="font-semibold">NXB:</span> {details.nxb}
               </p>
               <p className="flex items-center gap-2 font-semibold">
-                {icon} Trạng thái: {label}
+                Trạng thái: {label}
               </p>
               <p>
-                <span className="font-semibold">Lượt mượn:</span> {details.soLuongMuon} lượt
+                <span className="font-semibold">Lượt mượn:</span>{" "}
+                {details.soLuongMuon} lượt
               </p>
               <Button
                 disabled={!available}
-                className={`mt-4 font-semibold py-2 px-4 rounded-lg ${available ? 'bg-[#062D76] hover:bg-[#E6EAF1] hover:text-[#062D76] text-white' : 'bg-gray-300 text-gray-600 cursor-not-allowed'}`}
+                onClick={handleBorrowBook}
+                className={`mt-4 font-semibold py-2 px-4 rounded-lg ${
+                  available
+                    ? "bg-[#062D76] hover:bg-[#E6EAF1] hover:text-[#062D76] text-white"
+                    : "bg-gray-300 text-gray-600 cursor-not-allowed"
+                }`}
               >
                 Mượn sách
               </Button>
@@ -94,8 +150,7 @@ const BookDetailsPage = () => {
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
               <p>
-                <span className="font-semibold">Mã sách:</span>{" "}
-                {details.maSach}
+                <span className="font-semibold">Mã sách:</span> {details.maSach}
               </p>
               <p>
                 <span className="font-semibold">Năm XB:</span> {details.nam}
@@ -105,8 +160,8 @@ const BookDetailsPage = () => {
                 {details.trongLuong} g
               </p>
               <p>
-                <span className="font-semibold">Đơn giá:</span>{" "}
-                {details.donGia} đ
+                <span className="font-semibold">Đơn giá:</span> {details.donGia}{" "}
+                đ
               </p>
               <p>
                 <span className="font-semibold">Tổng số lượng:</span>{" "}
@@ -127,9 +182,10 @@ const BookDetailsPage = () => {
 
           {/* Reviews */}
           <div className="mt-6">
-              <BookReview bookId={details.maSach} /> </div>
-            </section>
-            <ChatBotButton />       
+            <BookReview bookId={details.maSach} />
+          </div>
+        </section>
+        <ChatBotButton />
       </main>
     </div>
   );
