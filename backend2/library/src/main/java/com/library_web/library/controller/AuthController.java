@@ -1,30 +1,20 @@
 package com.library_web.library.controller;
 
-import com.library_web.library.dto.CartItemDTO;
 import com.library_web.library.dto.UserDTO;
 import com.library_web.library.model.User;
 import com.library_web.library.model.Cart;
-import com.library_web.library.model.GoogleLoginRequest;
 import com.library_web.library.repository.UserRepository;
-import com.library_web.library.security.JwtUtil;
-import com.library_web.library.service.GoogleAuthService;
 import com.library_web.library.service.UserService;
+import com.library_web.library.service.GoogleAuthService;
 import com.library_web.library.service.FacebookAuthService;
 import com.library_web.library.service.CartService;
-
-
-// import org.apache.coyote.BadRequestException;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import jakarta.servlet.http.HttpServletRequest;
-
-import java.util.HashMap;
-import java.util.List;
-
 import java.util.Map;
 import java.util.Optional;
 
@@ -34,37 +24,22 @@ import java.util.Optional;
 public class AuthController {
 
     @Autowired
-    private GoogleAuthService googleAuthService;
-
-    private final UserService userService;
-    private final UserRepository userRepository;
-    private final CartService cartService;
-
-
-    @Autowired
     private UserService userService;
 
-    @PostMapping("/login")
-    public Map<String, Object> login(@RequestBody Map<String, String> request) {
-        String emailOrPhone = request.get("email") != null ? request.get("email") : request.get("phone");
-        String password = request.get("password");
+    @Autowired
+    private UserRepository userRepository;
 
-        if (emailOrPhone == null || emailOrPhone.isBlank() || password == null || password.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email hoặc số điện thoại và mật khẩu không được để trống");
-        }
+    @Autowired
+    private CartService cartService;
 
-        return userService.login(emailOrPhone, password);
-    }
+    @Autowired
+    private GoogleAuthService googleAuthService;
 
-
-    public AuthController(UserService userService, UserRepository userRepository, CartService cartService) {
-        this.userService = userService;
-        this.userRepository = userRepository;
-        this.cartService = cartService;
-    }
+    @Autowired
+    private FacebookAuthService facebookAuthService;
 
     @PostMapping("/register")
-    public Map<String, Object> register(@RequestBody UserDTO userDTO) {
+    public Map<String, String> register(@RequestBody UserDTO userDTO) {
         if (userDTO == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Dữ liệu đăng ký không được để trống");
         }
@@ -83,35 +58,48 @@ public class AuthController {
         return userService.verifyOtpAndCreate(email, otp);
     }
 
-
     @PostMapping("/forgot-password")
     public Map<String, Object> forgotPassword(@RequestBody Map<String, String> request) {
         String emailOrPhone = request.get("emailOrPhone");
         if (emailOrPhone == null || emailOrPhone.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email hoặc số điện thoại không được để trống");
         }
-
         return userService.forgotPassword(emailOrPhone);
-
-/*
-    @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody Map<String, String> request) {
-        return ResponseEntity.ok(userService.login(request.get("email"), request.get("matKhau")));
-        return ResponseEntity.ok(userService.login(request.get("email"), request.get("password")));
-
     }
-*/
-    // Tui fix lại cái phương thức post, code của ông/bà là cmt ở trên í.
-   @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody Map<String, String> request) {
-        Map<String, Object> response = userService.login(request.get("email"), request.get("password"));
-        // Tạo hoặc lấy giỏ hàng nếu đăng nhập thành công
-        if (response.containsKey("accessToken")) {
-            User user = userRepository.findByEmail(request.get("email"))
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
+
+    @PostMapping("/login")
+    public Map<String, Object> login(@RequestBody Map<String, String> request) {
+        // Lấy email hoặc phone từ request
+        String emailOrPhone = request.get("email");
+        if (emailOrPhone == null || emailOrPhone.isBlank()) {
+            emailOrPhone = request.get("phone");
+            if (emailOrPhone == null || emailOrPhone.isBlank()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Email hoặc số điện thoại không được cung cấp");
+            }
+        }
+        String password = request.get("password");
+
+        // Kiểm tra input
+        if (password == null || password.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mật khẩu không được để trống");
+        }
+
+        // Gọi phương thức login từ UserService
+        Map<String, Object> response = userService.login(emailOrPhone, password);
+
+        // Kiểm tra đăng nhập thành công và tạo/lấy giỏ hàng
+        if (response.containsKey("data") && ((Map<String, Object>) response.get("data")).containsKey("accessToken")) {
+            Map<String, Object> userData = (Map<String, Object>) ((Map<String, Object>) response.get("data"))
+                    .get("user");
+            String username = (String) userData.get("username");
+            User user = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                            "Không tìm thấy người dùng sau khi đăng nhập"));
             cartService.getOrCreateCart(user);
         }
-        return ResponseEntity.ok(response);
+
+        return response;
     }
 
     @PostMapping("/reset-password")
@@ -120,64 +108,75 @@ public class AuthController {
         String otp = request.get("otp");
         String newPassword = request.get("newPassword");
 
-        if (emailOrPhone == null || emailOrPhone.isBlank() || otp == null || otp.isBlank() || newPassword == null || newPassword.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email/số điện thoại, OTP và mật khẩu mới không được để trống");
+        if (emailOrPhone == null || emailOrPhone.isBlank() || otp == null || otp.isBlank() || newPassword == null
+                || newPassword.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Email/số điện thoại, OTP và mật khẩu mới không được để trống");
         }
 
         return userService.resetPassword(emailOrPhone, otp, newPassword);
     }
 
-      @PostMapping("/auth/google")
+    @PostMapping("/auth/google")
     public ResponseEntity<?> loginWithGoogle(@RequestBody Map<String, String> body) {
         String accessToken = body.get("googleAccessToken");
 
         try {
             Map<String, Object> response = googleAuthService.signInWithGoogle(accessToken);
 
-            //tạo giỏ hàng tự động
-            if (response.containsKey("accessToken")) {
-                String email = (String) response.get("email");
-                if (email != null) { 
+            // Tạo hoặc lấy giỏ hàng nếu đăng nhập thành công
+            if (response.containsKey("data")
+                    && ((Map<String, Object>) response.get("data")).containsKey("accessToken")) {
+                String email = (String) ((Map<String, Object>) response.get("data")).get("user.email");
+                if (email != null) {
                     User user = userRepository.findByEmail(email)
-                        .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng sau khi đăng nhập bằng Google"));
+                            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                                    "Không tìm thấy người dùng sau khi đăng nhập bằng Google"));
                     cartService.getOrCreateCart(user);
                 }
             }
 
             return ResponseEntity.ok(response);
         } catch (Exception ex) {
-            return ResponseEntity.status(401).body(Map.of("error", "Google Login thất bại: " + ex.getMessage()));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Google Login thất bại: " + ex.getMessage()));
         }
     }
-      
+
     @PostMapping("/auth/facebook")
     public ResponseEntity<?> loginWithFacebook(@RequestBody Map<String, String> body) {
         String accessToken = body.get("accessToken");
+
         try {
-            Map<String, Object> result = facebookAuthService.signInWithFacebook(accessToken);
-            if (result.containsKey("accessToken")) {
-                String username = (String) result.get("username");
+            Map<String, Object> response = facebookAuthService.signInWithFacebook(accessToken);
+
+            // Tạo hoặc lấy giỏ hàng nếu đăng nhập thành công
+            if (response.containsKey("data")
+                    && ((Map<String, Object>) response.get("data")).containsKey("accessToken")) {
+                String username = (String) ((Map<String, Object>) response.get("data")).get("user.username");
                 if (username != null) {
                     User user = userRepository.findByUsername(username)
-                        .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng sau khi đăng nhập bằng Facebook"));
+                            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                                    "Không tìm thấy người dùng sau khi đăng nhập bằng Facebook"));
                     cartService.getOrCreateCart(user);
                 }
             }
 
-            return ResponseEntity.ok(result);
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return ResponseEntity.status(401).body(Map.of("status", "FAIL", "message", e.getMessage()));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("status", "FAIL", "message", e.getMessage()));
         }
     }
 
     @PostMapping("/password/reset")
-    public ResponseEntity<?> resetPassword(@RequestBody Map<String, String> request) {
+    public ResponseEntity<?> resetPasswordDuplicate(@RequestBody Map<String, String> request) {
         return ResponseEntity.ok(userService.resetPassword(
                 request.get("emailOrPhone"),
                 request.get("otp"),
                 request.get("newPassword")));
     }
-}
+
     @GetMapping("/refresh-token")
     public Map<String, Object> refreshToken(HttpServletRequest request) {
         String authHeader = request.getHeader("Authorization");
