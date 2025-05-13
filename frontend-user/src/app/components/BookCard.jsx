@@ -5,10 +5,6 @@ import { useRouter } from "next/navigation";
 const StatusIndicator = ({ status }) => {
   let label, dotClass;
   switch (status) {
-    case "DA_XOA":
-      label = "Đã xóa";
-      dotClass = "bg-[#F7302E]";
-      break;
     case "DA_HET":
       label = "Đã hết";
       dotClass = "bg-[#F7302E]";
