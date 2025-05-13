@@ -267,6 +267,8 @@ import {
 import { Menu as MenuIcon, X, Bell, ShoppingCart } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from "react";
 
 const navigation = [
   { name: "Trang chủ", href: "/" },
@@ -289,6 +291,36 @@ const CartBadge = ({ count }) => {
 
 const Header = () => {
   const pathname = usePathname();
+  const router = useRouter();
+
+  const [cartCount, setCartCount] = useState();
+
+  const user = JSON.parse(localStorage.getItem("persist:root")); // lấy thông tin người dùng từ localStorage
+
+  const fetchCart = async () => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/cart/${user.id}`);
+      if (response.ok) {
+        const data = await response.json();
+        const booksInCart = data.data || [];
+        setCartCount(booksInCart.length);
+      } else {
+        console.error("Lỗi khi lấy giỏ hàng");
+      }
+    } catch (error) {
+      console.error("Có lỗi xảy ra:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchCart();
+  }, [user.id]);
+
+  const handleLogout = () => {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("persist:root");
+    router.push("/user-login");
+  };
 
   return (
     <header className="bg-[#062D76] text-white shadow-lg fixed top-0 left-0 w-full z-50">
@@ -339,7 +371,7 @@ const Header = () => {
                   }`}
                 >
                   <Link href="/cart">
-                    <CartBadge count={3} />
+                    <CartBadge count={cartCount} />
                     <ShoppingCart
                       style={{
                         width: "1.5rem",
@@ -408,14 +440,14 @@ const Header = () => {
                     </MenuItem>
                     <MenuItem>
                       {({ active }) => (
-                        <Link
-                          href="/logout"
-                          className={`block px-4 py-2 text-gray-700 ${
+                        <button
+                          onClick={handleLogout}
+                          className={`w-full text-left px-4 py-2 text-gray-700 ${
                             active && "bg-gray-100"
                           }`}
                         >
                           Đăng xuất
-                        </Link>
+                        </button>
                       )}
                     </MenuItem>
                   </MenuItems>

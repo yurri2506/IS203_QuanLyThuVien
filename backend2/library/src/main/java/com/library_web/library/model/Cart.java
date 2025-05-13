@@ -24,7 +24,6 @@ public class Cart {
     public Cart() {
         this.soLuongSach = 0;
     }
-
     public Long getId() {
         return id; 
     }
@@ -46,7 +45,6 @@ public class Cart {
     public void setItems(List<CartItem> items) {
         this.items = items; 
     }
-
     public void addItem(CartItem item) {
         if (!items.stream().anyMatch(i -> i.getBook().getMaSach().equals(item.getBook().getMaSach()))) {
             items.add(item);
