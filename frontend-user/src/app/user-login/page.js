@@ -13,84 +13,97 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { motion } from "framer-motion";
-import { LogIn } from "lucide-react";
+import { LogIn, Eye, EyeOff } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import toast, { Toaster } from "react-hot-toast";
 import * as yup from "yup";
 import GoogleLoginButton from "../components/GoogleLoginButton";
+import FacebookLoginButton from "../components/FacebookLoginButton";
 import Cookies from "js-cookie";
 import { useDispatch } from "react-redux";
 import { updateUser } from "@/store/slices/userSlice";
+
+// Function to determine if input is email or phone
+const determineInputType = (input) => {
+  if (typeof input !== "string" || input.trim() === "") {
+    return { type: "invalid", value: input };
+  }
+  const trimmedInput = input.trim();
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  const phoneRegex = /^\d{3,15}$/;
+
+  if (emailRegex.test(trimmedInput)) {
+    return { type: "email", value: trimmedInput };
+  }
+  if (phoneRegex.test(trimmedInput)) {
+    return { type: "phone", value: trimmedInput };
+  }
+  return { type: "invalid", value: trimmedInput };
+};
+
+// Schemas for validation
+const loginSchema = yup.object().shape({
+  identifier: yup
+    .string()
+    .required("Email hoặc số điện thoại không được để trống")
+    .test(
+      "valid-identifier",
+      "Email hoặc số điện thoại không hợp lệ",
+      (value) => {
+        if (!value) return false;
+        const { type } = determineInputType(value);
+        return type !== "invalid";
+      }
+    ),
+  matKhau: yup
+    .string()
+    .min(6, "Mật khẩu phải có ít nhất 6 ký tự")
+    .required("Mật khẩu không được để trống"),
+});
+
+const registerSchema = yup.object().shape({
+  tenND: yup.string().required("Tên không được để trống"),
+  identifier: yup
+    .string()
+    .required("Email hoặc số điện thoại không được để trống")
+    .test(
+      "valid-identifier",
+      "Email hoặc số điện thoại không hợp lệ",
+      (value) => {
+        if (!value) return false;
+        const { type } = determineInputType(value);
+        return type !== "invalid";
+      }
+    ),
+  matKhau: yup
+    .string()
+    .min(6, "Mật khẩu phải có ít nhất 6 ký tự")
+    .required("Mật khẩu không được để trống"),
+  ngaySinh: yup
+    .date()
+    .required("Ngày sinh không được để trống")
+    .typeError("Ngày sinh phải là ngày hợp lệ"),
+  gioiTinh: yup
+    .string()
+    .oneOf(["Nam", "Nu", "Khac"], "Vui lòng chọn giới tính")
+    .required("Giới tính không được để trống"),
+});
+
+const otpSchema = yup.object().shape({
+  otp: yup
+    .string()
+    .length(6, "Mã OTP phải có 6 chữ số")
+    .required("Mã OTP không được để trống"),
+});
 
 const Page = () => {
   const router = useRouter();
   const dispatch = useDispatch();
   const [showOTP, setShowOTP] = useState(false);
   const [otpEmail, setOtpEmail] = useState("");
-
-  // Function to determine if input is email or phone
-  const determineInputType = (input) => {
-    if (typeof input !== "string" || input.trim() === "") {
-      return { type: "invalid", value: input };
-    }
-    const trimmedInput = input.trim();
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    const phoneRegex = /^\d{3,15}$/;
-
-    if (emailRegex.test(trimmedInput)) {
-      return { type: "email", value: trimmedInput };
-    }
-    if (phoneRegex.test(trimmedInput)) {
-      return { type: "phone", value: trimmedInput };
-    }
-    return { type: "invalid", value: trimmedInput };
-  };
-
-  // Schemas for validation
-  const loginSchema = yup.object().shape({
-    identifier: yup
-      .string()
-      .required("Email hoặc số điện thoại không được để trống")
-      .test("valid-identifier", "Email hoặc số điện thoại không hợp lệ", (value) => {
-        if (!value) return false;
-        const { type } = determineInputType(value);
-        return type !== "invalid";
-      }),
-    matKhau: yup
-      .string()
-      .min(6, "Mật khẩu phải có ít nhất 6 ký tự")
-      .required("Mật khẩu không được để trống"),
-  });
-
-  const registerSchema = yup.object().shape({
-    tenND: yup.string().required("Tên không được để trống"),
-    identifier: yup
-      .string()
-      .required("Email hoặc số điện thoại không được để trống")
-      .test("valid-identifier", "Email hoặc số điện thoại không hợp lệ", (value) => {
-        if (!value) return false;
-        const { type } = determineInputType(value);
-        return type !== "invalid";
-      }),
-    matKhau: yup
-      .string()
-      .min(6, "Mật khẩu phải có ít nhất 6 ký tự")
-      .required("Mật khẩu không được để trống"),
-    ngaySinh: yup.date().required("Ngày sinh không được để trống"),
-    gioiTinh: yup
-      .string()
-      .oneOf(["Nam", "Nu", "Khac"], "Vui lòng chọn giới tính")
-      .required("Giới tính không được để trống"),
-  });
-
-  const otpSchema = yup.object().shape({
-    otp: yup
-      .string()
-      .length(6, "Mã OTP phải có 6 chữ số")
-      .required("Mã OTP không được để trống"),
-  });
+  const [showPassword, setShowPassword] = useState(false);
 
   // Form hooks
   const {
@@ -124,13 +137,13 @@ const Page = () => {
   // Handle registration
   const onSubmitRegister = async (data) => {
     const { type, value } = determineInputType(data.identifier);
-    
+
     try {
       const payload = {
         username: data.tenND,
         [type]: value,
         password: data.matKhau,
-        birthdate: data.ngaySinh,
+        birthdate: data.ngaySinh.toISOString().split("T")[0], // Định dạng YYYY-MM-DD
         gender: data.gioiTinh,
       };
 
@@ -177,16 +190,19 @@ const Page = () => {
   // Handle OTP verification
   const onSubmitOTP = async (data) => {
     try {
-      const verifyResponse = await fetch("http://localhost:8080/register/verify-otp", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: otpEmail,
-          otp: data.otp,
-        }),
-      });
+      const verifyResponse = await fetch(
+        "http://localhost:8080/api/register/verify-otp", // Sửa endpoint
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: otpEmail,
+            otp: data.otp,
+          }),
+        }
+      );
 
       const verifyResult = await verifyResponse.json();
 
@@ -201,9 +217,12 @@ const Page = () => {
           style: { background: "#fee2e2", color: "#b91c1c" },
         });
       } else if (verifyResponse.status === 500) {
-        toast.error(verifyResult.message || "Lỗi máy chủ, vui lòng thử lại sau", {
-          style: { background: "#fef3c7", color: "#d97706" },
-        });
+        toast.error(
+          verifyResult.message || "Lỗi máy chủ, vui lòng thử lại sau",
+          {
+            style: { background: "#fef3c7", color: "#d97706" },
+          }
+        );
       } else {
         toast.error(verifyResult.message || "Có lỗi xảy ra", {
           style: { background: "#fee2e2", color: "#b91c1c" },
@@ -219,7 +238,7 @@ const Page = () => {
   // Handle login
   const onSubmitLogin = async (data) => {
     const { type, value } = determineInputType(data.identifier);
-    
+
     try {
       const payload = {
         [type]: value,
@@ -238,18 +257,18 @@ const Page = () => {
 
       if (response.status === 200) {
         localStorage.setItem("accessToken", result.data.accessToken);
-        localStorage.setItem("id", result.data.id);
-        localStorage.setItem("username", result.data.username);
+        localStorage.setItem("id", result.data.user.id || ""); // Giả định có id trong user
+        localStorage.setItem("username", result.data.user.username || "");
 
         Cookies.set("refreshToken", result.data.refreshToken, {
           expires: 7,
-          secure: true,
+          // secure: true, // Bỏ khi chạy trên localhost, bật khi deploy HTTPS
           sameSite: "Strict",
         });
 
         dispatch(
           updateUser({
-            ...result.data,
+            ...result.data.user,
             access_token: result.data.accessToken,
             refreshToken: result.data.refreshToken,
           })
@@ -341,12 +360,22 @@ const Page = () => {
                       )}
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="matKhau" className="text-[#086280]">
-                        Mật khẩu
-                      </Label>
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="matKhau" className="text-[#086280]">
+                          Mật khẩu
+                        </Label>
+                        <button
+                          type="button"
+                          className="flex items-center text-gray-600 text-sm"
+                          onClick={() => setShowPassword(!showPassword)}
+                        >
+                          {showPassword ? <EyeOff className="w-5 h-5 ml-1" /> : <Eye className="w-5 h-5 ml-1" />}
+                          {showPassword ? "Ẩn" : "Hiện"}
+                        </button>
+                      </div>
                       <Input
                         id="matKhau"
-                        type="password"
+                        type={showPassword ? "text" : "password"}
                         {...registerLogin("matKhau")}
                         placeholder="Nhập mật khẩu của bạn"
                         className="col-span-3 dark:border-gray-400 border-[#0E42D2] placeholder:text-gray-400"
@@ -357,6 +386,11 @@ const Page = () => {
                         </p>
                       )}
                     </div>
+                    <div className="text-right text-blue-500 text-sm mb-4">
+                      <a href="/change-password" className="underline">
+                        Quên mật khẩu?
+                      </a>
+                    </div>
                     <Button
                       onClick={handleSubmitLogin(onSubmitLogin)}
                       className="w-full bg-[#062D76] text-white"
@@ -366,6 +400,7 @@ const Page = () => {
                   </div>
                   <div className="mt-4">
                     <GoogleLoginButton />
+                    <FacebookLoginButton className="mt-2 w-full" />
                   </div>
                 </TabsContent>
 
@@ -498,9 +533,7 @@ const Page = () => {
                     placeholder="Nhập mã OTP 6 chữ số"
                     className="col-span-3 dark:border-gray-400 border-[#0E42D2] placeholder:text-gray-400"
                   />
-                  {errorsOTP.otp && (
-                    <p className="text-red-500">{errorsOTP.otp.message}</p>
-                  )}
+                  {errorsOTP.otp && <p className="text-red-500">{errorsOTP.otp.message}</p>}
                 </div>
                 <Button
                   onClick={handleSubmitOTP(onSubmitOTP)}

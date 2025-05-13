@@ -19,15 +19,29 @@ public class Category {
 
     public Category() {}
 
-    public Long getId() { return id; }
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    public Long getId() {
+        return id; 
+    }
+    public String getName() {
+        return name; 
+    }
+    public void setName(String name) {
+        this.name = name; 
+    }
 
-    public Integer getSoLuongDanhMuc() { return soLuongDanhMuc; }
-    public void setSoLuongDanhMuc(Integer soLuongDanhMuc) { this.soLuongDanhMuc = soLuongDanhMuc; }
+    public Integer getSoLuongDanhMuc() {
+        return soLuongDanhMuc; 
+    }
+    public void setSoLuongDanhMuc(Integer soLuongDanhMuc) {
+        this.soLuongDanhMuc = soLuongDanhMuc; 
+    }
 
-    public List<CategoryChild> getChildren() { return children; }
-    public void setChildren(List<CategoryChild> children) { this.children = children; }
+    public List<CategoryChild> getChildren() {
+        return children; 
+    }
+    public void setChildren(List<CategoryChild> children) {
+        this.children = children; 
+    }
 
     public void addChild(CategoryChild child) {
         if (!children.contains(child)) {

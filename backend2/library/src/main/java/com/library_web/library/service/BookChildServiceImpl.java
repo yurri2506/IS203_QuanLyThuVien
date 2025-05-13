@@ -40,41 +40,12 @@ public class BookChildServiceImpl implements BookChildService {
         char suffix = (char) ('a' + existing.size());
         BookChild child = new BookChild(book, String.valueOf(suffix));
         book.addChild(child);
+        book.setTongSoLuong(book.getTongSoLuong() + 1);
+        book.updateTrangThai();
         bookRepo.save(book);
         return child;
     }
-/*
-@Override
-@Transactional
-public BookChild updateChild(String childId, Map<String, Object> updates) {
-    BookChild child = childRepo.findById(childId)
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Không tìm thấy sách con: " + childId
-        ));
 
-    if (updates.containsKey("status")) {
-        BookChild.Status newStatus = BookChild.Status.valueOf(
-            updates.get("status").toString()
-        );
-        BookChild.Status oldStatus = child.getStatus();
-
-        // Không cho chuyển từ NOT_AVAILABLE về AVAILABLE
-        if (oldStatus == BookChild.Status.NOT_AVAILABLE && newStatus == BookChild.Status.AVAILABLE) {
-            throw new ResponseStatusException(
-                HttpStatus.BAD_REQUEST,
-                "Không cho phép chuyển từ NOT_AVAILABLE về AVAILABLE"
-            );
-        }
-        switch (newStatus) {
-            case BORROWED -> child.borrow();
-            case AVAILABLE -> child.returnBack();
-            case NOT_AVAILABLE -> child.markNotAvailable();
-        }
-    }
-    return childRepo.save(child);
-}
-
-*/
 @Override
 @Transactional
 public void deleteChild(String childId) {
@@ -87,6 +58,7 @@ public void deleteChild(String childId) {
     childRepo.save(child);
     book.decreaseTotalQuantity();
     book.setSoLuongXoa((book.getSoLuongXoa() == null ? 0 : book.getSoLuongXoa()) + 1);
+    book.updateTrangThai();
     bookRepo.save(book);
 }
 
@@ -99,6 +71,8 @@ public void deleteChild(String childId) {
         ));
         try {
             child.borrow();
+            Book book = child.getBook();
+            book.updateTrangThai();
         } catch (IllegalStateException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
@@ -114,6 +88,8 @@ public void deleteChild(String childId) {
             ));
         try {
             child.returnBack();
+            Book book = child.getBook();
+            book.updateTrangThai();
         } catch (IllegalStateException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
