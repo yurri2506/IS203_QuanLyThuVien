@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import java.util.*;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-
 @Entity
 public class Cart {
      @Id
