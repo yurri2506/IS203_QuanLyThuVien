@@ -1,10 +1,8 @@
 package com.library_web.library.dto;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-
 
 public class UserDTO {
     private String username;
@@ -14,13 +12,10 @@ public class UserDTO {
     private String password;
     private String role = "USER"; // mặc định là USER
 
-    private String gender;     
+    private String gender;
 
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSX")
-private LocalDateTime birthdate;
-
-
-
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate birthdate;
 
     // Getters và Setters
     public String getUsername() {
@@ -34,7 +29,7 @@ private LocalDateTime birthdate;
     public String getEmail() {
         return email;
     }
-    
+
     public String getPhone() {
         return phone;
     }
@@ -42,6 +37,7 @@ private LocalDateTime birthdate;
     public void setEmail(String email) {
         this.email = email;
     }
+
     public void setPhone(String phone) {
         this.phone = phone;
     }
@@ -53,28 +49,36 @@ private LocalDateTime birthdate;
     public void setFullname(String fullname) {
         this.fullname = fullname;
     }
+
     public String getPassword() {
         return password;
     }
+
     public void setPassword(String password) {
         this.password = password;
     }
+
     public String getRole() {
         return role;
     }
+
     public void setRole(String role) {
         this.role = role;
     }
+
     public String getGender() {
         return gender;
     }
-    public void setGender  (String gender){
+
+    public void setGender(String gender) {
         this.gender = gender;
     }
-    public LocalDateTime getBirthdate() {
+
+    public LocalDate getBirthdate() {
         return birthdate;
-    }   
-    public void setBirthdate(LocalDateTime birthdate) {
+    }
+
+    public void setBirthdate(LocalDate birthdate) {
         this.birthdate = birthdate;
     }
 }
