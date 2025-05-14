@@ -17,4 +17,10 @@ public class UploadController {
   public ResponseEntity<?> uploadImages(@RequestParam("file") MultipartFile[] files) {
     return uploadService.uploadImages(files);
   }
+
+  @PostMapping("/barcodeImage")
+  public ResponseEntity<?> uploadBarcodeImage(@RequestParam("file") MultipartFile file,
+      @RequestParam("type") String type) {
+    return uploadService.uploadBarcode(file, type);
+  }
 }
