@@ -66,7 +66,7 @@ const UploadImage = () => {
     setLoading(true);
     try{
       const response = await fetch(
-        `http://localhost:8080/user/${text}`,
+        `http://localhost:8080/api/user/${text}`,
         {
           method: "GET",
         }
