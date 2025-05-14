@@ -2,7 +2,7 @@ package com.library_web.library.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -28,8 +28,6 @@ public class User {
     @JsonBackReference
     private Cart cart;
 
-
-
     @Column(nullable = true, unique = true)
 
     private String phone;
@@ -42,24 +40,24 @@ public class User {
 
     private String fullname;
 
-    @Column(nullable = true)
     private String gender;
 
-    
-    @Column(nullable = true)
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSX") // Cập nhật để khớp với frontend
-    private LocalDateTime birthdate;
-    
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate birthdate;
 
     @Column(name = "provider")
-     private String provider; // GOOGLE, FACEBOOK
- 
-     @Column(name = "provider_id")
-     private String providerId; // ID do Google/Facebook cấp
+    private String provider; // GOOGLE, FACEBOOK
 
+    @Column(name = "provider_id")
+    private String providerId; // ID do Google/Facebook cấp
 
-    public Cart getCart() { return cart; }
-    public void setCart(Cart cart) { this.cart = cart; }
+    public Cart getCart() {
+        return cart;
+    }
+
+    public void setCart(Cart cart) {
+        this.cart = cart;
+    }
 
     public Long getId() {
         return id;
@@ -125,12 +123,14 @@ public class User {
         this.gender = gender;
     }
 
-    public LocalDateTime getBirthdate() {
+    public LocalDate getBirthdate() {
         return birthdate;
-    }  
-    public void setBirthdate(LocalDateTime birthdate) {
+    }
+
+    public void setBirthdate(LocalDate birthdate) {
         this.birthdate = birthdate;
     }
+
     public String getProvider() {
         return provider;
     }

@@ -3,7 +3,6 @@ import { Button } from "@/app/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/app/components/ui/input";
 import { Label } from "@/components/ui/label";
-
 import { yupResolver } from "@hookform/resolvers/yup";
 import { motion } from "framer-motion";
 import { LogIn } from "lucide-react";
@@ -13,8 +12,18 @@ import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import * as yup from "yup";
 
+// Validation schema for login
 const loginSchema = yup.object().shape({
-    email: yup.string().email("Email không hợp lệ").required("Email không được để trống"),
+    loginInput: yup
+        .string()
+        .required("Vui lòng nhập số điện thoại hoặc email")
+        .test("is-email-or-phone", "Vui lòng nhập email hợp lệ hoặc số điện thoại", (value) => {
+            if (!value) return false;
+            // Check if input is email (contains @) or phone (digits only)
+            const isEmail = value.includes("@");
+            const isPhone = /^\d+$/.test(value);
+            return isEmail || isPhone;
+        }),
     password: yup.string().min(6, "Mật khẩu phải có ít nhất 6 ký tự").required("Mật khẩu không được để trống"),
 });
 
@@ -26,13 +35,33 @@ const Page = () => {
         resolver: yupResolver(loginSchema),
     });
 
-    const onSubmit = async () => {
+    const onSubmit = async (data) => {
         setLoading(true);
         try {
+            // Determine if input is email or phone
+            const isEmail = data.loginInput.includes("@");
+            const payload = {
+                [isEmail ? "email" : "phone"]: data.loginInput,
+                password: data.password,
+            };
+
+            // Simulate backend call
+             const response = await fetch("http://localhost:8080/api/admin/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(payload),
+        });
+            if (!response.ok) {
+                throw new Error("Login failed");
+            }
+
+            // console.log("Sending to backend:", payload);
             toast.success("Đăng nhập thành công");
             router.push("/dashboard");
         } catch (error) {
-            toast.error("Đăng nhập thất bại. Kiểm tra lại email và mật khẩu");
+            toast.error("Đăng nhập thất bại. Kiểm tra lại thông tin đăng nhập");
         } finally {
             setLoading(false);
         }
@@ -47,24 +76,24 @@ const Page = () => {
                             <img src="/images/logo.jpg" alt="Admin Panel" className="w-24 mx-auto" />
                         </CardTitle>
                         <CardDescription className="text-center text-[#1CA2C1] text-[16px]">
-                            Đăng nhập vào tài khoản quản trị 
+                            Đăng nhập vào tài khoản quản trị
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
                         <form onSubmit={handleSubmit(onSubmit)}>
                             <div className="space-y-4">
                                 <div className="space-y-2">
-                                    <Label htmlFor="loginEmail" className="text-[#086280]">Email</Label>
+                                    <Label htmlFor="loginInput" className="text-[#086280]">Số điện thoại hoặc Email</Label>
                                     <Input
-                                        id="loginEmail"
-                                        name="email"
-                                        type="email"
-                                        {...register("email")}
-                                        placeholder="Nhập email của bạn"
+                                        id="loginInput"
+                                        name="loginInput"
+                                        type="text"
+                                        {...register("loginInput")}
+                                        placeholder="Nhập số điện thoại hoặc email"
                                         className="col-span-3 dark:border-gray-400 border-[#0E42D2] placeholder:text-gray-400"
                                     />
-                                    {errors.email && (
-                                        <p className="text-red-500">{errors.email.message}</p>
+                                    {errors.loginInput && (
+                                        <p className="text-red-500">{errors.loginInput.message}</p>
                                     )}
                                 </div>
                                 <div className="space-y-2">
@@ -81,8 +110,8 @@ const Page = () => {
                                         <p className="text-red-500">{errors.password.message}</p>
                                     )}
                                 </div>
-                                <Button className="w-full bg-[#23CAF1] text-white mt-5" type="submit">
-                                    <LogIn className="mr-2 w-4 h-4" /> Đăng nhập
+                                <Button className="w-full bg-[#23CAF1] text-white mt-5" type="submit" disabled={loading}>
+                                    <LogIn className="mr-2 w-4 h-4" /> {loading ? "Đang đăng nhập..." : "Đăng nhập"}
                                 </Button>
                             </div>
                         </form>
