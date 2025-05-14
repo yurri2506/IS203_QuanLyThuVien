@@ -45,23 +45,24 @@ const Page = () => {
                 password: data.password,
             };
 
-            // Simulate backend call
-             const response = await fetch("http://localhost:8080/api/admin/login", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(payload),
-        });
+            // Make backend call
+            const response = await fetch("http://localhost:8080/api/admin/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(payload),
+            });
+
             if (!response.ok) {
-                throw new Error("Login failed");
+                const errorData = await response.json();
+                throw new Error(errorData.message || "Đăng nhập thất bại");
             }
 
-            // console.log("Sending to backend:", payload);
             toast.success("Đăng nhập thành công");
             router.push("/dashboard");
         } catch (error) {
-            toast.error("Đăng nhập thất bại. Kiểm tra lại thông tin đăng nhập");
+            toast.error(error.message || "Đã xảy ra lỗi, vui lòng thử lại");
         } finally {
             setLoading(false);
         }
