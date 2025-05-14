@@ -31,13 +31,12 @@ const determineInputType = (input) => {
     return { type: "invalid", value: input };
   }
   const trimmedInput = input.trim();
-  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-  const phoneRegex = /^\d{3,15}$/;
-
-  if (emailRegex.test(trimmedInput)) {
+  const isEmail = trimmedInput.includes("@");
+  const isPhone = /^\d+$/.test(trimmedInput);
+  if (isEmail) {
     return { type: "email", value: trimmedInput };
   }
-  if (phoneRegex.test(trimmedInput)) {
+  if (isPhone) {
     return { type: "phone", value: trimmedInput };
   }
   return { type: "invalid", value: trimmedInput };
@@ -47,10 +46,10 @@ const determineInputType = (input) => {
 const loginSchema = yup.object().shape({
   identifier: yup
     .string()
-    .required("Email hoặc số điện thoại không được để trống")
+    .required("Vui lòng nhập số điện thoại hoặc email")
     .test(
       "valid-identifier",
-      "Email hoặc số điện thoại không hợp lệ",
+      "Vui lòng nhập email hợp lệ hoặc số điện thoại",
       (value) => {
         if (!value) return false;
         const { type } = determineInputType(value);
@@ -67,10 +66,10 @@ const registerSchema = yup.object().shape({
   tenND: yup.string().required("Tên không được để trống"),
   identifier: yup
     .string()
-    .required("Email hoặc số điện thoại không được để trống")
+    .required("Vui lòng nhập số điện thoại hoặc email")
     .test(
       "valid-identifier",
-      "Email hoặc số điện thoại không hợp lệ",
+      "Vui lòng nhập email hợp lệ hoặc số điện thoại",
       (value) => {
         if (!value) return false;
         const { type } = determineInputType(value);
@@ -167,21 +166,11 @@ const Page = () => {
         } else {
           router.push("/");
         }
-      } else if ([400, 403, 404].includes(response.status)) {
-        toast.error(result.message || "Đăng ký thất bại", {
-          style: { background: "#fee2e2", color: "#b91c1c" },
-        });
-      } else if (response.status === 500) {
-        toast.error(result.message || "Lỗi máy chủ, vui lòng thử lại sau", {
-          style: { background: "#fef3c7", color: "#d97706" },
-        });
       } else {
-        toast.error(result.message || "Có lỗi xảy ra", {
-          style: { background: "#fee2e2", color: "#b91c1c" },
-        });
+        throw new Error(result.message || "Đăng ký thất bại");
       }
     } catch (error) {
-      toast.error(error.message || "Có lỗi xảy ra", {
+      toast.error(error.message || "Đã xảy ra lỗi, vui lòng thử lại", {
         style: { background: "#fee2e2", color: "#b91c1c" },
       });
     }
@@ -191,7 +180,7 @@ const Page = () => {
   const onSubmitOTP = async (data) => {
     try {
       const verifyResponse = await fetch(
-        "http://localhost:8080/api/register/verify-otp", // Sửa endpoint
+        "http://localhost:8080/api/register/verify-otp",
         {
           method: "POST",
           headers: {
@@ -212,24 +201,11 @@ const Page = () => {
         });
         setShowOTP(false);
         router.push("/");
-      } else if ([400, 403, 404].includes(verifyResponse.status)) {
-        toast.error(verifyResult.message || "OTP không hợp lệ", {
-          style: { background: "#fee2e2", color: "#b91c1c" },
-        });
-      } else if (verifyResponse.status === 500) {
-        toast.error(
-          verifyResult.message || "Lỗi máy chủ, vui lòng thử lại sau",
-          {
-            style: { background: "#fef3c7", color: "#d97706" },
-          }
-        );
       } else {
-        toast.error(verifyResult.message || "Có lỗi xảy ra", {
-          style: { background: "#fee2e2", color: "#b91c1c" },
-        });
+        throw new Error(verifyResult.message || "Xác thực OTP thất bại");
       }
     } catch (error) {
-      toast.error(error.message || "Có lỗi xảy ra", {
+      toast.error(error.message || "Đã xảy ra lỗi, vui lòng thử lại", {
         style: { background: "#fee2e2", color: "#b91c1c" },
       });
     }
@@ -257,12 +233,11 @@ const Page = () => {
 
       if (response.status === 200) {
         localStorage.setItem("accessToken", result.data.accessToken);
-        localStorage.setItem("id", result.data.user.id || ""); // Giả định có id trong user
+        localStorage.setItem("id", result.data.user.id || "");
         localStorage.setItem("username", result.data.user.username || "");
 
         Cookies.set("refreshToken", result.data.refreshToken, {
           expires: 7,
-          // secure: true, // Bỏ khi chạy trên localhost, bật khi deploy HTTPS
           sameSite: "Strict",
         });
 
@@ -278,24 +253,11 @@ const Page = () => {
           style: { background: "#d1fae5", color: "#065f46" },
         });
         router.push("/");
-      } else if ([400, 403, 404].includes(response.status)) {
-        toast.error(result.message || "Đăng nhập thất bại", {
-          style: { background: "#fee2e2", color: "#b91c1c" },
-        });
-        router.push("/user-login");
-      } else if (response.status === 500) {
-        toast.error(result.message || "Lỗi máy chủ, vui lòng thử lại sau", {
-          style: { background: "#fef3c7", color: "#d97706" },
-        });
-        router.push("/user-login");
       } else {
-        toast.error(result.message || "Có lỗi xảy ra", {
-          style: { background: "#fee2e2", color: "#b91c1c" },
-        });
-        router.push("/user-login");
+        throw new Error(result.message || "Đăng nhập thất bại");
       }
     } catch (error) {
-      toast.error(error.message || "Có lỗi xảy ra", {
+      toast.error(error.message || "Đã xảy ra lỗi, vui lòng thử lại", {
         style: { background: "#fee2e2", color: "#b91c1c" },
       });
       router.push("/user-login");
