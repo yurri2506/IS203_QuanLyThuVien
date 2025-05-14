@@ -91,9 +91,9 @@ const UploadImage = () => {
     try{
       const userId = result?.id;
       var response = await fetch(
-        `http://localhost:8080/borrow-card/user/${userId}`,
+        `http://localhost:8080/api/borrow-cards/user/${userId}`,
         {
-          method: "GET",
+          method: "POST",
         }
       );
       if(!response.ok){
