@@ -23,7 +23,7 @@ public class AdminController {
     @Autowired
     private UserService userService;
 
-      @PostMapping("/login")
+    @PostMapping("/login")
     public Map<String, Object> login(@RequestBody Map<String, String> request) {
         // Lấy email hoặc phone từ request
         String emailOrPhone = request.get("email");
@@ -44,28 +44,29 @@ public class AdminController {
         // Gọi phương thức login từ UserService
         Map<String, Object> response = userService.login(emailOrPhone, password);
 
-        //  // Kiểm tra role của người dùng
-        // Map<String, Object> userData = (Map<String, Object>) response.get("data");
-        // String role = (String) userData.get("role");
-        // if ("ADMIN".equals(role)) {
-        //     throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền truy cập");
-        // }
-        // System.out.println("role: " + response.get("role"));
+        if (response == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Đăng nhập không thành công");
+        }
 
-        // if (response == null ) {
-        //     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Đăng nhập không thành công");
-        // }
+        // Lấy role
+        Map<String, Object> data = (Map<String, Object>) response.get("data");
+        Map<String, Object> userData = (Map<String, Object>) data.get("user");
+        String role = (String) userData.get("role");
+
+        if (!"ADMIN".equals(role)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền truy cập");
+        }
 
         return response;
     }
-@PreAuthorize("hasAuthority('ADMIN')")
+
+    @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/users")
     public Map<String, Object> getAllUsers() {
         List<User> users = userRepository.findAll();
         return Map.of(
-            "message", "Danh sách người dùng",
-            "data", users
-        );
+                "message", "Danh sách người dùng",
+                "data", users);
     }
 
     @DeleteMapping("/users/{id}")
@@ -75,8 +76,7 @@ public class AdminController {
         }
         userRepository.deleteById(id);
         return Map.of(
-            "message", "Xóa người dùng với ID " + id + " thành công",
-            "data", Map.of("id", id)
-        );
+                "message", "Xóa người dùng với ID " + id + " thành công",
+                "data", Map.of("id", id));
     }
 }
