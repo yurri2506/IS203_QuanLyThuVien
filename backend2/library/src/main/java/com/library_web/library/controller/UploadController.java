@@ -1,5 +1,5 @@
 package com.library_web.library.controller;
-
+import org.springframework.http.MediaType;
 import com.library_web.library.service.UploadService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -13,8 +13,13 @@ public class UploadController {
   @Autowired
   private UploadService uploadService;
 
-  @PostMapping("/image")
-  public ResponseEntity<?> uploadImages(@RequestParam("file") MultipartFile[] files) {
-    return uploadService.uploadImages(files);
-  }
+  @PostMapping(
+      path = "/image",
+      consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+    public ResponseEntity<?> uploadImages(
+        @RequestParam("files") MultipartFile[] files
+    ) {
+        return uploadService.uploadImages(files);
+    }
 }

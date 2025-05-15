@@ -31,9 +31,11 @@ public class Book {
     @Column(name = "created_at", updatable = false)
     private LocalDate createdAt;
 
-    @ElementCollection
-    @JsonIgnore  
-    private List<String> hinhAnh;
+    @ElementCollection  
+     //@JsonIgnore
+   @CollectionTable(name = "book_hinh_anh", joinColumns = @JoinColumn(name = "book_ma_sach")) 
+   @Column(name = "hinh_anh") 
+   private List<String> hinhAnh;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_child_id")
