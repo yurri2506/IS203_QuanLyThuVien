@@ -16,4 +16,6 @@ public interface BookChildRepository extends JpaRepository<BookChild, String> {
     long countByBookMaSach(Long bookId);
     @Query("SELECT COUNT(bc) FROM BookChild bc WHERE bc.book.maSach = :maSach AND bc.status IN (com.library_web.library.model.BookChild.Status.AVAILABLE, com.library_web.library.model.BookChild.Status.BORROWED)")
     long countActiveByBookMaSach(@Param("maSach") Long maSach);
+    // The findById method is already provided by JpaRepository with the correct signature:
+    // Optional<BookChild> findById(String id);
 }

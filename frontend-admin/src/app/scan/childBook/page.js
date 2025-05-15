@@ -59,11 +59,12 @@ const UploadChild = ({resultChild, setResultChild}) => {
     setLoading(true);
     try{
       const response = await fetch(
-        `http://localhost:8080/childNParent/${text}`,
+        `http://localhost:8080/api/bookchild/${text}`,
         {
           method: "GET",
         }
       );
+
       if (!response.ok) {
         toast.error("Không tìm thấy sách") 
         setLoading(false);       
