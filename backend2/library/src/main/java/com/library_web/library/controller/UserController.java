@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -34,6 +35,11 @@ public class UserController {
      public User layUserTheoId(@PathVariable Long id) {
          return userRepository.findById(id).orElse(null);
      }
+
+    @GetMapping()
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
+    }
 
     @PutMapping("/")
     public Map<String, Object> updateProfile(@RequestParam String username, @RequestBody Map<String, String> updates) {
