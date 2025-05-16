@@ -293,7 +293,7 @@ const UploadImage = () => {
     try {
       if (currentChoose.status === "Đã yêu cầu") {
         const response = await fetch(
-          `http://localhost:8080/api/borrow-cards/${currentChoose?.id}`,
+          `http://localhost:8080/api/borrow-cards/borrow/${currentChoose?.id}`,
           {
             method: "PUT",
             headers: {
