@@ -67,4 +67,11 @@ public class BorrowCardController {
     BorrowCard borrowCard = service.updateBorrowCardToBorrowing(id, childBookIds);
     return ResponseEntity.ok(borrowCard);
   }
+
+  @PutMapping("/return/{id}")
+  public ResponseEntity<BorrowCard> returnBooks(@PathVariable Long id) {
+    BorrowCard borrowCard = service.updateBorrowCardOnReturn(id);
+    return ResponseEntity.ok(borrowCard);
+  }
+
 }

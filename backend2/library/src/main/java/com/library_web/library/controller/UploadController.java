@@ -13,6 +13,12 @@ public class UploadController {
   @Autowired
   private UploadService uploadService;
 
+  @PostMapping("/barcodeImage")
+  public ResponseEntity<?> uploadBarcodeImage(@RequestParam("file") MultipartFile file,
+      @RequestParam("type") String type) {
+    return uploadService.uploadBarcode(file, type);
+  }
+
   @PostMapping(
       path = "/image",
       consumes = MediaType.MULTIPART_FORM_DATA_VALUE

@@ -155,12 +155,12 @@ public class BorrowCardService {
     // Lấy danh sách BorrowedBook hiện có
     List<BorrowedBook> borrowedBooks = borrowCard.getBorrowedBooks();
 
-    for (String childId : childBookIds) {
+    for (String childId : childBookIds) { 
         BookChild child = childBookRepo.findById(childId)
             .orElseThrow(() -> new RuntimeException("Không tìm thấy sách con với id: " + childId));
 
         Long parentId = child.getBook().getMaSach(); // lấy id sách cha thực tế từ sách con
-
+        System.out.println("Sách con id: " + childId + ", Sách cha id: " + parentId);
         // Tìm BorrowedBook phù hợp với sách cha này và chưa có sách con
         BorrowedBook matched = borrowedBooks.stream()
             .filter(bb -> bb.getBookId().equals(parentId) && (bb.getChildBookId() == null || bb.getChildBookId().isEmpty()))
@@ -187,13 +187,14 @@ public class BorrowCardService {
     // Kiểm tra và cập nhật trạng thái phiếu mượn
     if (borrowCard.getStatus().equals(BorrowCard.Status.BORROWED.getStatusDescription())) {
         borrowCard.setStatus(BorrowCard.Status.RETURNED.getStatusDescription());
-    }
 
+    }
     // Cập nhật ngày trả sách
     borrowCard.setDueDate(LocalDateTime.now());
 
     // Cập nhật trạng thái sách con
-    List<String> childBookIds = borrowCard.getBookIds(); // lấy danh sách sách con
+    List<String> childBookIds = borrowCard.getBookIds(); 
+    System.out.println(childBookIds);// lấy danh sách sách con
     for (String childId : childBookIds) {
         BookChild child = childBookRepo.findById(childId)
             .orElseThrow(() -> new RuntimeException("Không tìm thấy sách con với id: " + childId));
@@ -204,10 +205,9 @@ public class BorrowCardService {
     }
 
     // Cập nhật số lượng sách trong kho
-    List<Long> bookIds = borrowCard.getBookIds().stream()
+    List<Long> bookIds = borrowCard.getParentBookIds().stream()
         .map(Long::valueOf)
         .collect(Collectors.toList());
-    
     for (Long bookId : bookIds) {
         Book book = BookRepository.findById(bookId)
             .orElseThrow(() -> new RuntimeException("Không tìm thấy sách với id: " + bookId));
