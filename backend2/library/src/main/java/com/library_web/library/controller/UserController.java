@@ -18,7 +18,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/user")
-@PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
+// @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')") -- tắt tạm phân quyền
 public class UserController {
 
     @Autowired
@@ -29,6 +29,11 @@ public class UserController {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+     @GetMapping("/{id}")
+     public User layUserTheoId(@PathVariable Long id) {
+         return userRepository.findById(id).orElse(null);
+     }
 
     @PutMapping("/")
     public Map<String, Object> updateProfile(@RequestParam String username, @RequestBody Map<String, String> updates) {

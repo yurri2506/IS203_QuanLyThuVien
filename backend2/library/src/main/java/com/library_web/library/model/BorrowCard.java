@@ -159,4 +159,9 @@ public class BorrowCard {
         .map(BorrowedBook::getChildBookId)
         .collect(Collectors.toList());
   }
+  public List<Long> getParentBookIds() {
+    return borrowedBooks.stream()
+        .map(BorrowedBook::getBookId)
+        .collect(Collectors.toList());
+  }
 }
