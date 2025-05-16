@@ -134,18 +134,12 @@ const UploadImage = () => {
         }
       }
     } else {
-      if (currentChoose?.childBookIds?.length > 0) {
+      if (currentChoose?.borrowedBooks?.length > 0) {
         try {
           const books = await Promise.all(
-            currentChoose.childBookIds.map(async (childBook) => {
-              const parentId = (
-                await (
-                  await fetch(
-                    `http://localhost:8080/api/childbook/${childBook}`
-                  )
-                ).json()
-              )?.maSach;
-              const data = await fetchBookInfo(parentId);
+            currentChoose.borrowedBooks.map(async (bookId) => {
+              const childBook = bookId;
+              const data = await fetchBookInfo(bookId.bookId);
               return { ...data, childId: childBook, checked: false };
             })
           );
@@ -183,7 +177,7 @@ const UploadImage = () => {
         <div className="flex flex-col">
           <p
             className={`font-semibold ${
-              currentChoose?.status !== "Đang yêu cầu" ? "" : "hidden"
+              currentChoose?.status !== "Đã yêu cầu" ? "" : "hidden"
             }`}
           >
             Id:&nbsp;{book?.maSach}
@@ -207,11 +201,11 @@ const UploadImage = () => {
           <strong>Ngày đăng ký mượn:</strong>&nbsp;
           {format(new Date(card?.borrowDate), "dd/MM/yyyy HH:mm:ss")}
         </p>
-        <p className={`${card?.status === "Đang yêu cầu" ? "" : "hidden"}`}>
+        <p className={`${card?.status === "Đã yêu cầu" ? "" : "hidden"}`}>
           <strong>Ngày lấy sách dự kiến:</strong>&nbsp;
           {format(new Date(card?.getBookDate), "dd/MM/yyyy HH:mm:ss")}
         </p>
-        <p className={`${card?.status === "Đang yêu cầu" ? "hidden" : ""}`}>
+        <p className={`${card?.status === "Đã yêu cầu" ? "hidden" : ""}`}>
           <strong>Ngày trả sách dự kiến:</strong>&nbsp;
           {format(
             new Date(
@@ -257,7 +251,8 @@ const UploadImage = () => {
         children.push(resultChild.id);
       } else {
         const childId = resultChild.id;
-        const foundBook = currentInfo.find((book) => book.id === childId);
+        console.log("tới đay");
+        const foundBook = currentInfo.find((book) => book.childId.childBookId === childId);
         if (!foundBook) {
           toast.error("Sách không tồn tại trong danh sách đã mượn!");
           return;
@@ -267,7 +262,7 @@ const UploadImage = () => {
           return;
         }
         const updatedBooks = currentInfo.map((book) =>
-          book.id === childId ? { ...book, checked: true } : book
+          book.childId.childBookId === childId ? { ...book, checked: true } : book
         );
         setInfo(updatedBooks);
       }
@@ -309,7 +304,7 @@ const UploadImage = () => {
         }
       } else {
         const response = await fetch(
-          `http://localhost:8080/api/borrow-cards/${currentChoose?.id}`,
+          `http://localhost:8080/api/borrow-cards/return/${currentChoose?.id}`,
           {
             method: "PUT",
           }
@@ -448,7 +443,7 @@ const UploadImage = () => {
                     <Book width={24} height={24} />
                     <p className="text-lg font-semibold">
                       {" "}
-                      Phiếu mượn đang yêu cầu
+                      Phiếu mượn đã yêu cầu
                     </p>
                   </div>
                   <div className="flex flex-col items-center">
