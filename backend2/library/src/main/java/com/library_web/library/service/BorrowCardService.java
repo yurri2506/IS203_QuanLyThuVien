@@ -155,12 +155,12 @@ public class BorrowCardService {
     // Lấy danh sách BorrowedBook hiện có
     List<BorrowedBook> borrowedBooks = borrowCard.getBorrowedBooks();
 
-    for (String childId : childBookIds) {
+    for (String childId : childBookIds) { 
         BookChild child = childBookRepo.findById(childId)
             .orElseThrow(() -> new RuntimeException("Không tìm thấy sách con với id: " + childId));
 
         Long parentId = child.getBook().getMaSach(); // lấy id sách cha thực tế từ sách con
-
+        System.out.println("Sách con id: " + childId + ", Sách cha id: " + parentId);
         // Tìm BorrowedBook phù hợp với sách cha này và chưa có sách con
         BorrowedBook matched = borrowedBooks.stream()
             .filter(bb -> bb.getBookId().equals(parentId) && (bb.getChildBookId() == null || bb.getChildBookId().isEmpty()))
