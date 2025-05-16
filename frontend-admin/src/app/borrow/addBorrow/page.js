@@ -25,7 +25,7 @@ function page() {
     const fetchUser = async()=>{
       setLoading(true)
       try{
-        const res = await fetch('http://localhost:8081/users',{method:'GET'})
+        const res = await fetch('http://localhost:8080/api/user',{method:'GET'})
         if (!res.ok) {
           throw new Error("Không thể lấy danh sách người dùng");
         }    
@@ -40,7 +40,7 @@ function page() {
     const fetchBook = async()=>{
       setLoading(true)
       try{
-        const res = await fetch('http://localhost:8081/books',{method:'GET'})
+        const res = await fetch('http://localhost:8080/api/book',{method:'GET'})
         if (!res.ok) {
           throw new Error("Không thể lấy danh sách sách");
         }    
@@ -54,7 +54,7 @@ function page() {
     fetchBook();
   }, []);
   const handleEnterUser = () =>{
-    const selected = userList.filter((user)=>user?.id === userText)
+    const selected = userList.filter((user)=>user?.id == userText)
     if(selected.length < 1) {
       toast.error("Không tìm thấy người dùng với id này")
       return;
@@ -105,7 +105,7 @@ function page() {
         userId: user?.id,
         bookIds: idList
       }
-      const response = await fetch("http://localhost:8081/borrow-card/create", {
+      const response = await fetch("http://localhost:8080/api/borrow-cards", {
         method:"POST",
         headers: {
           'Content-Type': 'application/json'
@@ -179,7 +179,7 @@ function page() {
             <div className="flex flex-col w-full gap-[5px] md:gap-[10px]">
               <p className="font-semibold text-lg mt-3">Tên Người Dùng</p>
               <p className="font-semibold text-gray-700 rounded-lg w-120 h-10 flex items-center bg-gray-300 px-5">
-                {user?.tenND}
+                {user?.username}
               </p>
             </div>
           </div>
