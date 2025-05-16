@@ -93,12 +93,20 @@ function Page() {
     const formData = new FormData();
     image.forEach((img) => {
       if (img.selectedFile) {
-        formData.append("file", img.selectedFile);
+        formData.append("files", img.selectedFile);
       }
     });
     try {
-      const res = await axios.post("http://localhost:8080/upload/image", formData);
-      return res.data; 
+    const res = await axios.post(
+      "http://localhost:8080/api/upload/image",
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data"
+        }
+      }
+    );
+    return res.data;
     } catch (error) {
       console.error("Error uploading images:", error);
       toast.error("Upload hình ảnh thất bại");
@@ -182,6 +190,8 @@ const handleValidation = () => {
         },
         quantity: parseInt(quantity),
       };
+
+      console.log("bookData gửi lên:", bookData);
 
       const res = await axios.post("http://localhost:8080/api/book", bookData);
       toast.success("Thêm sách thành công");
