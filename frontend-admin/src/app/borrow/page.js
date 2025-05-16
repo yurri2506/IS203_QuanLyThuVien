@@ -35,7 +35,7 @@ const page = () => {
     if (selectedButton === "Đã yêu cầu")
       return card.status === "Đã yêu cầu";
     if (selectedButton === "Đang mượn") return card.status === "Đang mượn";
-    if (selectedButton === "Hết hạn") return card.status === "Hết hạn";
+    if (selectedButton === "Đã trả") return card.status === "Đã trả";
     return false;
   });
 
@@ -118,7 +118,7 @@ const page = () => {
 
   const handleExpired = () =>{
     setSelectedButton("Đã yêu cầu");
-    if (confirm('Bạn chắc chắn muốn tiến hành xem xét các phiếu hết hạn?')) {
+    if (confirm('Bạn chắc chắn muốn tiến hành xem xét các phiếu Đã trả?')) {
       // Đồng ý
       const today = new Date();
       const expiredList = filteredCards.filter(card => {
@@ -181,8 +181,8 @@ const page = () => {
               {/* Returned Status */}
               <Button
                 className={`flex flex-1 gap-3 justify-center text-white hover:bg-gray-500 items-center text-[1.125rem] max-md:text-[1rem] font-medium rounded-md py-5 max-md:py-2 cursor-pointer ${
-                  selectedButton === "Hết hạn"? "bg-[#062D76]": "bg-[#b6cefa]"}`}
-                onClick={() => handleButtonClick("Hết hạn")}
+                  selectedButton === "Đã trả"? "bg-[#062D76]": "bg-[#b6cefa]"}`}
+                onClick={() => handleButtonClick("Đã trả")}
               >
                 <TimerOff
                   style={{
@@ -191,7 +191,7 @@ const page = () => {
                   }}
                   className="size-6"
                 />
-                Hết hạn
+                Đã trả
               </Button>
               </div>
               <div className="flex gap-5">
@@ -251,7 +251,7 @@ const page = () => {
                           </>
                         )}
 
-                        {selectedButton === "Hết hạn" && (
+                        {selectedButton === "Đã trả" && (
                           <>
                           {/*Hết hạn do trả sách hoặc hết hạn do ko lấy sách đúng hạn */}
                             {borrowing.dueDate?"Ngày trả: ":"Hạn lấy sách: "}
@@ -295,7 +295,7 @@ const page = () => {
             {/*Nút Thêm - Floating Button*/}
         <div className={`fixed bottom-6 right-10 ${selectedButton==="Đã yêu cầu"?"":"hidden"}`}>
           <Button
-            title={"Xét phiếu hết hạn"}
+            title={"Xét phiếu đã trả"}
             className="bg-red-700 rounded-3xl w-12 h-12 border-2 border-white"
             onClick={() => {
               handleExpired();
