@@ -17,10 +17,10 @@ public class BorrowCardController {
   @Autowired
   private BorrowCardService service;
 
-  // @GetMapping
-  // public ResponseEntity<List<BorrowCardDTO>> getAll() {
-  // return ResponseEntity.ok(service.getAll());
-  // }
+  @GetMapping
+  public ResponseEntity<List<BorrowCard>> getAll() {
+    return ResponseEntity.ok(service.getAll());
+  }
 
   @GetMapping("/{id}")
   public ResponseEntity<BorrowCardDTO> getBorrowCardDetails(@PathVariable Long id) {
