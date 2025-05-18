@@ -61,26 +61,30 @@ public class UserService {
         // throw new IllegalArgumentException("Giới tính không được để trống");
 
         // if ((userDTO.getEmail() == null || userDTO.getEmail().isBlank()) &&
-        //         (userDTO.getPhone() == null || userDTO.getPhone().isBlank())) {
-        //     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Phải cung cấp email hoặc số điện thoại");
+        // (userDTO.getPhone() == null || userDTO.getPhone().isBlank())) {
+        // throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Phải cung cấp
+        // email hoặc số điện thoại");
         // }
         // if (userDTO.getEmail() != null && !userDTO.getEmail().isBlank()
-        //         && userRepository.findByEmail(userDTO.getEmail()).isPresent()) {
-        //     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email đã tồn tại");
+        // && userRepository.findByEmail(userDTO.getEmail()).isPresent()) {
+        // throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email đã tồn
+        // tại");
         // }
         // if (userDTO.getPhone() != null && !userDTO.getPhone().isBlank()
-        //         && userRepository.findByPhone(userDTO.getPhone()).isPresent()) {
-        //     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Số điện thoại đã tồn tại");
+        // && userRepository.findByPhone(userDTO.getPhone()).isPresent()) {
+        // throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Số điện thoại đã
+        // tồn tại");
         // }
         // if (userRepository.findByUsername(userDTO.getUsername()).isPresent()) {
-        //     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tên đăng nhập đã tồn tại");
-        //}
+        // throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tên đăng nhập đã
+        // tồn tại");
+        // }
 
         if (userDTO.getEmail() != null && userRepository.findByEmail(userDTO.getEmail()).isPresent())
             throw new IllegalArgumentException("Email đã tồn tại");
         if (userDTO.getPhone() != null && userRepository.findByPhone(userDTO.getPhone()).isPresent())
             throw new IllegalArgumentException("Số điện thoại đã tồn tại");
-        
+
         if (userDTO.getPhone() != null && (userDTO.getEmail() == null || userDTO.getEmail().isBlank())) {
             User user = new User();
             user.setUsername(userDTO.getUsername());
@@ -152,12 +156,12 @@ public class UserService {
                         "accessToken", accessToken,
                         "refreshToken", refreshToken,
                         "user", Map.of(
+                                "id", user.getId(),
                                 "username", user.getUsername(),
                                 "email", user.getEmail() != null ? user.getEmail() : "",
                                 "phone", user.getPhone() != null ? user.getPhone() : "",
                                 "fullname", user.getFullname() != null ? user.getFullname() : "",
-                                "role", user.getRole() != null ? user.getRole() : ""
-                                )));
+                                "role", user.getRole() != null ? user.getRole() : "")));
 
     }
 
@@ -261,6 +265,7 @@ public class UserService {
                         "accessToken", accessToken,
                         "refreshToken", refreshToken,
                         "user", Map.of(
+                                "id", user.getId(),
                                 "username", user.getUsername(),
                                 "email", user.getEmail() != null ? user.getEmail() : "",
                                 "phone", user.getPhone() != null ? user.getPhone() : "",
