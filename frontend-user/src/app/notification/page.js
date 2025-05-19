@@ -73,7 +73,7 @@ const Notifications = () => {
                     id: `borrow-request-${card.id}-${borrowedBook.bookId}`,
                     type: "borrow-request",
                     message: `Bạn đã yêu cầu mượn sách ${bookName} thành công.`,
-                    link: `/borrow-cards/${card.id}`,
+                    link: `/borrowed-card/${card.id}`,
                     timestamp: card.borrowDate || new Date().toISOString(),
                   });
                 }
@@ -84,7 +84,7 @@ const Notifications = () => {
                     id: `borrow-success-${card.id}-${borrowedBook.bookId}`,
                     type: "borrow-success",
                     message: `Bạn đã mượn sách ${bookName} thành công.`,
-                    link: `/borrow-cards/${card.id}`,
+                    link: `/borrowed-card/${card.id}`,
                     timestamp: card.getBookDate || new Date().toISOString(),
                   });
 
@@ -94,7 +94,7 @@ const Notifications = () => {
                       id: `due-reminder-${card.id}-${borrowedBook.bookId}-${daysDiff}`,
                       type: "due-reminder",
                       message: `Sách ${bookName} đã gần tới hạn mượn sách. Hãy gia hạn hoặc trả sách.`,
-                      link: `/borrow-cards/${card.id}`,
+                      link: `/borrowed-card/${card.id}`,
                       timestamp: new Date().toISOString(),
                     });
                   }
@@ -105,7 +105,7 @@ const Notifications = () => {
                       id: `overdue-${card.id}-${borrowedBook.bookId}`,
                       type: "overdue",
                       message: `Bạn đã quá hạn mượn sách ${bookName}!`,
-                      link: `/borrow-cards/${card.id}`,
+                      link: `/borrowed-card/${card.id}`,
                       timestamp: new Date().toISOString(),
                     });
                   }
@@ -117,7 +117,7 @@ const Notifications = () => {
                     id: `return-success-${card.id}-${borrowedBook.bookId}`,
                     type: "return-success",
                     message: `Bạn đã trả sách ${bookName} thành công.`,
-                    link: `/borrow-cards/${card.id}`,
+                    link: `/borrowed-card/${card.id}`,
                     timestamp: card.dueDate || new Date().toISOString(),
                   });
                 }
