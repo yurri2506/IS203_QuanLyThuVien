@@ -147,6 +147,18 @@ public class UserService {
         }
 
         User user = userOpt.get();
+
+        // Kiểm tra xem đây là admin hay user
+        if (user.getRole().equals("ADMIN")) {
+            String otp = String.valueOf((int) (Math.random() * 900000) + 100000);
+            LocalDateTime expiredAt = LocalDateTime.now().plusMinutes(5);
+            TempStorage.savePendingOtp(user.getEmail(), otp, expiredAt);
+            // Gửi OTP qua email
+            sendOtpEmail(user.getEmail(), otp);
+            return Map.of("message", "Đã gửi OTP tới email, vui lòng xác thực",
+                    "email", user.getEmail());
+
+        }
         String accessToken = JwtUtil.generateAccessToken(user.getUsername());
         String refreshToken = JwtUtil.generateRefreshToken(user.getUsername());
 
@@ -163,6 +175,33 @@ public class UserService {
                                 "fullname", user.getFullname() != null ? user.getFullname() : "",
                                 "role", user.getRole() != null ? user.getRole() : "")));
 
+    }
+
+    public Map<String, Object> verifyOtpAndLoginForAdmin(String email, String otp) {
+
+        if (!TempStorage.isValidOtp(email, otp)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "OTP không chính xác hoặc đã hết hạn");
+        }
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Không tìm thấy người dùng với email này"));
+
+        String accessToken = JwtUtil.generateAccessToken(user.getUsername());
+        String refreshToken = JwtUtil.generateRefreshToken(user.getUsername());
+        TempStorage.removePendingUser(email);
+
+        return Map.of(
+                "message", "Đăng nhập thành công",
+                "data", Map.of(
+                        "accessToken", accessToken,
+                        "refreshToken", refreshToken,
+                        "admin", Map.of(
+                                "id", user.getId(),
+                                "username", user.getUsername(),
+                                "email", user.getEmail() != null ? user.getEmail() : "",
+                                "phone", user.getPhone() != null ? user.getPhone() : "",
+                                "fullname", user.getFullname() != null ? user.getFullname() : "")));
     }
 
     public Map<String, Object> refreshAccessToken(String refreshToken) {
