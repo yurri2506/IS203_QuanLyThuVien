@@ -1,13 +1,7 @@
 package com.library_web.library.controller;
 
 import com.library_web.library.dto.UserDTO;
-
-import com.library_web.library.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-
 import com.library_web.library.model.User;
-import com.library_web.library.model.Cart;
 import com.library_web.library.repository.UserRepository;
 import com.library_web.library.service.UserService;
 import com.library_web.library.service.GoogleAuthService;
@@ -16,13 +10,10 @@ import com.library_web.library.service.CartService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
-
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Map;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api")
@@ -46,9 +37,19 @@ public class AuthController {
 
     @PostMapping("/register")
     public Map<String, String> register(@RequestBody UserDTO userDTO) {
-        if (userDTO == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Dữ liệu đăng ký không được để trống");
+
+        if (userDTO.getEmail() != null && !userDTO.getEmail().isBlank() &&
+                userRepository.findByEmail(userDTO.getEmail()).isPresent()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email đã tồn tại");
         }
+        if (userDTO.getPhone() != null && !userDTO.getPhone().isBlank() &&
+                userRepository.findByPhone(userDTO.getPhone()).isPresent()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Số điện thoại đã tồn tại");
+        }
+        if (userRepository.findByUsername(userDTO.getUsername()).isPresent()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tên đăng nhập đã tồn tại");
+        }
+
         return userService.register(userDTO);
     }
 
@@ -57,45 +58,37 @@ public class AuthController {
         String email = payload.get("email");
         String otp = payload.get("otp");
 
-        if (email == null || email.isBlank() || otp == null || otp.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email và OTP không được để trống");
+        Map<String, Object> response = userService.verifyOtpAndCreate(email, otp);
+        if (response == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "OTP không chính xác hoặc đã hết hạn");
         }
-
-        return userService.verifyOtpAndCreate(email, otp);
+        return response;
     }
 
     @PostMapping("/forgot-password")
     public Map<String, Object> forgotPassword(@RequestBody Map<String, String> request) {
         String emailOrPhone = request.get("emailOrPhone");
-        if (emailOrPhone == null || emailOrPhone.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email hoặc số điện thoại không được để trống");
+        Map<String, Object> response = userService.forgotPassword(emailOrPhone);
+        if (response == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "Không tìm thấy người dùng với email hoặc số điện thoại này");
         }
-
-        return userService.forgotPassword(emailOrPhone);
+        return response;
     }
 
     @PostMapping("/login")
     public Map<String, Object> login(@RequestBody Map<String, String> request) {
-        // Lấy email hoặc phone từ request
         String emailOrPhone = request.get("email");
         if (emailOrPhone == null || emailOrPhone.isBlank()) {
             emailOrPhone = request.get("phone");
-            if (emailOrPhone == null || emailOrPhone.isBlank()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "Email hoặc số điện thoại không được cung cấp");
-            }
         }
         String password = request.get("password");
 
-        // Kiểm tra input
-        if (password == null || password.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mật khẩu không được để trống");
+        Map<String, Object> response = userService.login(emailOrPhone, password);
+        if (response == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email/số điện thoại hoặc mật khẩu không đúng");
         }
 
-        // Gọi phương thức login từ UserService
-        Map<String, Object> response = userService.login(emailOrPhone, password);
-
-        // Kiểm tra đăng nhập thành công và tạo/lấy giỏ hàng
         if (response.containsKey("data") && ((Map<String, Object>) response.get("data")).containsKey("accessToken")) {
             Map<String, Object> userData = (Map<String, Object>) ((Map<String, Object>) response.get("data"))
                     .get("user");
@@ -115,26 +108,30 @@ public class AuthController {
         String otp = request.get("otp");
         String newPassword = request.get("newPassword");
 
-        if (emailOrPhone == null || emailOrPhone.isBlank() || otp == null || otp.isBlank() || newPassword == null
-                || newPassword.isBlank()) {
+        Map<String, Object> response = userService.resetPassword(emailOrPhone, otp, newPassword);
+        if (response == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Email/số điện thoại, OTP và mật khẩu mới không được để trống");
-
+                    "OTP không chính xác, đã hết hạn hoặc không tìm thấy người dùng");
         }
-
-        return userService.resetPassword(emailOrPhone, otp, newPassword);
+        return response;
     }
 
     @PostMapping("/auth/google")
     public ResponseEntity<?> loginWithGoogle(@RequestBody Map<String, String> body) {
         String accessToken = body.get("googleAccessToken");
+        if (accessToken == null || accessToken.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Google Access Token không được để trống");
+        }
 
         try {
-            Map<String, Object> response = googleAuthService.signInWithGoogle(accessToken);
+            Map<String, Object> response = userService.loginWithGoogle(accessToken);
+            if (response == null) {
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+                        "Google Login thất bại: IdToken không hợp lệ");
+            }
 
-            // Tạo hoặc lấy giỏ hàng nếu đăng nhập thành công
-            if (response.containsKey("data")
-                    && ((Map<String, Object>) response.get("data")).containsKey("accessToken")) {
+            if (response.containsKey("data") &&
+                    ((Map<String, Object>) response.get("data")).containsKey("accessToken")) {
                 String email = (String) ((Map<String, Object>) response.get("data")).get("user.email");
                 if (email != null) {
                     User user = userRepository.findByEmail(email)
@@ -154,13 +151,14 @@ public class AuthController {
     @PostMapping("/auth/facebook")
     public ResponseEntity<?> loginWithFacebook(@RequestBody Map<String, String> body) {
         String accessToken = body.get("accessToken");
+        if (accessToken == null || accessToken.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Facebook Access Token không được để trống");
+        }
 
         try {
             Map<String, Object> response = facebookAuthService.signInWithFacebook(accessToken);
-
-            // Tạo hoặc lấy giỏ hàng nếu đăng nhập thành công
-            if (response.containsKey("data")
-                    && ((Map<String, Object>) response.get("data")).containsKey("accessToken")) {
+            if (response.containsKey("data") &&
+                    ((Map<String, Object>) response.get("data")).containsKey("accessToken")) {
                 String username = (String) ((Map<String, Object>) response.get("data")).get("user.username");
                 if (username != null) {
                     User user = userRepository.findByUsername(username)
@@ -169,7 +167,6 @@ public class AuthController {
                     cartService.getOrCreateCart(user);
                 }
             }
-
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
@@ -179,10 +176,16 @@ public class AuthController {
 
     @PostMapping("/password/reset")
     public ResponseEntity<?> resetPasswordDuplicate(@RequestBody Map<String, String> request) {
-        return ResponseEntity.ok(userService.resetPassword(
-                request.get("emailOrPhone"),
-                request.get("otp"),
-                request.get("newPassword")));
+        String emailOrPhone = request.get("emailOrPhone");
+        String otp = request.get("otp");
+        String newPassword = request.get("newPassword");
+
+        Map<String, Object> response = userService.resetPassword(emailOrPhone, otp, newPassword);
+        if (response == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "OTP không chính xác, đã hết hạn hoặc không tìm thấy người dùng");
+        }
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/refresh-token")
@@ -192,12 +195,15 @@ public class AuthController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Yêu cầu header Authorization với Bearer Token");
         }
 
-        String refreshToken = authHeader.substring(7); // Bỏ "Bearer " (7 ký tự)
+        String refreshToken = authHeader.substring(7);
         if (refreshToken.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Refresh Token không được để trống");
         }
 
-        return userService.refreshAccessToken(refreshToken);
+        Map<String, Object> response = userService.refreshAccessToken(refreshToken);
+        if (response == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Refresh Token không hợp lệ hoặc đã hết hạn");
+        }
+        return response;
     }
-
 }
