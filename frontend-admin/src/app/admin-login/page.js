@@ -11,11 +11,11 @@ import { Input } from "@/app/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { motion } from "framer-motion";
-import { LogIn } from "lucide-react";
+import { LogIn, ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import toast from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 import * as yup from "yup";
 import Cookies from "js-cookie";
 import { updateUser } from "@/store/slices/userSlice";
@@ -31,7 +31,6 @@ const loginSchema = yup.object().shape({
       "Vui lòng nhập email hợp lệ hoặc số điện thoại",
       (value) => {
         if (!value) return false;
-        // Check if input is email (contains @) or phone (digits only)
         const isEmail = value.includes("@");
         const isPhone = /^\d+$/.test(value);
         return isEmail || isPhone;
@@ -43,30 +42,50 @@ const loginSchema = yup.object().shape({
     .required("Mật khẩu không được để trống"),
 });
 
+// Validation schema for OTP
+const otpSchema = yup.object().shape({
+  otp: yup
+    .string()
+    .required("Vui lòng nhập mã OTP")
+    .matches(/^\d{6}$/, "Mã OTP phải là 6 chữ số"),
+});
+
 const Page = () => {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
+  const [loading, setLoading] = useState(false);
+  const [isOtpPhase, setIsOtpPhase] = useState(false);
+  const [email, setEmail] = useState("");
 
+  // Login form
   const {
-    register,
-    handleSubmit,
-    formState: { errors },
+    register: loginRegister,
+    handleSubmit: handleLoginSubmit,
+    formState: { errors: loginErrors },
+    reset: resetLogin,
   } = useForm({
     resolver: yupResolver(loginSchema),
   });
 
-  const onSubmit = async (data) => {
+  // OTP form
+  const {
+    register: otpRegister,
+    handleSubmit: handleOtpSubmit,
+    formState: { errors: otpErrors },
+    reset: resetOtp,
+  } = useForm({
+    resolver: yupResolver(otpSchema),
+  });
+
+  const onLoginSubmit = async (data) => {
     setLoading(true);
     try {
-      // Determine if input is email or phone
       const isEmail = data.loginInput.includes("@");
       const payload = {
         [isEmail ? "email" : "phone"]: data.loginInput,
         password: data.password,
       };
 
-      // Make backend call
       const response = await fetch("http://localhost:8080/api/admin/login", {
         method: "POST",
         headers: {
@@ -79,42 +98,179 @@ const Page = () => {
         const errorData = await response.json();
         throw new Error(errorData.message || "Đăng nhập thất bại");
       }
+
       const result = await response.json();
 
-      if (response.status === 200) {
-        localStorage.setItem("accessToken", result.data.accessToken);
-        localStorage.setItem("id", result.data.user.id || "");
-        localStorage.setItem("username", result.data.user.username || "");
-
-        Cookies.set("refreshToken", result.data.refreshToken, {
-          expires: 7,
-          sameSite: "Strict",
-        });
-
-        dispatch(
-          updateUser({
-            ...result.data.user,
-            access_token: result.data.accessToken,
-            refreshToken: result.data.refreshToken,
-          })
-        );
-
-        toast.success(result.message || "Đăng nhập thành công", {
-          style: { background: "#d1fae5", color: "#065f46" },
-        });
-        router.push("/dashboard");
-      } else {
-        throw new Error(result.message || "Đăng nhập thất bại");
+      if (result.message == "Đăng nhập thành công") {
+        throw new Error("Bạn không có quyền truy cập vào trang này");
       }
+
+      setIsOtpPhase(true);
+      setEmail(result.email);
+      toast.success(result.message || "Đã gửi OTP tới email của bạn", {
+        style: { background: "#d1fae5", color: "#065f46" },
+      });
+      resetLogin(); // Clear login form
     } catch (error) {
-      toast.error(error.message || "Đã xảy ra lỗi, vui lòng thử lại");
+      toast.error(error.message || "Đã xảy ra lỗi, vui lòng thử lại", {
+        style: { background: "#fee2e2", color: "#991b1b" },
+      });
     } finally {
       setLoading(false);
     }
   };
 
+  const onOtpSubmit = async (data) => {
+    setLoading(true);
+    try {
+      const payload = { email: email, otp: data.otp };
+      const response = await fetch(
+        "http://localhost:8080/api/admin/verify-otp",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Xác thực OTP thất bại");
+      }
+
+      const result = await response.json();
+
+      localStorage.setItem("accessToken", result.data.accessToken);
+      localStorage.setItem("id", result.data.admin.id || "");
+      localStorage.setItem("username", result.data.admin.username || "");
+
+      Cookies.set("refreshToken", result.data.refreshToken, {
+        expires: 7,
+        sameSite: "Strict",
+      });
+
+      dispatch(
+        updateUser({
+          ...result.data.admin,
+          access_token: result.data.accessToken,
+          refreshToken: result.data.refreshToken,
+        })
+      );
+
+      toast.success(result.message || "Đăng nhập thành công", {
+        style: { background: "#d1fae5", color: "#065f46" },
+      });
+      // Chờ 1.5 giây rồi chuyển trang
+      setTimeout(() => {
+        router.push("/dashboard");
+      }, 1000);
+    } catch (error) {
+      toast.error(error.message || "Đã xảy ra lỗi, vui lòng thử lại", {
+        style: { background: "#fee2e2", color: "#991b1b" },
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleBackToLogin = () => {
+    setIsOtpPhase(false);
+    setEmail("");
+    resetOtp();
+  };
+
+  const renderLoginForm = () => (
+    <form onSubmit={handleLoginSubmit(onLoginSubmit)}>
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="loginInput" className="text-[#086280]">
+            Số điện thoại hoặc Email
+          </Label>
+          <Input
+            id="loginInput"
+            name="loginInput"
+            type="text"
+            {...loginRegister("loginInput")}
+            placeholder="Nhập số điện thoại hoặc email"
+            className="col-span-3 dark:border-gray-400 border-[#0E42D2] placeholder:text-gray-400"
+          />
+          {loginErrors.loginInput && (
+            <p className="text-red- react-hot-toast500">
+              {loginErrors.loginInput.message}
+            </p>
+          )}
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="loginPassword" className="text-[#086280]">
+            Mật khẩu
+          </Label>
+          <Input
+            id="loginPassword"
+            name="password"
+            type="password"
+            {...loginRegister("password")}
+            placeholder="Nhập mật khẩu của bạn"
+            className="col-span-3 dark:border-gray-400 border-[#0E42D2] placeholder:text-gray-400"
+          />
+          {loginErrors.password && (
+            <p className="text-red-500">{loginErrors.password.message}</p>
+          )}
+        </div>
+        <Button
+          className="w-full bg-[#23CAF1] text-white mt-5"
+          type="submit"
+          disabled={loading}
+        >
+          <LogIn className="mr-2 w-4 h-4" />
+          {loading ? "Đang đăng nhập..." : "Đăng nhập"}
+        </Button>
+      </div>
+    </form>
+  );
+
+  const renderOtpForm = () => (
+    <form onSubmit={handleOtpSubmit(onOtpSubmit)}>
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="otp" className="text-[#086280]">
+            Mã OTP
+          </Label>
+          <Input
+            id="otp"
+            name="otp"
+            type="text"
+            {...otpRegister("otp")}
+            placeholder="Nhập mã OTP 6 chữ số"
+            className="col-span-3 dark:border-gray-400 border-[#0E42D2] placeholder:text-gray-400"
+          />
+          {otpErrors.otp && (
+            <p className="text-red-500">{otpErrors.otp.message}</p>
+          )}
+        </div>
+        <Button
+          className="w-full bg-[#23CAF1] text-white mt-5"
+          type="submit"
+          disabled={loading}
+        >
+          <LogIn className="mr-2 w-4 h-4" />
+          {loading ? "Đang xác thực..." : "Xác thực OTP"}
+        </Button>
+        <Button
+          variant="outline"
+          className="w-full mt-2 text-[#086280] border-[#0E42D2]"
+          onClick={handleBackToLogin}
+          disabled={loading}
+        >
+          <ArrowLeft className="mr-2 w-4 h-4" />
+          Quay lại đăng nhập
+        </Button>
+      </div>
+    </form>
+  );
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#F9FDFF] p-6">
+      <Toaster position="top-center" reverseOrder={false} />
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -130,54 +286,13 @@ const Page = () => {
               />
             </CardTitle>
             <CardDescription className="text-center text-[#1CA2C1] text-[16px]">
-              Đăng nhập vào tài khoản quản trị
+              {isOtpPhase
+                ? "Xác thực OTP để đăng nhập"
+                : "Đăng nhập vào tài khoản quản trị"}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit(onSubmit)}>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="loginInput" className="text-[#086280]">
-                    Số điện thoại hoặc Email
-                  </Label>
-                  <Input
-                    id="loginInput"
-                    name="loginInput"
-                    type="text"
-                    {...register("loginInput")}
-                    placeholder="Nhập số điện thoại hoặc email"
-                    className="col-span-3 dark:border-gray-400 border-[#0E42D2] placeholder:text-gray-400"
-                  />
-                  {errors.loginInput && (
-                    <p className="text-red-500">{errors.loginInput.message}</p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="loginPassword" className="text-[#086280]">
-                    Mật khẩu
-                  </Label>
-                  <Input
-                    id="loginPassword"
-                    name="password"
-                    type="password"
-                    {...register("password")}
-                    placeholder="Nhập mật khẩu của bạn"
-                    className="col-span-3 dark:border-gray-400 border-[#0E42D2] placeholder:text-gray-400"
-                  />
-                  {errors.password && (
-                    <p className="text-red-500">{errors.password.message}</p>
-                  )}
-                </div>
-                <Button
-                  className="w-full bg-[#23CAF1] text-white mt-5"
-                  type="submit"
-                  disabled={loading}
-                >
-                  <LogIn className="mr-2 w-4 h-4" />{" "}
-                  {loading ? "Đang đăng nhập..." : "Đăng nhập"}
-                </Button>
-              </div>
-            </form>
+            {isOtpPhase ? renderOtpForm() : renderLoginForm()}
           </CardContent>
         </Card>
       </motion.div>

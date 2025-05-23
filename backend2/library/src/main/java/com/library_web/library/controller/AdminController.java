@@ -7,6 +7,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+
+import com.library_web.library.service.TempStorage;
 import com.library_web.library.service.UserService;
 
 import java.util.List;
@@ -48,16 +50,20 @@ public class AdminController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Đăng nhập không thành công");
         }
 
-        // Lấy role
-        Map<String, Object> data = (Map<String, Object>) response.get("data");
-        Map<String, Object> userData = (Map<String, Object>) data.get("user");
-        String role = (String) userData.get("role");
-
-        if (!"ADMIN".equals(role)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền truy cập");
+        
+        return response;
+    }
+    
+    @PostMapping("/verify-otp")
+    public Map<String, Object> verifyOtp(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        String otp = request.get("otp");
+       
+        if (!TempStorage.isValidOtp(email, otp)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "OTP không hợp lệ hoặc đã hết hạn");
         }
 
-        return response;
+        return userService.verifyOtpAndLoginForAdmin(email, otp);
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")
