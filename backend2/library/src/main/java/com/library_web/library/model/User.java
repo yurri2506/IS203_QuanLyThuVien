@@ -51,6 +51,13 @@ public class User {
     @Column(name = "provider_id")
     private String providerId; // ID do Google/Facebook cấp
 
+     @Column(name = "avatar_url")
+    private String avatar_url;
+
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    @Column(name = "joined_date")
+    private LocalDate joined_date;
+
     public Cart getCart() {
         return cart;
     }
@@ -145,6 +152,18 @@ public class User {
 
     public void setProviderId(String providerId) {
         this.providerId = providerId;
+    }
+    public String getAvatar_url() {
+        return avatar_url;
+    }
+    public void setAvatar_url(String avatar_url) {
+        this.avatar_url = avatar_url;
+    }
+    public LocalDate getJoined_date() {
+        return joined_date;
+    }
+    public void setJoined_date(LocalDate joined_date) {
+        this.joined_date = joined_date;
     }
 
 }
