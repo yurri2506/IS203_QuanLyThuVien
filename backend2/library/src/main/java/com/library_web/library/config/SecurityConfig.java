@@ -75,7 +75,8 @@ public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Excepti
                 "/api/book/**",
                 "/api/bookchild/**",
                 "/api/cart/**",
-                "/api/**"
+                "/api/**",
+                "/uploads/avatars/**"
             ).permitAll()
             // Endpoint quản lý admin
             .requestMatchers("/api/admin/**").hasAuthority("ADMIN")

@@ -56,7 +56,11 @@ const ProfileCard = () => {
       setIsError(true);
       return false;
     }
-    if (formData.birthdate && formData.birthdate !== "Chưa cập nhật" && !dateRegex.test(formData.birthdate)) {
+    if (
+      formData.birthdate &&
+      formData.birthdate !== "Chưa cập nhật" &&
+      !dateRegex.test(formData.birthdate)
+    ) {
       setMessage("Ngày sinh phải có định dạng yyyy-MM-dd");
       setIsError(true);
       return false;
@@ -68,11 +72,14 @@ const ProfileCard = () => {
     const id = localStorage.getItem("id");
     const fetchUserInfo = async () => {
       try {
-        const response = await axios.get(`http://localhost:8080/api/user/${id}`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
+        const response = await axios.get(
+          `http://localhost:8080/api/user/${id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
 
         const user = response.data;
         setFormData({
@@ -158,7 +165,9 @@ const ProfileCard = () => {
           avatar_url: data.data.avatar_url || null,
         }));
 
-        const persistedRoot = JSON.parse(localStorage.getItem("persist:root") || "{}");
+        const persistedRoot = JSON.parse(
+          localStorage.getItem("persist:root") || "{}"
+        );
         localStorage.setItem(
           "persist:root",
           JSON.stringify({
@@ -181,7 +190,10 @@ const ProfileCard = () => {
         setMessage("Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.");
         // TODO: Chuyển hướng đến trang đăng nhập
       } else {
-        setMessage(error.response?.data?.message || "Có lỗi xảy ra khi cập nhật thông tin");
+        setMessage(
+          error.response?.data?.message ||
+            "Có lỗi xảy ra khi cập nhật thông tin"
+        );
       }
       setIsError(true);
     }
@@ -194,17 +206,27 @@ const ProfileCard = () => {
       return;
     }
 
+    const id = localStorage.getItem("id");
+    if (!id) {
+      setMessage("Không tìm thấy thông tin ID người dùng");
+      setIsError(true);
+      return;
+    }
+
+    console.log("Uploading avatar for ID:", id); // Debug log
+
     const formData = new FormData();
-    formData.append("username", localStorage.getItem("username"));
+    formData.append("id", id);
     formData.append("file", avatarFile);
 
     try {
       const response = await axios.post(
-        `http://localhost:8080/api/user/upload-avatar`,
+        "http://localhost:8080/api/user/upload-avatar",
         formData,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "multipart/form-data",
           },
         }
       );
@@ -219,25 +241,26 @@ const ProfileCard = () => {
       setAvatarFile(null);
     } catch (error) {
       console.error("Lỗi khi upload ảnh:", error);
-      if (error.response?.status === 401) {
-        setMessage("Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.");
-      } else {
-        setMessage(error.response?.data?.message || "Có lỗi xảy ra khi upload ảnh");
-      }
+      const errorMsg =
+        error.response?.data?.message || "Có lỗi xảy ra khi upload ảnh";
+      setMessage(errorMsg);
       setIsError(true);
     }
   };
 
   const handleVerifyOtp = async () => {
     try {
-      const response = await fetch(`http://localhost:8080/api/user/verify-email-update`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({ email: formData.email, otp }),
-      });
+      const response = await fetch(
+        `http://localhost:8080/api/user/verify-email-update`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({ email: formData.email, otp }),
+        }
+      );
 
       const data = await response.json();
 
@@ -252,7 +275,9 @@ const ProfileCard = () => {
         email: data.data.email,
       }));
 
-      const persistedRoot = JSON.parse(localStorage.getItem("persist:root") || "{}");
+      const persistedRoot = JSON.parse(
+        localStorage.getItem("persist:root") || "{}"
+      );
       localStorage.setItem(
         "persist:root",
         JSON.stringify({
@@ -271,7 +296,9 @@ const ProfileCard = () => {
       if (error.response?.status === 401) {
         setMessage("Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.");
       } else {
-        setMessage(error.response?.data?.message || "Có lỗi xảy ra khi xác thực OTP");
+        setMessage(
+          error.response?.data?.message || "Có lỗi xảy ra khi xác thực OTP"
+        );
       }
       setIsError(true);
     }
@@ -288,10 +315,20 @@ const ProfileCard = () => {
   const isSidebarOpen = useSidebarStore((state) => state.isSidebarOpen);
 
   return (
-    <div className={`flex-1 py-4 px-0 transition-all duration-300 ${isSidebarOpen ? "md:ml-64" : "md:ml-0"}`}>
+    <div
+      className={`flex-1 py-4 px-0 transition-all duration-300 ${
+        isSidebarOpen ? "md:ml-64" : "md:ml-0"
+      }`}
+    >
       <div className="p-15 bg-white rounded-2xl flex flex-col overflow-y-auto">
         {message && (
-          <div className={`mb-4 p-3 rounded-lg ${isError ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"}`}>
+          <div
+            className={`mb-4 p-3 rounded-lg ${
+              isError
+                ? "bg-red-100 text-red-700"
+                : "bg-green-100 text-green-700"
+            }`}
+          >
             {message}
           </div>
         )}
@@ -305,7 +342,9 @@ const ProfileCard = () => {
                 width={100}
                 height={100}
                 className="w-[100px] h-[100px] rounded-full object-cover"
-                onError={() => setFormData((prev) => ({ ...prev, avatar_url: null }))}
+                onError={() =>
+                  setFormData((prev) => ({ ...prev, avatar_url: null }))
+                }
               />
             ) : (
               <div className="w-[100px] h-[100px] rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
@@ -313,34 +352,80 @@ const ProfileCard = () => {
               </div>
             )}
             <div className="flex flex-col gap-3">
-              <h2 className="text-neutral-900 text-xl font-semibold">{formData.fullName}</h2>
-              <p className="text-neutral-900 text-opacity-50 text-l font-medium">{formData.email}</p>
+              <h2 className="text-neutral-900 text-xl font-semibold">
+                {formData.fullName}
+              </h2>
+              <p className="text-neutral-900 text-opacity-50 text-l font-medium">
+                {formData.email}
+              </p>
             </div>
           </div>
-          <Button onClick={isEditing ? handleSave : toggleEdit} className="w-20 p-3 bg-blue-300 rounded-2xl text-white text-l font-medium hover:bg-blue-400">
+          <Button
+            onClick={isEditing ? handleSave : toggleEdit}
+            className="w-20 p-3 bg-blue-300 rounded-2xl text-white text-l font-medium hover:bg-blue-400"
+          >
             {isEditing ? "Lưu" : "Sửa"}
           </Button>
         </div>
 
         <Section title="Thông tin cá nhân">
-          <InfoRow label="Họ và tên" name="fullName" value={formData.fullName} isEditing={isEditing} onChange={handleChange} />
-          <InfoRow label="MSSV" name="studentId" value={formData.studentId} isEditing={false} />
-          <InfoRow label="Gmail" name="email" value={formData.email} isEditing={isEditing} onChange={handleChange} />
-          <InfoRow label="Ngày sinh" name="birthdate" value={formatDateForDisplay(formData.birthdate)} isEditing={isEditing} onChange={handleChange} />
-          <InfoRow label="Số điện thoại" name="phone" value={formData.phone} isEditing={isEditing} onChange={handleChange} />
-          <InfoRow label="Ngày tham gia" name="joinDate" value={formatDateForDisplay(formData.joinDate)} isEditing={false} />
+          <InfoRow
+            label="Họ và tên"
+            name="fullName"
+            value={formData.fullName}
+            isEditing={isEditing}
+            onChange={handleChange}
+          />
+          <InfoRow
+            label="MSSV"
+            name="studentId"
+            value={formData.studentId}
+            isEditing={false}
+          />
+          <InfoRow
+            label="Gmail"
+            name="email"
+            value={formData.email}
+            isEditing={isEditing}
+            onChange={handleChange}
+          />
+          <InfoRow
+            label="Ngày sinh"
+            name="birthdate"
+            value={formatDateForDisplay(formData.birthdate)}
+            isEditing={isEditing}
+            onChange={handleChange}
+          />
+          <InfoRow
+            label="Số điện thoại"
+            name="phone"
+            value={formData.phone}
+            isEditing={isEditing}
+            onChange={handleChange}
+          />
+          <InfoRow
+            label="Ngày tham gia"
+            name="joinDate"
+            value={formatDateForDisplay(formData.joinDate)}
+            isEditing={false}
+          />
         </Section>
 
         {isEditing && (
           <div className="mt-4">
-            <label className="text-black text-l font-medium">Upload ảnh đại diện</label>
+            <label className="text-black text-l font-medium">
+              Upload ảnh đại diện
+            </label>
             <input
               type="file"
               accept="image/*"
               onChange={handleAvatarChange}
               className="px-2.5 py-3.5 border-black bg-gray-100 text-black text-m font-normal w-full"
             />
-            <Button onClick={handleUploadAvatar} className="mt-2 w-20 p-3 bg-blue-300 rounded-2xl text-white text-l font-medium hover:bg-blue-400">
+            <Button
+              onClick={handleUploadAvatar}
+              className="mt-2 w-20 p-3 bg-blue-300 rounded-2xl text-white text-l font-medium hover:bg-blue-400"
+            >
               Upload
             </Button>
           </div>
@@ -356,7 +441,10 @@ const ProfileCard = () => {
               className="px-2.5 py-3.5 border-black bg-gray-100 text-black text-m font-normal w-full"
               placeholder="Nhập mã OTP"
             />
-            <Button onClick={handleVerifyOtp} className="mt-2 w-20 p-3 bg-blue-300 rounded-2xl text-white text-l font-medium hover:bg-blue-400">
+            <Button
+              onClick={handleVerifyOtp}
+              className="mt-2 w-20 p-3 bg-blue-300 rounded-2xl text-white text-l font-medium hover:bg-blue-400"
+            >
               Xác thực
             </Button>
           </div>
@@ -389,7 +477,9 @@ const InfoRow = ({ label, name, value, isEditing, onChange }) => (
       <input
         type={name === "birthdate" ? "date" : "text"}
         name={name}
-        value={name === "birthdate" ? value.split("/").reverse().join("-") : value}
+        value={
+          name === "birthdate" ? value.split("/").reverse().join("-") : value
+        }
         onChange={onChange}
         className="px-2.5 py-3.5 border-black bg-gray-100 text-black text-m font-normal"
       />

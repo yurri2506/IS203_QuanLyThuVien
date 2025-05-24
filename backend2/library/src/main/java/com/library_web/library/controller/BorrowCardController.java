@@ -1,6 +1,7 @@
 package com.library_web.library.controller;
 
 import com.library_web.library.dto.BorrowCardDTO;
+import com.library_web.library.dto.BorrowStatsDTO;
 import com.library_web.library.model.BorrowCard;
 import com.library_web.library.service.BorrowCardService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,7 +53,6 @@ public class BorrowCardController {
     return service.delete(id) ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
   }
 
-
   @PostMapping("/user/{userId}")
   public ResponseEntity<List<BorrowCard>> getBorrowCardsByUserId(@PathVariable Long userId) {
     List<BorrowCard> borrowCards = service.getBorrowCardsByUserId(userId);
@@ -69,11 +69,17 @@ public class BorrowCardController {
     return ResponseEntity.ok(borrowCard);
   }
 
-  
   @PutMapping("/return/{id}")
   public ResponseEntity<BorrowCard> returnBooks(@PathVariable Long id) {
     BorrowCard borrowCard = service.updateBorrowCardOnReturn(id);
     return ResponseEntity.ok(borrowCard);
+  }
+
+  // Thống kê lượt mượn sách trong tuần vừa qua
+  @GetMapping("/stats/last-week")
+  public ResponseEntity<BorrowStatsDTO> getBorrowStatsLastWeek() {
+    BorrowStatsDTO stats = service.getBorrowStatsLastWeek();
+    return ResponseEntity.ok(stats);
   }
 
 }

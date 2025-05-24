@@ -187,52 +187,50 @@ public class UserController {
     }
 
     @PostMapping("/upload-avatar")
-    public Map<String, Object> uploadAvatar(@RequestParam String username, @RequestParam("file") MultipartFile file) {
-        String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
-        String currentRole = SecurityContextHolder.getContext().getAuthentication().getAuthorities()
-                .iterator().next().getAuthority();
+public Map<String, Object> uploadAvatar(@RequestParam Long id, @RequestParam("file") MultipartFile file) {
+    String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+    String currentRole = SecurityContextHolder.getContext().getAuthentication().getAuthorities()
+            .iterator().next().getAuthority();
 
-        if (currentRole.equals("USER") && !currentUsername.equals(username)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền upload ảnh cho người khác");
-        }
+    User user = userRepository.findById(id)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "Không tìm thấy người dùng với ID: " + id));
 
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "Không tìm thấy người dùng với username: " + username));
-
-        // Kiểm tra định dạng file
-        String contentType = file.getContentType();
-        if (contentType == null || !contentType.startsWith("image/")) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chỉ hỗ trợ file ảnh (JPG, PNG, v.v.)");
-        }
-
-        // Kiểm tra kích thước file (giới hạn 5MB)
-        if (file.getSize() > 5 * 1024 * 1024) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "File ảnh quá lớn, tối đa 5MB");
-        }
-
-        // Xóa ảnh cũ nếu có
-        if (user.getAvatar_url() != null && !user.getAvatar_url().isEmpty()) {
-            try {
-                Path oldPath = Paths.get("uploads/avatars/" + user.getAvatar_url().substring(user.getAvatar_url().lastIndexOf("/") + 1));
-                Files.deleteIfExists(oldPath);
-            } catch (IOException e) {
-                // Log lỗi nhưng không dừng quá trình
-                System.err.println("Lỗi khi xóa ảnh cũ: " + e.getMessage());
-            }
-        }
-
-        String avatarUrl = uploadFileToStorage(file);
-        user.setAvatar_url(avatarUrl);
-        userRepository.save(user);
-
-        return Map.of(
-                "message", "Upload ảnh đại diện thành công",
-                "data", Map.of(
-                        "avatar_url", avatarUrl,
-                        "username", user.getUsername()));
+    if (currentRole.equals("USER") && !currentUsername.equals(user.getUsername())) {
+        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền upload ảnh cho người khác");
     }
 
+    // Kiểm tra định dạng file
+    String contentType = file.getContentType();
+    if (contentType == null || !contentType.startsWith("image/")) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chỉ hỗ trợ file ảnh (JPG, PNG, v.v.)");
+    }
+
+    // Kiểm tra kích thước file (giới hạn 5MB)
+    if (file.getSize() > 5 * 1024 * 1024) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "File ảnh quá lớn, tối đa 5MB");
+    }
+
+    // Xóa ảnh cũ nếu có
+    if (user.getAvatar_url() != null && !user.getAvatar_url().isEmpty()) {
+        try {
+            Path oldPath = Paths.get("uploads/avatars/" + user.getAvatar_url().substring(user.getAvatar_url().lastIndexOf("/") + 1));
+            Files.deleteIfExists(oldPath);
+        } catch (IOException e) {
+            System.err.println("Lỗi khi xóa ảnh cũ: " + e.getMessage());
+        }
+    }
+
+    String avatarUrl = uploadFileToStorage(file);
+    user.setAvatar_url(avatarUrl);
+    userRepository.save(user);
+
+    return Map.of(
+            "message", "Upload ảnh đại diện thành công",
+            "data", Map.of(
+                    "avatar_url", avatarUrl,
+                    "id", user.getId()));
+}
     private String uploadFileToStorage(MultipartFile file) {
         try {
             String fileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
