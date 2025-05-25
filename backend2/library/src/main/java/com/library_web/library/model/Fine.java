@@ -15,15 +15,16 @@ import jakarta.persistence.*;
 @AllArgsConstructor
 public class Fine {
   @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
-  
+
   @ManyToOne
   @JoinColumn(name = "user_id")
   private User userId;
-  
+
   private double soTien;
   private String noiDung;
-  
+
   @ManyToOne
   @JoinColumn(name = "borrow_card_id")
   private BorrowCard cardId;

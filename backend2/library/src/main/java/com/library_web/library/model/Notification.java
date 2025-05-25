@@ -5,10 +5,11 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-
-import org.springframework.data.annotation.Id;
+import jakarta.persistence.Id;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 
@@ -18,11 +19,13 @@ import jakarta.persistence.ManyToOne;
 @AllArgsConstructor
 public class Notification {
   @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
   @ManyToOne
   @JoinColumn(name = "user_id")
-  private User userId; // ID người dùng nhận thông báo
+  private User user; // ID người dùng nhận thông báo
+
   private String message; // Nội dung thông báo
   private LocalDateTime timestamp; // Thời gian tạo thông báo
   private boolean isRead; // Trạng thái đọc của thông báo

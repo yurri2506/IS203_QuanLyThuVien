@@ -4,20 +4,26 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import org.springframework.data.annotation.Id;
+import jakarta.persistence.Id;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 
+@Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Setting {
     @Id
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
     private int finePerDay;
     private int waitingToTake;
     private int borrowDay;
     private int startToMail;
-    public Setting(int finePerDay, int waitingToTake,int borrowDay, int startToMail ) {
+
+    public Setting(int finePerDay, int waitingToTake, int borrowDay, int startToMail) {
         this.finePerDay = finePerDay;
         this.waitingToTake = waitingToTake;
         this.borrowDay = borrowDay;
