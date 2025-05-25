@@ -24,7 +24,7 @@ public class NotificationService {
     Notification notification = new Notification();
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new RuntimeException("User not found"));
-    notification.setUserId(user);
+    notification.setUser(user);
     notification.setMessage(message);
     notification.setTimestamp(LocalDateTime.now());
     notification.setRead(false);
@@ -37,12 +37,16 @@ public class NotificationService {
 
   // Lấy tất cả thông báo của người dùng theo userId
   public List<Notification> getAllNotifications(Long userId) {
-    return notificationRepository.findByUserId(userId);
+     User user = userRepository.findById(userId)
+        .orElseThrow(() -> new RuntimeException("User not found with id " + userId));
+    return notificationRepository.findByUserId(user);
   }
 
   // Lấy thông báo chưa đọc
   public List<Notification> getUnreadNotifications(Long userId) {
-    return notificationRepository.findByUserIdAndIsRead(userId, false);
+    User user = userRepository.findById(userId)
+        .orElseThrow(() -> new RuntimeException("User not found with id " + userId));
+    return notificationRepository.findByUserIdAndIsRead(user, false);
   }
 
   // Đánh dấu thông báo là đã đọc
