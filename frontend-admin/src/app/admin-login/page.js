@@ -139,10 +139,11 @@ const Page = () => {
       }
 
       const result = await response.json();
+      console.log("Login result:", result);
 
       localStorage.setItem("accessToken", result.data.accessToken);
       localStorage.setItem("id", result.data.admin.id || "");
-      localStorage.setItem("username", result.data.admin.username || "");
+      localStorage.setItem("role", result.data.admin.role || "ABC");
 
       Cookies.set("refreshToken", result.data.refreshToken, {
         expires: 7,

@@ -68,7 +68,7 @@ const Header = () => {
     localStorage.setItem("notificationReadStatus", JSON.stringify(readStatus));
   }, [readStatus]);
 
-  const user = JSON.parse(localStorage.getItem("persist:root")) || { id: "54" }; // Default to 54 if no user
+  const user = JSON.parse(localStorage.getItem("persist:root")) //|| { id: "54" }; // Default to 54 if no user
 
   // Fetch cart
   const fetchCart = async () => {

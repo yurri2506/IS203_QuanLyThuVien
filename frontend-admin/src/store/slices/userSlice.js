@@ -3,14 +3,14 @@ import Cookies from "js-cookie";
 
 // Initial state
 const initialState = {
-  fullname: "",
-  birthday: "",
-  email: "",
   id: "",
+  username: "",
+  email: "",
   phone: "",
+  fullname: "",
+  birthdate: "",
   role: "",
-  username: [],
-  user_avt_img: "",
+  avarta_url: "",
   accessToken: "",
   refreshToken: Cookies.get("refreshToken"),
   isAuthenticated: !!Cookies.get("accessToken"), // Check if accessToken exists
@@ -36,6 +36,7 @@ const userSlice = createSlice({
       return {
         ...state,
         ...filteredPayload,
+        role: filteredPayload.role || state.role, // Ensure role is updated if provided
         isAuthenticated: true, // Ensure user is authenticated
       };
     },
@@ -58,6 +59,9 @@ const userSlice = createSlice({
     logout: () => {
       Cookies.remove("accessToken");
       localStorage.removeItem("refreshToken");
+      localStorage.removeItem("id");
+      localStorage.removeItem("role");
+      
       return {
         ...initialState,
         accessToken: "", // Clear tokens

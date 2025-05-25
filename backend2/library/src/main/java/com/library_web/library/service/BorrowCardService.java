@@ -232,51 +232,10 @@ public class BorrowCardService {
                 return repository.save(borrowCard);
         }
 
-        // // Thống kê lượt mượn sách trong tuần vừa qua
-        // public BorrowStatsDTO getBorrowStatsLastWeek() {
-        // // Lấy ngày bắt đầu của tuần trước (7 ngày trước)
-        // LocalDateTime startOfLastWeek = LocalDateTime.now().minusDays(100);
-
-        // // Lấy tất cả phiếu mượn có get_book_date trong vòng 7 ngày qua
-        // List<BorrowCard> borrowCards =
-        // repository.findByGetBookDateAfter(startOfLastWeek);
-
-        // // Đếm tổng số lượt mượn (dựa trên child_book_id không null)
-        // long totalBorrows = borrowCards.stream()
-        // .flatMap(card -> card.getBorrowedBooks().stream())
-        // .filter(bb -> bb.getChildBookId() != null && !bb.getChildBookId().isEmpty())
-        // .count();
-
-        // // Group by book_id để tính số lượt mượn cho từng sách
-        // Map<Long, Long> borrowCountByBook = borrowCards.stream()
-        // .flatMap(card -> card.getBorrowedBooks().stream())
-        // .filter(bb -> bb.getChildBookId() != null && !bb.getChildBookId().isEmpty())
-        // .collect(Collectors.groupingBy(
-        // BorrowedBook::getBookId,
-        // Collectors.counting()));
-
-        // // Lấy thông tin sách để hiển thị chi tiết
-        // List<BorrowStatsDTO.BookBorrowDetail> bookDetails =
-        // borrowCountByBook.entrySet().stream()
-        // .map(entry -> {
-        // Long bookId = entry.getKey();
-        // Long borrowCount = entry.getValue();
-        // Book book = BookRepository.findById(bookId)
-        // .orElseThrow(() -> new RuntimeException(
-        // "Không tìm thấy sách với id: " + bookId));
-        // return new BorrowStatsDTO.BookBorrowDetail(
-        // bookId,
-        // book.getTenSach(),
-        // book.getTenTacGia(),
-        // borrowCount);
-        // })
-        // .collect(Collectors.toList());
-
-        // return new BorrowStatsDTO(totalBorrows, bookDetails);
-        // }
+       
         public BorrowStatsDTO getBorrowStatsLastWeek() {
                 // Sử dụng múi giờ +07 (Asia/Bangkok tương ứng với +07:00)
-                LocalDateTime startOfLastWeek = LocalDateTime.now(ZoneId.of("Asia/Bangkok")).minusDays(7);
+                LocalDateTime startOfLastWeek = LocalDateTime.now(ZoneId.of("Asia/Bangkok")).minusDays(100);
                 System.out.println("Start of last week: " + startOfLastWeek); // Debug thời gian
 
                 List<BorrowCard> borrowCards = repository.findByGetBookDateAfter(startOfLastWeek);
