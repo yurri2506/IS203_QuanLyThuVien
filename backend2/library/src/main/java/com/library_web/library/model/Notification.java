@@ -1,0 +1,46 @@
+package com.library_web.library.model;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
+
+import org.springframework.data.annotation.Id;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+
+@Entity
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class Notification {
+  @Id
+  private Long id;
+
+  @ManyToOne
+  @JoinColumn(name = "user_id")
+  private User userId; // ID người dùng nhận thông báo
+  private String message; // Nội dung thông báo
+  private LocalDateTime timestamp; // Thời gian tạo thông báo
+  private boolean isRead; // Trạng thái đọc của thông báo
+
+  // Enum trạng thái thông báo
+  public enum Status {
+    NEW("Mới"),
+    READ("Đã đọc");
+
+    private final String description;
+
+    Status(String description) {
+      this.description = description;
+    }
+
+    @com.fasterxml.jackson.annotation.JsonValue
+    public String getDescription() {
+      return description;
+    }
+  }
+}
