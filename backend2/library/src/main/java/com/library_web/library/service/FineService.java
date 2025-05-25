@@ -27,8 +27,8 @@ public class FineService {
   private FineRepository fineRepo;
   @Autowired
   private UserRepository userRepo;
-  // @Autowired
-  // private EmailService mailService;
+  @Autowired
+  private EmailService mailService;
   @Autowired
   private BookChildService childBookService;
   @Autowired
@@ -53,7 +53,7 @@ public class FineService {
       bookRepo.save(book);
     }
 
-    // mailService.mailFine(savedFine);
+    mailService.mailFine(savedFine);
     String message = "Bạn đã bị phạt " + fine.getSoTien()
         + "VND. Vui lòng thanh toán tiền phạt sớm nhất.\nID Phiếu phạt: " + savedFine.getId();
     // notificationService.sendNotification(savedFine.getUserId(), message);
@@ -99,7 +99,7 @@ public class FineService {
       fine.setNgayThanhToan(LocalDateTime.now());
       fine.setTrangThai(Fine.TrangThai.DA_THANH_TOAN);
       fineRepo.save(fine);
-      // mailService.mailPay(fine); // gửi mail thông báo
+      mailService.mailPay(fine); // gửi mail thông báo
       return "ok";
     } catch (Exception e) {
       e.printStackTrace();
