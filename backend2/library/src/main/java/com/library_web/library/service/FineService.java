@@ -11,7 +11,6 @@ import com.library_web.library.model.Book;
 import com.library_web.library.model.BookChild;
 import com.library_web.library.model.Fine;
 import com.library_web.library.model.User;
-import com.library_web.library.service.BookChildService;
 import com.library_web.library.repository.BookRepository;
 import com.library_web.library.repository.BorrowCardRepository;
 import com.library_web.library.repository.BookChildRepository;
@@ -35,8 +34,8 @@ public class FineService {
   private BorrowCardRepository borrowCardRepo;
   @Autowired
   private BookRepository bookRepo;
-  // @Autowired
-  // private NotificationService notificationService;
+  @Autowired
+  private NotificationService notificationService;
 
   public Fine addFine(Fine fine) {
     fine.setTrangThai(Fine.TrangThai.CHUA_THANH_TOAN);
@@ -56,7 +55,7 @@ public class FineService {
     mailService.mailFine(savedFine);
     String message = "Bạn đã bị phạt " + fine.getSoTien()
         + "VND. Vui lòng thanh toán tiền phạt sớm nhất.\nID Phiếu phạt: " + savedFine.getId();
-    // notificationService.sendNotification(savedFine.getUserId(), message);
+    notificationService.sendNotification(savedFine.getUserId().getId(), message);
     return savedFine;
   }
 

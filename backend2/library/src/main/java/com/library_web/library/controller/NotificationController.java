@@ -22,7 +22,7 @@ public class NotificationController {
 
     // Gửi thông báo mới
     @PostMapping("/send")
-    public ResponseEntity<Notification> sendNotification(@RequestParam String userId, @RequestParam String message) {
+    public ResponseEntity<Notification> sendNotification(@RequestParam Long userId, @RequestParam String message) {
         Notification notification = notificationService.sendNotification(userId, message);
         return ResponseEntity.ok(notification);
     }
@@ -35,21 +35,21 @@ public class NotificationController {
 
     // Lấy tất cả thông báo của người dùng
     @GetMapping("/{userId}")
-    public ResponseEntity<List<Notification>> getAllNotifications(@PathVariable String userId) {
+    public ResponseEntity<List<Notification>> getAllNotifications(@PathVariable Long userId) {
         List<Notification> notifications = notificationService.getAllNotifications(userId);
         return ResponseEntity.ok(notifications);
     }
 
     // Lấy thông báo chưa đọc của người dùng
     @GetMapping("/unread/{userId}")
-    public ResponseEntity<List<Notification>> getUnreadNotifications(@PathVariable String userId) {
+    public ResponseEntity<List<Notification>> getUnreadNotifications(@PathVariable Long userId) {
         List<Notification> notifications = notificationService.getUnreadNotifications(userId);
         return ResponseEntity.ok(notifications);
     }
 
     // Đánh dấu thông báo đã đọc
     @PutMapping("/mark-as-read/{id}")
-    public ResponseEntity<?> markAsRead(@PathVariable String id) {
+    public ResponseEntity<?> markAsRead(@PathVariable Long id) {
         try {
             Notification notification = notificationService.markAsRead(id);
             return ResponseEntity.ok(notification);

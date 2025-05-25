@@ -8,8 +8,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface NotificationRepository extends JpaRepository<Notification, String> {
+public interface NotificationRepository extends JpaRepository<Notification, Long> {
     // Thêm các phương thức truy vấn theo nhu cầu, ví dụ:
-    List<Notification> findByUserIdAndIsRead(String userId, boolean isRead);
-    List<Notification> findByUserId(String userId);
+    List<Notification> findByUserIdAndIsRead(Long userId, boolean isRead);
+    List<Notification> findByUserId(Long userId);
 }

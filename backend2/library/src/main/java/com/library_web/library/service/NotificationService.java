@@ -20,9 +20,9 @@ public class NotificationService {
   private UserRepository userRepository;
 
   // Gửi thông báo mới
-  public Notification sendNotification(String userId, String message) {
+  public Notification sendNotification(Long userId, String message) {
     Notification notification = new Notification();
-    User user = userRepository.findById(Long.parseLong(userId))
+    User user = userRepository.findById(userId)
         .orElseThrow(() -> new RuntimeException("User not found"));
     notification.setUserId(user);
     notification.setMessage(message);
@@ -36,17 +36,17 @@ public class NotificationService {
   }
 
   // Lấy tất cả thông báo của người dùng theo userId
-  public List<Notification> getAllNotifications(String userId) {
+  public List<Notification> getAllNotifications(Long userId) {
     return notificationRepository.findByUserId(userId);
   }
 
   // Lấy thông báo chưa đọc
-  public List<Notification> getUnreadNotifications(String userId) {
+  public List<Notification> getUnreadNotifications(Long userId) {
     return notificationRepository.findByUserIdAndIsRead(userId, false);
   }
 
   // Đánh dấu thông báo là đã đọc
-  public Notification markAsRead(String id) {
+  public Notification markAsRead(Long id) {
     Notification notification = notificationRepository.findById(id)
         .orElseThrow(() -> new RuntimeException("Ko tìm thấy thông báo"));
     if (!notification.isRead()) {
