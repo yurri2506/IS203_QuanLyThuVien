@@ -8,6 +8,7 @@ import com.library_web.library.model.User;
 import com.library_web.library.model.BorrowCard;
 import com.library_web.library.model.Category;
 import com.library_web.library.model.CategoryChild;
+import com.library_web.library.model.Fine;
 import com.library_web.library.model.BorrowCard.Status;
 import com.library_web.library.model.BorrowedBook;
 import com.library_web.library.repository.BookChildRepository;
@@ -21,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -38,6 +40,12 @@ public class BorrowCardService {
     private CategoryChildRepository CategoryChildRepository;
     @Autowired
     private BookChildRepository childBookRepo;
+    @Autowired
+    private FineService fineService;
+    @Autowired
+    private EmailService EmailService;
+    @Autowired
+    private SettingService settingService;
 
     public List<BorrowCard> getAll() {
         return repository.findAll();
@@ -99,7 +107,11 @@ public class BorrowCardService {
             book.setSoLuongMuon(book.getSoLuongMuon() + 1);
             BookRepository.save(book);
         }
-        return repository.save(borrowCard);
+        borrowCard = repository.save(borrowCard);
+        String message = "Bạn đã tạo phiếu mượn sách thành công! Vui lòng đến lấy sách trong thời gian sớm nhất nhé!\nID Phiếu mượn: "
+                + borrowCard.getId();
+        // notificationService.sendNotification(borrowCard.getUserId(), message);
+        return borrowCard;
     }
 
     // public BorrowCardDTO update(Long id, BorrowCardDTO dto) {
@@ -174,6 +186,12 @@ public class BorrowCardService {
             child.setStatus(BookChild.Status.BORROWED);
             childBookRepo.save(child);
         }
+        // gửi mail thông báo
+        EmailService.mailTaken(borrowCard);
+        // Gửi thông báo đến người dùng
+        String message = "Bạn đã mượn sách thành công. ID Phiếu mượn: "
+                + borrowCard.getId();
+        // notificationService.sendNotification(borrowCard.getUserId(), message);
 
         borrowCard.setBorrowedBooks(borrowedBooks); // cập nhật lại danh sách
         return repository.save(borrowCard);
@@ -189,6 +207,33 @@ public class BorrowCardService {
             borrowCard.setStatus(BorrowCard.Status.RETURNED.getStatusDescription());
 
         }
+
+        // Nếu trả trễ
+        long soNgayTre = ChronoUnit.DAYS.between(borrowCard.getDueDate(), LocalDateTime.now());
+        if (soNgayTre < 0) {
+            soNgayTre = 0; // chưa trễ hạn
+        } else {
+            Fine data = new Fine();
+            int finePerDay = settingService.getSetting().getFinePerDay();
+            data.setNoiDung("Trả sách trễ hạn");
+            data.setSoTien(soNgayTre * finePerDay);
+            data.setCardId(borrowCard);
+            User user = UserRepository.findById(borrowCard.getUserId())
+                    .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại"));
+            data.setUserId(user);
+            fineService.addFine(data);
+            // Gửi thông báo trả sách trễ
+            String message = "Bạn đã trả sách trễ " + soNgayTre
+                    + " ngày. Vui lòng thanh toán tiền phạt sớm nhất.\nID Phiếu mượn: " + borrowCard.getId();
+        //     notificationService.sendNotification(borrowCard.getUserId(), message);
+        }
+        // Nếu không trễ, gửi thông báo trả sách thành công
+        if (soNgayTre == 0) {
+            String message = "Bạn đã trả sách thành công! ID Phiếu mượn: " + borrowCard.getId();
+        //     notificationService.sendNotification(borrowCard.getUserId(), message);
+        }
+        borrowCard.setSoNgayTre(soNgayTre);
+
         // Cập nhật ngày trả sách
         borrowCard.setDueDate(LocalDateTime.now());
 
