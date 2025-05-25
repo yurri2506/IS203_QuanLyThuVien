@@ -125,8 +125,8 @@ public class UserService {
                                 "email", user.getEmail() != null ? user.getEmail() : "",
                                 "phone", user.getPhone() != null ? user.getPhone() : "",
                                 "fullname", user.getFullname() != null ? user.getFullname() : "",
-
-                                "birthdate", user.getBirthdate() != null ? user.getBirthdate().toString() : "")));
+                                "birthdate", user.getBirthdate() != null ? user.getBirthdate().toString() : ""),
+                                "role", user.getRole()));
 
     }
 
@@ -155,7 +155,8 @@ public class UserService {
                                 "email", user.getEmail() != null ? user.getEmail() : "",
                                 "phone", user.getPhone() != null ? user.getPhone() : "",
                                 "fullname", user.getFullname() != null ? user.getFullname() : "",
-                                "birthdate", user.getBirthdate() != null ? user.getBirthdate().toString() : "")));
+                                "birthdate", user.getBirthdate() != null ? user.getBirthdate().toString() : ""),
+                                "role", user.getRole()));
 
     }
 
