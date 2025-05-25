@@ -8,14 +8,14 @@ Website quản lý thư viện hỗ trợ quản lý sách, người dùng, và 
 
 ## 📋 Mục lục
 
-- [Giới thiệu nhóm](#giới-thiệu-nhóm)
-- [Thành viên](#thành-viên)
-- [Công nghệ sử dụng](#công-nghệ-sử-dụng)
-- [Yêu cầu trước khi cài đặt](#yêu-cầu-trước-khi-cài-đặt)
-- [Hướng dẫn cài đặt](#hướng-dẫn-cài-đặt)
-- [Cấu hình cơ sở dữ liệu](#cấu-hình-cơ-sở-dữ-liệu)
-- [Cấu hình bổ sung](#cấu-hình-bổ-sung)
-- [Lưu ý khi chạy project](#lưu-ý-khi-chạy-project)
+- Giới thiệu nhóm
+- Thành viên
+- Công nghệ sử dụng
+- Yêu cầu trước khi cài đặt
+- Hướng dẫn cài đặt
+- Cấu hình cơ sở dữ liệu
+- Cấu hình bổ sung
+- Lưu ý khi chạy project
 
 ---
 
