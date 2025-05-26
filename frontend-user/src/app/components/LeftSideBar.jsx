@@ -77,21 +77,25 @@ const LeftSideBar = () => {
           <Button
             variant="ghost"
             className={`w-full justify-start transition-colors ${
-              pathname === "/overdue-books"
+              pathname === "/borrowed-card"
                 ? "bg-[#6CB1DA] text-white"
                 : "hover:bg-[#6CB1DA] hover:text-white"
             }`}
-            onClick={() => handleNavigation("/overdue-books")}
+            onClick={() => handleNavigation("/borrowed-card")}
           >
-            <CircleAlert className="mr-4" /> Sách quá hạn
+            <CircleAlert className="mr-4" /> Phiếu mượn
           </Button>
 
           <Button
             variant="ghost"
-            className={`flex justify-start py-5 items-center cursor-pointer w-full text-[1.125rem] font-normal ${getButtonClass("/borrowed-card")}`}
-            onClick={() => handleNavigation("/borrowed-card")}
+            className={`w-full justify-start transition-colors ${
+              pathname === "/fine"
+                ? "bg-[#6CB1DA] text-white"
+                : "hover:bg-[#6CB1DA] hover:text-white"
+            }`}
+            onClick={() => handleNavigation("/fine")}
           >
-            <ClipboardList style={{ width: "1.5rem", height: "1.5rem", strokeWidth: "1.5px" }} className="mr-2" /> Phiếu mượn
+            <CircleAlert className="mr-4" /> Phiếu phạt
           </Button>
 
           <Button
