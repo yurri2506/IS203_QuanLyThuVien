@@ -1,6 +1,7 @@
 package com.library_web.library.service;
 
 import com.library_web.library.dto.BorrowCardDTO;
+import com.library_web.library.dto.FineDTO;
 // import com.library_web.library.dto.BorrowCardDTO.BookInfo;
 import com.library_web.library.model.Book;
 import com.library_web.library.model.BookChild;
@@ -8,7 +9,7 @@ import com.library_web.library.model.User;
 import com.library_web.library.model.BorrowCard;
 // import com.library_web.library.model.Category;
 import com.library_web.library.model.CategoryChild;
-import com.library_web.library.model.Fine;
+// import com.library_web.library.model.Fine;
 // import com.library_web.library.model.BorrowCard.Status;
 import com.library_web.library.model.BorrowedBook;
 import com.library_web.library.repository.BookChildRepository;
@@ -221,14 +222,14 @@ public class BorrowCardService {
                 if (soNgayTre < 0) {
                         soNgayTre = 0; // chưa trễ hạn
                 } else {
-                        Fine data = new Fine();
+                        FineDTO data = new FineDTO();
                         int finePerDay = settingService.getSetting().getFinePerDay();
                         data.setNoiDung("Trả sách trễ hạn");
-                        data.setSoTien(soNgayTre * finePerDay);
-                        data.setCardId(borrowCard);
+                        data.setSoTien((int)(soNgayTre * finePerDay));
+                        data.setBorrowCardId(borrowCard.getId());
                         User user = UserRepository.findById(borrowCard.getUserId())
                                         .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại"));
-                        data.setUserId(user);
+                        data.setUserId(user.getId());
                         fineService.addFine(data);
                         // Gửi thông báo trả sách trễ
                         String message = "Bạn đã trả sách trễ " + soNgayTre
