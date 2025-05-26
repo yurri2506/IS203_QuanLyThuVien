@@ -30,13 +30,14 @@ function page() {
           fineData.noiDung == "Làm mất sách" ||
           fineData.noiDung == "Trả sách trễ hạn"
         ) {
-          const bookData = await getBookInfo(fineData.cardId.borrowedBooks[0].bookId); // Lấy thông tin sách từ cardId
+          const bookData = await getBookInfo(
+            fineData.cardId.borrowedBooks[0].bookId
+          ); // Lấy thông tin sách từ cardId
           setBookInfo(bookData);
           // console.log("Thông tin sách đã được cập nhật:", bookData);
         } else {
           setBookInfo(null); // Nếu không liên quan đến sách, đặt bookInfo là null
         }
-        
       } else {
         toast.error("Lỗi khi lấy phiếu phạt");
       }
@@ -100,11 +101,14 @@ function page() {
     );
   };
   const handleThanhToan = async () => {
-    const response = await axios.post(
-      `http://localhost:8080/fine/pay-momo/${fine.id}`
-    );
-    const payUrl = response.data;
-    window.location.href = payUrl;
+    // const response = await axios.post(
+    //   `http://localhost:8080/fine/pay-momo/${fine.id}`
+    // );
+    // const payUrl = response.data;
+    // window.location.href = payUrl;
+    toast.success("Thanh toán thành công", {
+      style: { background: "#d1fae5", color: "#065f46" },
+    });
   };
   return (
     <main className="flex flex-col min-h-screen text-foreground">
@@ -182,10 +186,7 @@ function page() {
                       </h2>
                       <div className="w-full h-70 mb-[2rem] overflow-y-scroll">
                         {bookInfo && (
-                          <BookCard
-                            key={bookInfo.id}
-                            book={bookInfo}
-                          />
+                          <BookCard key={bookInfo.id} book={bookInfo} />
                         )}
                       </div>
                     </div>
