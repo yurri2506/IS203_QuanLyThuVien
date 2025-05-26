@@ -29,6 +29,8 @@ public class Fine {
   @JoinColumn(name = "borrow_card_id")
   private BorrowCard cardId;
 
+  private String orderId;
+
   private TrangThai trangThai;
   private LocalDateTime ngayThanhToan;
 
@@ -45,5 +47,13 @@ public class Fine {
     public String getMoTa() {
       return moTa;
     }
+  }
+
+  public String getOrderId() {
+    return orderId;
+  }
+
+  public void setOrderId(String orderId) {
+    this.orderId = orderId;
   }
 }
