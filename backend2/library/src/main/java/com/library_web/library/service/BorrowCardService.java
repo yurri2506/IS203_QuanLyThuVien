@@ -242,7 +242,7 @@ public class BorrowCardService {
                         String message = "Bạn đã trả sách thành công! ID Phiếu mượn: " + borrowCard.getId();
                         notificationService.sendNotification(borrowCard.getUserId(), message);
                 }
-                borrowCard.setSoNgayTre(soNgayTre);
+                borrowCard.setSoNgayTre((int) soNgayTre);
 
                 // Cập nhật ngày trả sách
                 borrowCard.setDueDate(LocalDateTime.now());
