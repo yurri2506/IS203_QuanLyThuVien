@@ -24,7 +24,7 @@ public class Notification {
 
   @ManyToOne
   @JoinColumn(name = "user_id")
-  private User user; // ID người dùng nhận thông báo
+  private User userId; // ID người dùng nhận thông báo
 
   private String message; // Nội dung thông báo
   private LocalDateTime timestamp; // Thời gian tạo thông báo
