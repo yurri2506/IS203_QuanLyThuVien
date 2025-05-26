@@ -90,11 +90,11 @@ const Header = () => {
   const fetchNotifications = async () => {
     const notificationList = [];
     try {
-      console.log("Fetching new books...");
+      // console.log("Fetching new books...");
       const newBooksResponse = await axios.get("http://localhost:8080/api/book/new-books-this-week");
       if (newBooksResponse.status === 200) {
         const newBooksCount = newBooksResponse.data;
-        console.log("New books count:", newBooksCount);
+        // console.log("New books count:", newBooksCount);
         if (newBooksCount > 0) {
           notificationList.push({
             id: `new-books-${new Date().toISOString()}`,
@@ -109,21 +109,21 @@ const Header = () => {
       }
 
       const userId = user.id;
-      console.log("Fetching borrow cards for userId:", userId);
+      // console.log("Fetching borrow cards for userId:", userId);
       const borrowCardsResponse = await axios.post(`http://localhost:8080/api/borrow-cards/user/${userId}`);
       if (borrowCardsResponse.status === 200) {
         const borrowCards = borrowCardsResponse.data;
-        console.log("Borrow cards data:", borrowCards);
+        // console.log("Borrow cards data:", borrowCards);
         const currentDate = new Date(); // May 19, 2025, 06:46 PM +07
 
         for (const card of borrowCards) {
-          console.log("Processing card:", card);
+          // console.log("Processing card:", card);
           if (card.borrowedBooks && Array.isArray(card.borrowedBooks)) {
             for (const borrowedBook of card.borrowedBooks) {
-              console.log("Processing borrowed book:", borrowedBook);
+              // console.log("Processing borrowed book:", borrowedBook);
               const bookResponse = await axios.get(`http://localhost:8080/api/book/${borrowedBook.bookId}`);
               const bookName = bookResponse.status === 200 ? bookResponse.data.tenSach : `Sách ${borrowedBook.bookId}`;
-              console.log("Book name fetched:", bookName);
+              // console.log("Book name fetched:", bookName);
               const dueDate = card.dueDate ? new Date(card.dueDate) : null;
               const daysDiff = dueDate ? Math.ceil((dueDate - currentDate) / (1000 * 60 * 60 * 24)) : null;
               const daysSinceDue = dueDate ? Math.ceil((currentDate - dueDate) / (1000 * 60 * 60 * 24)) : null;

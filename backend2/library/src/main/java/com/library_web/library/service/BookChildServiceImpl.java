@@ -9,8 +9,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.HashMap;
 import java.util.List;
-
+import java.util.Map;
 
 @Service
 public class BookChildServiceImpl implements BookChildService {
@@ -35,7 +36,8 @@ public class BookChildServiceImpl implements BookChildService {
     @Override
     @Transactional
     public BookChild addChild(Long bookId) {
-        Book book = bookRepo.findById(bookId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy sách: " + bookId));
+        Book book = bookRepo.findById(bookId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy sách: " + bookId));
         List<BookChild> existing = childRepo.findByBookMaSachOrderByIdAsc(bookId);
         char suffix = (char) ('a' + existing.size());
         BookChild child = new BookChild(book, String.valueOf(suffix));
@@ -46,29 +48,27 @@ public class BookChildServiceImpl implements BookChildService {
         return child;
     }
 
-@Override
-@Transactional
-public void deleteChild(String childId) {
-    BookChild child = childRepo.findById(childId)
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Không tìm thấy sách con: " + childId
-        ));
-    Book book = child.getBook();
-    child.markNotAvailable();
-    childRepo.save(child);
-    book.decreaseTotalQuantity();
-    book.setSoLuongXoa((book.getSoLuongXoa() == null ? 0 : book.getSoLuongXoa()) + 1);
-    book.updateTrangThai();
-    bookRepo.save(book);
-}
+    @Override
+    @Transactional
+    public void deleteChild(String childId) {
+        BookChild child = childRepo.findById(childId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Không tìm thấy sách con: " + childId));
+        Book book = child.getBook();
+        child.markNotAvailable();
+        childRepo.save(child);
+        book.decreaseTotalQuantity();
+        book.setSoLuongXoa((book.getSoLuongXoa() == null ? 0 : book.getSoLuongXoa()) + 1);
+        book.updateTrangThai();
+        bookRepo.save(book);
+    }
 
     @Override
     @Transactional
     public BookChild borrowChild(String childId) {
         BookChild child = childRepo.findById(childId)
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "Không tìm thấy sách con: " + childId
-        ));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Không tìm thấy sách con: " + childId));
         try {
             child.borrow();
             Book book = child.getBook();
@@ -83,9 +83,8 @@ public void deleteChild(String childId) {
     @Transactional
     public BookChild returnChild(String childId) {
         BookChild child = childRepo.findById(childId)
-            .orElseThrow(() -> new ResponseStatusException(
-                HttpStatus.NOT_FOUND, "Không tìm thấy sách con: " + childId
-            ));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Không tìm thấy sách con: " + childId));
         try {
             child.returnBack();
             Book book = child.getBook();
@@ -95,4 +94,17 @@ public void deleteChild(String childId) {
         }
         return childRepo.save(child);
     }
-} 
+
+    @Override
+    @Transactional
+    public Map<String, Object> getChildAndParent(String childId) {
+        BookChild child = childRepo.findById(childId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy sách con với id: " + childId));
+        Book parent = bookRepo.findById(child.getBook().getMaSach())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy sách với id: " + child.getBook().getMaSach()));
+        Map<String, Object> result = new HashMap<>();
+        result.put("childBook", child);
+        result.put("parentBook", parent);
+        return result;
+    }
+}
