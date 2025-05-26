@@ -1,6 +1,6 @@
 "use client";
 import LeftSideBar from "@/app/components/LeftSideBar";
-import ChatBotButton from "../components/ChatBoxButton";
+// import ChatBotButton from "../components/ChatBoxButton";
 import { Button } from "@/components/ui/button";
 import { Receipt, Undo2 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
@@ -19,20 +19,24 @@ function page() {
     setLoading(true);
     try {
       const response = await axios.get(
-        `http://localhost:8081/fine/${MaPhieuPhat}`
+        `http://localhost:8080/api/fine/${MaPhieuPhat}`
       );
       if (response.status === 200) {
         const fineData = response.data;
         setFine(fineData);
         // Nếu phiếu phạt liên quan đến sách, lấy thông tin sách
-        console.log(fineData);
+        // console.log(fineData);
         if (
-          fineData.noiDung === "Làm mất sách" ||
-          fineData.noiDung === "Trả sách trễ hạn"
+          fineData.noiDung == "Làm mất sách" ||
+          fineData.noiDung == "Trả sách trễ hạn"
         ) {
-          const bookData = await getBookInfo(fineData.cardId); // Lấy thông tin sách từ cardId
+          const bookData = await getBookInfo(fineData.cardId.borrowedBooks[0].bookId); // Lấy thông tin sách từ cardId
           setBookInfo(bookData);
+          // console.log("Thông tin sách đã được cập nhật:", bookData);
+        } else {
+          setBookInfo(null); // Nếu không liên quan đến sách, đặt bookInfo là null
         }
+        
       } else {
         toast.error("Lỗi khi lấy phiếu phạt");
       }
@@ -44,11 +48,17 @@ function page() {
   };
 
   // Lấy thông tin sách (nếu nội dung phạt liên quan đến sách)
-  const getBookInfo = async (cardId) => {
-    if (typeof cardId === "string") {
-      // Nếu cardId là string, đây là trường hợp "Khác", không có sách
+  const getBookInfo = async (bookId) => {
+    // console.log("Lấy thông tin sách cho cardId2:", bookId);
+    const response = await axios.get(
+      `http://localhost:8080/api/book/${bookId}` // Lấy thông tin sách từ cardId
+    );
+    if (response.status === 200) {
+      return response.data; // Trả về thông tin sách
+    } else {
+      toast.error("Lỗi khi lấy thông tin sách");
       return null;
-    } else return cardId;
+    }
   };
 
   useEffect(() => {
@@ -62,25 +72,28 @@ function page() {
     return (
       <article className="flex grow shrink gap-3 min-w-60 bg-white rounded-xl shadow-[0px_2px_2px_rgba(0,0,0,0.25)] p-5">
         <img
-          src={book.parentBook.hinhAnh[0]}
-          alt={book.parentBook.tenSach}
+          src={book.hinhAnh[0]}
+          alt={book.tenSach}
           className="object-cover shrink rounded-sm aspect-[0.67] w-[100px]"
         />
         <div className="flex flex-col flex-1 shrink self-end basis-0">
           <h3 className="flex-1 shrink gap-2.5 self-stretch mt-2 w-full text-[1.125rem] font-medium text-black basis-0">
-            {book.parentBook.tenSach}
+            {book.tenSach}
           </h3>
           <p className="flex-1 shrink gap-2.5 self-stretch mt-2 w-full text-base text-black basis-0">
-            ID sách: {book.childBook.id}
+            ID sách: {fine.cardId.borrowedBooks[0].bookId}
           </p>
           <p className="flex-1 shrink gap-2.5 self-stretch mt-2 w-full text-base text-black basis-0">
-            Tác giả: {book.parentBook.tenTacGia}
+            ID sách con: {fine.cardId.borrowedBooks[0].childBookId}
           </p>
           <p className="flex-1 shrink gap-2.5 self-stretch mt-2 w-full text-base text-black basis-0">
-            Thể loại: {book.parentBook.theLoai}
+            Tác giả: {book.tenTacGia}
           </p>
           <p className="flex-1 shrink gap-2.5 self-stretch mt-2 w-full text-base text-black basis-0">
-            NXB: {book.parentBook.nxb}
+            Thể loại: {book.categoryChildName}
+          </p>
+          <p className="flex-1 shrink gap-2.5 self-stretch mt-2 w-full text-base text-black basis-0">
+            NXB: {book.nxb}
           </p>
         </div>
       </article>
@@ -139,7 +152,7 @@ function page() {
                   <p className="text-[1rem] font-semibold text-[#131313]/50">
                     ID Người Dùng:{" "}
                     <span className="text-[#131313] font-medium ">
-                      {fine.userId}
+                      {fine.userId.id}
                     </span>
                   </p>
                   <p className="text-[1rem] font-semibold text-[#131313]/50">
@@ -162,7 +175,7 @@ function page() {
               </div>
               {bookInfo && (
                 <div className="flex flex-col gap-[10px] relative bg-white w-full rounded-lg mt-2 drop-shadow-lg p-5 items-center">
-                  {fine.NoiDung === "Trả sách trễ hạn" && (
+                  {fine.noiDung === "Trả sách trễ hạn" && (
                     <div className="flex flex-col w-full">
                       <h2 className="text-lg font-medium text-[#062D76] text-center">
                         Thông tin sách
@@ -170,7 +183,7 @@ function page() {
                       <div className="w-full h-70 mb-[2rem] overflow-y-scroll">
                         {bookInfo && (
                           <BookCard
-                            key={bookInfo.parentBook.id}
+                            key={bookInfo.id}
                             book={bookInfo}
                           />
                         )}
@@ -182,7 +195,7 @@ function page() {
                       <h2 className="text-lg font-medium text-[#062D76] text-center ">
                         Thông tin sách
                       </h2>
-                      <BookCard key={bookInfo.parentBook.id} book={bookInfo} />
+                      <BookCard key={bookInfo.id} book={bookInfo} />
                     </div>
                   )}
                 </div>
