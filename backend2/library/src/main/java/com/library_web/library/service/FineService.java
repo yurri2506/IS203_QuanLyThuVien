@@ -67,10 +67,12 @@ public class FineService {
   // return savedFine;
   // }
   public Fine addFine(FineDTO dto) {
+    dto.setTrangThai(FineDTO.TrangThai.CHUA_THANH_TOAN);
     Fine fine = new Fine();
     fine.setNoiDung(dto.getNoiDung());
     fine.setSoTien(dto.getSoTien());
     fine.setTrangThai(Fine.TrangThai.CHUA_THANH_TOAN);
+    fine.setNgayThanhToan(null);
 
     // Gán User
     User user = userRepository.findById(dto.getUserId())

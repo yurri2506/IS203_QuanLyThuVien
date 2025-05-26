@@ -119,7 +119,7 @@ public class BorrowCard {
   @Column(name = "status", nullable = false)
   private String status;
 
-  private long soNgayTre;
+  private Integer soNgayTre;
 
   public enum Status {
     REQUESTED("Đã yêu cầu"),

@@ -58,4 +58,16 @@ public class FineDTO {
       return moTa;
     }
   }
+  public TrangThai getTrangThai() {
+    return trangThai;
+  }
+  public void setTrangThai(TrangThai trangThai) {
+    this.trangThai = trangThai;
+  }
+  public LocalDateTime getNgayThanhToan() {
+    return ngayThanhToan;
+  }
+  public void setNgayThanhToan(LocalDateTime ngayThanhToan) {
+    this.ngayThanhToan = ngayThanhToan;
+  }
 }

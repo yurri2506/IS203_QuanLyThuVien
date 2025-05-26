@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import { Plus, Search, ReceiptText, Timer, DollarSign } from "lucide-react";
 import { ThreeDot } from "react-loading-indicators";
 import toast from "react-hot-toast";
-import axios from "axios"; 
+import axios from "axios";
 import { TbListDetails } from "react-icons/tb";
 
 const page = () => {
@@ -53,7 +53,8 @@ const page = () => {
     const userId = localStorage.getItem("id"); // Lấy userId từ localStorage
 
     try {
-      const response = await axios.get(`http://localhost:8080/fines/${userId}`);
+      console.log("Fetching fines for userId22:", userId);
+      const response = await axios.get(`http://localhost:8080/api/fines/${userId}`);
       console.log("Dữ liệu trả về từ API:", response.data);
       if (response.status === 200) {
         const data = response.data;
@@ -83,12 +84,15 @@ const page = () => {
   };
 
   useEffect(() => {
+    console.log("Fetching fines on component mount");
     fetchFine();
     setMode(0);
     setSearchQuery("");
-    handleSearch();
   }, []);
 
+  useEffect(() => {
+    handleSearch();
+  }, [searchQuery, mode, needToPay, paid]);
   const FineCard = ({ fine }) => {
     // Component phiếu phạt
     return (
@@ -99,7 +103,7 @@ const page = () => {
           </p>
           <p className="text-[1rem] font-semibold text-[#131313]/50">
             User ID:{" "}
-            <span className="text-[#131313] font-medium ">{fine.userId}</span>
+            <span className="text-[#131313] font-medium ">{fine.userId.id}</span>
           </p>
           <p className="text-[1rem] font-semibold text-[#131313]/50">
             Số Tiền:{" "}
