@@ -234,7 +234,7 @@ const Page = () => {
       if (response.status === 200) {
         localStorage.setItem("accessToken", result.data.accessToken);
         localStorage.setItem("id", result.data.user.id || "");
-        localStorage.setItem("username", result.data.user.username || "");
+        localStorage.setItem("role", result.data.user.role || "");
 
         Cookies.set("refreshToken", result.data.refreshToken, {
           expires: 7,
