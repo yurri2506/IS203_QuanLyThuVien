@@ -1,31 +1,41 @@
 package com.library_web.library.service;
 
 import com.library_web.library.dto.BorrowCardDTO;
+
 import com.library_web.library.dto.BorrowCardDTO.BookInfo;
 import com.library_web.library.dto.BorrowStatsDTO;
+
+import com.library_web.library.dto.FineDTO;
+// import com.library_web.library.dto.BorrowCardDTO.BookInfo;
+
 import com.library_web.library.model.Book;
 import com.library_web.library.model.BookChild;
 import com.library_web.library.model.User;
 import com.library_web.library.model.BorrowCard;
-import com.library_web.library.model.Category;
+// import com.library_web.library.model.Category;
 import com.library_web.library.model.CategoryChild;
-import com.library_web.library.model.BorrowCard.Status;
+// import com.library_web.library.model.Fine;
+// import com.library_web.library.model.BorrowCard.Status;
 import com.library_web.library.model.BorrowedBook;
 import com.library_web.library.repository.BookChildRepository;
 import com.library_web.library.repository.BookRepository;
 import com.library_web.library.repository.BorrowCardRepository;
 import com.library_web.library.repository.CategoryChildRepository;
-import com.library_web.library.repository.CategoryRepository;
+// import com.library_web.library.repository.CategoryRepository;
 import com.library_web.library.repository.UserRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 import java.util.Map;
+
+import java.time.temporal.ChronoUnit;
+
 import java.util.stream.Collectors;
 
 @Service
@@ -42,9 +52,180 @@ public class BorrowCardService {
         @Autowired
         private BookChildRepository childBookRepo;
 
+        @Autowired
+        private FineService fineService;
+        @Autowired
+        private EmailService EmailService;
+        @Autowired
+        private SettingService settingService;
+        @Autowired
+        private NotificationService notificationService;
+
+
         public List<BorrowCard> getAll() {
                 return repository.findAll();
         }
+// <<<<<<< thanhtri
+
+//         public BorrowCardDTO getBorrowCardDetails(Long id) {
+//                 BorrowCard borrowCard = repository.findById(id)
+//                                 .orElseThrow(() -> new RuntimeException("Phiếu mượn không tồn tại"));
+
+//                 // Cập nhật trạng thái trước khi trả về
+//                 // borrowCard.updateStatus(Status.BORROWED);
+//                 repository.save(borrowCard);
+//                 User user = UserRepository.findById(borrowCard.getUserId())
+//                                 .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại"));
+
+//                 List<BorrowedBook> borrowedBooks = borrowCard.getBorrowedBooks();
+//                 List<Long> bookIds = borrowedBooks.stream()
+//                                 .map(BorrowedBook::getBookId)
+//                                 .distinct()
+//                                 .toList();
+
+//                 List<Book> books = BookRepository.findAllById(bookIds);
+//                 List<BorrowCardDTO.BookInfo> bookInfos = books.stream().map(book -> {
+//                         CategoryChild categoryChild = CategoryChildRepository
+//                                         .findChildById(book.getCategoryChild().getId())
+//                                         .orElseThrow(() -> new RuntimeException("Thể loại không tồn tại"));
+//                         return new BorrowCardDTO.BookInfo(
+//                                         book.getHinhAnh().get(0),
+//                                         book.getTenSach(),
+//                                         book.getTenTacGia(),
+//                                         categoryChild.getName(), // Lấy tên thể loại con
+//                                         book.getNxb(),
+//                                         book.getSoLuongMuon());
+//                 }).toList();
+
+//                 return new BorrowCardDTO(
+//                                 borrowCard.getId(),
+//                                 user.getId(),
+//                                 user.getUsername(),
+//                                 bookInfos,
+//                                 borrowCard.getBorrowDate(),
+//                                 borrowCard.getGetBookDate(),
+//                                 borrowCard.getDueDate(),
+//                                 bookInfos.size());
+//         }
+
+//         public BorrowCard create(Long userId, List<Long> bookIds) {
+//                 System.out.println("dữ liệu: " + bookIds);
+//                 LocalDateTime borrowDate = LocalDateTime.now(ZoneId.of("Asia/Bangkok"));
+//                 // int waitingToTake = settingService.getSetting().getWaitingToTake();
+//                 int waitingToTake = 3;
+//                 List<BorrowedBook> borrowedBooks = bookIds.stream()
+//                                 .map(id -> new BorrowedBook(id, null))
+//                                 .toList();
+//                 BorrowCard borrowCard = new BorrowCard(userId, borrowDate, waitingToTake, borrowedBooks);
+//                 for (Long bookId : bookIds) {
+//                         Book book = BookRepository.findById(bookId)
+//                                         .orElseThrow(() -> new RuntimeException(
+//                                                         "Không tìm thấy sách với id: " + bookId));
+
+//                         book.setSoLuongMuon(book.getSoLuongMuon() + 1);
+//                         BookRepository.save(book);
+//                 }
+//                 return repository.save(borrowCard);
+//         }
+
+//         // public BorrowCardDTO update(Long id, BorrowCardDTO dto) {
+//         // Optional<BorrowCard> optional = repository.findById(id);
+//         // if (optional.isEmpty())
+//         // return null;
+
+//         // BorrowCard card = optional.get();
+//         // card.setBookIds(dto.getBookIds());
+//         // card.setDueDate(dto.getDueDate());
+//         // card.setGetBookDate(dto.getGetBookDate());
+//         // card.setStatus(dto.getStatus());
+
+//         // return toDTO(repository.save(card));
+//         // }
+
+//         public boolean delete(Long id) {
+//                 if (!repository.existsById(id))
+//                         return false;
+//                 repository.deleteById(id);
+//                 return true;
+//         }
+
+//         // private BorrowCardDTO toDTO(BorrowCard card) {
+//         // BorrowCardDTO dto = new BorrowCardDTO();
+//         // dto.setId(card.getId());
+//         // dto.setUserId(card.getUserId());
+//         // dto.setBookIds(card.getBookIds());
+//         // dto.setBorrowDate(card.getBorrowDate());
+//         // dto.setDueDate(card.getDueDate());
+//         // dto.setGetBookDate(card.getGetBookDate());
+//         // dto.setStatus(card.getStatus());
+//         // return dto;
+//         // }
+
+//         public List<BorrowCard> getBorrowCardsByUserId(Long userId) {
+//                 return repository.findByUserId(userId); // Trả về tất cả phiếu mượn của userId
+//         }
+
+//         // Cập nhật phiếu mượn khi người dùng đến lấy sách
+//         public BorrowCard updateBorrowCardToBorrowing(Long id, List<String> childBookIds) {
+//                 BorrowCard borrowCard = repository.findById(id)
+//                                 .orElseThrow(() -> new RuntimeException("Phiếu mượn không tồn tại"));
+
+//                 // Cập nhật trạng thái và ngày giờ
+//                 borrowCard.setStatus(BorrowCard.Status.BORROWED.getStatusDescription());
+//                 borrowCard.setGetBookDate(LocalDateTime.now(ZoneId.of("Asia/Bangkok")));
+//                 int borrowDay = 7; // giả định
+//                 borrowCard.setDueDate(LocalDateTime.now(ZoneId.of("Asia/Bangkok")).plusDays(borrowDay));
+
+//                 // Lấy danh sách BorrowedBook hiện có
+//                 List<BorrowedBook> borrowedBooks = borrowCard.getBorrowedBooks();
+
+//                 for (String childId : childBookIds) {
+//                         BookChild child = childBookRepo.findById(childId)
+//                                         .orElseThrow(() -> new RuntimeException(
+//                                                         "Không tìm thấy sách con với id: " + childId));
+
+//                         Long parentId = child.getBook().getMaSach(); // lấy id sách cha thực tế từ sách con
+//                         System.out.println("Sách con id: " + childId + ", Sách cha id: " + parentId);
+//                         // Tìm BorrowedBook phù hợp với sách cha này và chưa có sách con
+//                         BorrowedBook matched = borrowedBooks.stream()
+//                                         .filter(bb -> bb.getBookId().equals(parentId)
+//                                                         && (bb.getChildBookId() == null
+//                                                                         || bb.getChildBookId().isEmpty()))
+//                                         .findFirst()
+//                                         .orElseThrow(
+//                                                         () -> new RuntimeException(
+//                                                                         "Không tìm thấy sách cha phù hợp cho sách con id: "
+//                                                                                         + childId));
+
+//                         // Gán childBookId vào BorrowedBook
+//                         matched.setChildBookId(childId);
+
+//                         // Đánh dấu sách con là đã được mượn
+//                         child.setStatus(BookChild.Status.BORROWED);
+//                         childBookRepo.save(child);
+//                 }
+
+//                 borrowCard.setBorrowedBooks(borrowedBooks); // cập nhật lại danh sách
+//                 return repository.save(borrowCard);
+//         }
+
+//         // Cập nhật phiếu mượn khi người dùng trả sách
+//         public BorrowCard updateBorrowCardOnReturn(Long id) {
+//                 BorrowCard borrowCard = repository.findById(id)
+//                                 .orElseThrow(() -> new RuntimeException("Phiếu mượn không tồn tại"));
+
+//                 // Kiểm tra và cập nhật trạng thái phiếu mượn
+//                 if (borrowCard.getStatus().equals(BorrowCard.Status.BORROWED.getStatusDescription())) {
+//                         borrowCard.setStatus(BorrowCard.Status.RETURNED.getStatusDescription());
+
+//                 }
+//                 // Cập nhật ngày trả sách
+//                 borrowCard.setDueDate(LocalDateTime.now());
+
+//                 // Cập nhật trạng thái sách con
+//                 List<String> childBookIds = borrowCard.getBookIds();
+//                 System.out.println(childBookIds);// lấy danh sách sách con
+// =======
 
         public BorrowCardDTO getBorrowCardDetails(Long id) {
                 BorrowCard borrowCard = repository.findById(id)
@@ -89,7 +270,7 @@ public class BorrowCardService {
 
         public BorrowCard create(Long userId, List<Long> bookIds) {
                 System.out.println("dữ liệu: " + bookIds);
-                LocalDateTime borrowDate = LocalDateTime.now(ZoneId.of("Asia/Bangkok"));
+                LocalDateTime borrowDate = LocalDateTime.now();
                 // int waitingToTake = settingService.getSetting().getWaitingToTake();
                 int waitingToTake = 3;
                 List<BorrowedBook> borrowedBooks = bookIds.stream()
@@ -104,7 +285,11 @@ public class BorrowCardService {
                         book.setSoLuongMuon(book.getSoLuongMuon() + 1);
                         BookRepository.save(book);
                 }
-                return repository.save(borrowCard);
+                borrowCard = repository.save(borrowCard);
+                String message = "Bạn đã tạo phiếu mượn sách thành công! Vui lòng đến lấy sách trong thời gian sớm nhất nhé!\nID Phiếu mượn: "
+                                + borrowCard.getId();
+                notificationService.sendNotification(borrowCard.getUserId(), message);
+                return borrowCard;
         }
 
         // public BorrowCardDTO update(Long id, BorrowCardDTO dto) {
@@ -151,18 +336,81 @@ public class BorrowCardService {
 
                 // Cập nhật trạng thái và ngày giờ
                 borrowCard.setStatus(BorrowCard.Status.BORROWED.getStatusDescription());
-                borrowCard.setGetBookDate(LocalDateTime.now(ZoneId.of("Asia/Bangkok")));
+                borrowCard.setGetBookDate(LocalDateTime.now());
                 int borrowDay = 7; // giả định
-                borrowCard.setDueDate(LocalDateTime.now(ZoneId.of("Asia/Bangkok")).plusDays(borrowDay));
+                borrowCard.setDueDate(LocalDateTime.now().plusDays(borrowDay));
 
                 // Lấy danh sách BorrowedBook hiện có
                 List<BorrowedBook> borrowedBooks = borrowCard.getBorrowedBooks();
 
+//>>>>>>> main
                 for (String childId : childBookIds) {
                         BookChild child = childBookRepo.findById(childId)
                                         .orElseThrow(() -> new RuntimeException(
                                                         "Không tìm thấy sách con với id: " + childId));
 
+// <<<<<<< thanhtri
+//                         // Đánh dấu sách con là đã trả, trạng thái là AVAILABLE
+//                         child.setStatus(BookChild.Status.AVAILABLE);
+//                         childBookRepo.save(child); // lưu lại trạng thái của sách con
+//                 }
+
+//                 // Cập nhật số lượng sách trong kho
+//                 List<Long> bookIds = borrowCard.getParentBookIds().stream()
+//                                 .map(Long::valueOf)
+//                                 .collect(Collectors.toList());
+//                 for (Long bookId : bookIds) {
+//                         Book book = BookRepository.findById(bookId)
+//                                         .orElseThrow(() -> new RuntimeException(
+//                                                         "Không tìm thấy sách với id: " + bookId));
+
+//                         // Giảm số lượng sách mượn (SoLuongMuon)
+//                         book.setSoLuongMuon(book.getSoLuongMuon() - 1);
+//                         BookRepository.save(book); // lưu lại thông tin sách
+//                 }
+
+//                 // Lưu phiếu mượn sau khi cập nhật
+//                 return repository.save(borrowCard);
+//         }
+
+       
+//         public BorrowStatsDTO getBorrowStatsLastWeek() {
+//                 // Sử dụng múi giờ +07 (Asia/Bangkok tương ứng với +07:00)
+//                 LocalDateTime startOfLastWeek = LocalDateTime.now(ZoneId.of("Asia/Bangkok")).minusDays(100);
+//                 System.out.println("Start of last week: " + startOfLastWeek); // Debug thời gian
+
+//                 List<BorrowCard> borrowCards = repository.findByGetBookDateAfter(startOfLastWeek);
+//                 System.out.println("Number of borrow cards: " + borrowCards.size()); // Debug số lượng
+
+//                 long totalBorrows = borrowCards.stream()
+//                                 .flatMap(card -> card.getBorrowedBooks().stream())
+//                                 .filter(bb -> bb.getChildBookId() != null && !bb.getChildBookId().isEmpty())
+//                                 .count();
+
+//                 Map<Long, Long> borrowCountByBook = borrowCards.stream()
+//                                 .flatMap(card -> card.getBorrowedBooks().stream())
+//                                 .filter(bb -> bb.getChildBookId() != null && !bb.getChildBookId().isEmpty())
+//                                 .collect(Collectors.groupingBy(
+//                                                 BorrowedBook::getBookId,
+//                                                 Collectors.counting()));
+
+//                 List<BorrowStatsDTO.BookBorrowDetail> bookDetails = borrowCountByBook.entrySet().stream()
+//                                 .map(entry -> {
+//                                         Long bookId = entry.getKey();
+//                                         Long borrowCount = entry.getValue();
+//                                         Book book = BookRepository.findById(bookId)
+//                                                         .orElseThrow(() -> new RuntimeException(
+//                                                                         "Không tìm thấy sách với id: " + bookId));
+//                                         return new BorrowStatsDTO.BookBorrowDetail(
+//                                                         bookId,
+//                                                         book.getTenSach(),
+//                                                         book.getTenTacGia(),
+//                                                         borrowCount);
+//                                 })
+//                                 .collect(Collectors.toList());
+
+//                 return new BorrowStatsDTO(totalBorrows, bookDetails);
+// =======
                         Long parentId = child.getBook().getMaSach(); // lấy id sách cha thực tế từ sách con
                         System.out.println("Sách con id: " + childId + ", Sách cha id: " + parentId);
                         // Tìm BorrowedBook phù hợp với sách cha này và chưa có sách con
@@ -183,6 +431,12 @@ public class BorrowCardService {
                         child.setStatus(BookChild.Status.BORROWED);
                         childBookRepo.save(child);
                 }
+                // gửi mail thông báo
+                EmailService.mailTaken(borrowCard);
+                // Gửi thông báo đến người dùng
+                String message = "Bạn đã mượn sách thành công. ID Phiếu mượn: "
+                                + borrowCard.getId();
+                notificationService.sendNotification(borrowCard.getUserId(), message);
 
                 borrowCard.setBorrowedBooks(borrowedBooks); // cập nhật lại danh sách
                 return repository.save(borrowCard);
@@ -198,6 +452,34 @@ public class BorrowCardService {
                         borrowCard.setStatus(BorrowCard.Status.RETURNED.getStatusDescription());
 
                 }
+
+                // Nếu trả trễ
+                long soNgayTre = ChronoUnit.DAYS.between(borrowCard.getDueDate(), LocalDateTime.now());
+                if (soNgayTre < 0) {
+                        soNgayTre = 0; // chưa trễ hạn
+                } else {
+                        FineDTO data = new FineDTO();
+                        int finePerDay = settingService.getSetting().getFinePerDay();
+                        data.setNoiDung("Trả sách trễ hạn");
+                        data.setSoTien((int)(soNgayTre * finePerDay));
+                        data.setBorrowCardId(borrowCard.getId());
+                        User user = UserRepository.findById(borrowCard.getUserId())
+                                        .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại"));
+                        data.setUserId(user.getId());
+                        fineService.addFine(data);
+                        // Gửi thông báo trả sách trễ
+                        String message = "Bạn đã trả sách trễ " + soNgayTre
+                                        + " ngày. Vui lòng thanh toán tiền phạt sớm nhất.\nID Phiếu mượn: "
+                                        + borrowCard.getId();
+                        notificationService.sendNotification(borrowCard.getUserId(), message);
+                }
+                // Nếu không trễ, gửi thông báo trả sách thành công
+                if (soNgayTre == 0) {
+                        String message = "Bạn đã trả sách thành công! ID Phiếu mượn: " + borrowCard.getId();
+                        notificationService.sendNotification(borrowCard.getUserId(), message);
+                }
+                borrowCard.setSoNgayTre((int) soNgayTre);
+
                 // Cập nhật ngày trả sách
                 borrowCard.setDueDate(LocalDateTime.now());
 
@@ -230,44 +512,6 @@ public class BorrowCardService {
 
                 // Lưu phiếu mượn sau khi cập nhật
                 return repository.save(borrowCard);
-        }
-
-       
-        public BorrowStatsDTO getBorrowStatsLastWeek() {
-                // Sử dụng múi giờ +07 (Asia/Bangkok tương ứng với +07:00)
-                LocalDateTime startOfLastWeek = LocalDateTime.now(ZoneId.of("Asia/Bangkok")).minusDays(100);
-                System.out.println("Start of last week: " + startOfLastWeek); // Debug thời gian
-
-                List<BorrowCard> borrowCards = repository.findByGetBookDateAfter(startOfLastWeek);
-                System.out.println("Number of borrow cards: " + borrowCards.size()); // Debug số lượng
-
-                long totalBorrows = borrowCards.stream()
-                                .flatMap(card -> card.getBorrowedBooks().stream())
-                                .filter(bb -> bb.getChildBookId() != null && !bb.getChildBookId().isEmpty())
-                                .count();
-
-                Map<Long, Long> borrowCountByBook = borrowCards.stream()
-                                .flatMap(card -> card.getBorrowedBooks().stream())
-                                .filter(bb -> bb.getChildBookId() != null && !bb.getChildBookId().isEmpty())
-                                .collect(Collectors.groupingBy(
-                                                BorrowedBook::getBookId,
-                                                Collectors.counting()));
-
-                List<BorrowStatsDTO.BookBorrowDetail> bookDetails = borrowCountByBook.entrySet().stream()
-                                .map(entry -> {
-                                        Long bookId = entry.getKey();
-                                        Long borrowCount = entry.getValue();
-                                        Book book = BookRepository.findById(bookId)
-                                                        .orElseThrow(() -> new RuntimeException(
-                                                                        "Không tìm thấy sách với id: " + bookId));
-                                        return new BorrowStatsDTO.BookBorrowDetail(
-                                                        bookId,
-                                                        book.getTenSach(),
-                                                        book.getTenTacGia(),
-                                                        borrowCount);
-                                })
-                                .collect(Collectors.toList());
-
-                return new BorrowStatsDTO(totalBorrows, bookDetails);
+//>>>>>>> main
         }
 }
