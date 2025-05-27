@@ -102,9 +102,8 @@ public class BorrowCard {
 
   @Column(name = "user_id", nullable = false)
   private Long userId;
-
-  @ElementCollection
-  @CollectionTable(name = "borrowed_books", joinColumns = @JoinColumn(name = "borrow_card_id"))
+  
+  @OneToMany(mappedBy = "borrowCard", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
   private List<BorrowedBook> borrowedBooks = new ArrayList<>();
 
   @Column(name = "borrow_date", nullable = false)
@@ -161,9 +160,68 @@ public class BorrowCard {
         .map(BorrowedBook::getChildBookId)
         .collect(Collectors.toList());
   }
+
   public List<Long> getParentBookIds() {
     return borrowedBooks.stream()
         .map(BorrowedBook::getBookId)
         .collect(Collectors.toList());
   }
+
+  // Getters and Setters
+  public Long getId() {
+    return id;
+  }
+
+  public void setId(Long id) {
+    this.id = id;
+  }
+
+  public Long getUserId() {
+    return userId;
+  }
+
+  public void setUserId(Long userId) {
+    this.userId = userId;
+  }
+
+  public List<BorrowedBook> getBorrowedBooks() {
+    return borrowedBooks;
+  }
+
+  public void setBorrowedBooks(List<BorrowedBook> borrowedBooks) {
+    this.borrowedBooks = borrowedBooks;
+  }
+
+  public LocalDateTime getBorrowDate() {
+    return borrowDate;
+  }
+
+  public void setBorrowDate(LocalDateTime borrowDate) {
+    this.borrowDate = borrowDate;
+  }
+
+  public LocalDateTime getDueDate() {
+    return dueDate;
+  }
+
+  public void setDueDate(LocalDateTime dueDate) {
+    this.dueDate = dueDate;
+  }
+
+  public LocalDateTime getGetBookDate() {
+    return getBookDate;
+  }
+
+  public void setGetBookDate(LocalDateTime getBookDate) {
+    this.getBookDate = getBookDate;
+  }
+
+  public String getStatus() {
+    return status;
+  }
+
+  public void setStatus(String status) {
+    this.status = status;
+  }
+
 }

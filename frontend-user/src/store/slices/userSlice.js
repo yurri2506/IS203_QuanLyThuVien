@@ -4,13 +4,13 @@ import Cookies from "js-cookie";
 // Initial state
 const initialState = {
   fullname: "",
-  birthday: "",
+  birthdate: "",
   email: "",
   id: "",
   phone: "",
   role: "",
   username: [],
-  user_avt_img: "",
+  avarta_url: "",
   accessToken: "",
   refreshToken: Cookies.get("refreshToken"),
   isAuthenticated: !!Cookies.get("accessToken"), // Check if accessToken exists
@@ -43,13 +43,13 @@ const userSlice = createSlice({
       return {
         ...state,
         fullname: "",
-        birthday: "",
+        birthdate: "",
         email: "",
         id: "",
         phone: "",
         role: "",
         username: [],
-        user_avt_img: "",
+        avarta_url: "",
         accessToken: "",
         refreshToken: "",
         isAuthenticated: false,

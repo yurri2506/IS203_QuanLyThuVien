@@ -1,9 +1,9 @@
 package com.library_web.library.service;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.library_web.library.model.User;
 import com.library_web.library.repository.UserRepository;
-import com.library_web.library.security.JwtUtil;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -18,6 +18,9 @@ public class FacebookAuthService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private TokenService tokenService;
 
     public Map<String, Object> signInWithFacebook(String accessToken) throws Exception {
         OkHttpClient client = new OkHttpClient();
@@ -49,14 +52,15 @@ public class FacebookAuthService {
             newUser.setFullname(name);
             newUser.setProvider("FACEBOOK");
             newUser.setProviderId(facebookId);
-            newUser.setPassword(""); // không cần
+            newUser.setPassword(""); // Không cần
+            newUser.setRole("USER"); // Gán role mặc định
             userRepository.save(newUser);
             return newUser;
         });
 
-        // Tạo token JWT
-        String accessTokenJwt = JwtUtil.generateAccessToken(user.getId().toString());
-        String refreshTokenJwt = JwtUtil.generateRefreshToken(user.getId().toString());
+        // Tạo token JWT bằng TokenService
+        String accessTokenJwt = tokenService.createAccessToken(user.getId(), user.getRole());
+        String refreshTokenJwt = tokenService.createRefreshToken(user.getId());
 
         Map<String, Object> result = new HashMap<>();
         result.put("status", "OK");
