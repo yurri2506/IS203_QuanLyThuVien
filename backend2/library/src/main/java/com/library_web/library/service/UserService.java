@@ -3,9 +3,10 @@ package com.library_web.library.service;
 import com.library_web.library.dto.UserDTO;
 import com.library_web.library.model.User;
 import com.library_web.library.repository.UserRepository;
-import com.library_web.library.security.JwtUtil;
-import com.library_web.library.service.TempStorage.PendingUser;
-
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.gson.GsonFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -19,11 +20,6 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 
-import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
-import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
-import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.client.json.gson.GsonFactory;
-
 @Service
 @Transactional
 public class UserService {
@@ -36,6 +32,9 @@ public class UserService {
 
     @Autowired
     private JavaMailSender mailSender;
+
+    @Autowired
+    private TokenService tokenService;
 
     public void sendOtpEmail(String toEmail, String otp) {
         SimpleMailMessage message = new SimpleMailMessage();
@@ -68,8 +67,56 @@ public class UserService {
         return Map.of("message", "Đã gửi OTP tới email, vui lòng xác thực");
     }
 
+   public Map<String, Object> createUser(UserDTO userDTO) {
+        // Check if user already exists
+        if (userDTO.getEmail() != null && !userDTO.getEmail().isBlank()) {
+            if (userRepository.findByEmail(userDTO.getEmail()).isPresent()) {
+                return Map.of("message", "Email đã tồn tại: " + userDTO.getEmail());
+            }
+        }
+        if (userDTO.getPhone() != null && !userDTO.getPhone().isBlank()) {
+            if (userRepository.findByPhone(userDTO.getPhone()).isPresent()) {
+                return Map.of("message", "Số điện thoại đã tồn tại: " + userDTO.getPhone());
+            }
+        }
+
+        // If email is provided, require OTP verification
+        if (userDTO.getEmail() != null && !userDTO.getEmail().isBlank()) {
+            String otp = String.valueOf((int) (Math.random() * 900000) + 100000);
+            LocalDateTime expiredAt = LocalDateTime.now().plusMinutes(5);
+            TempStorage.savePendingUser(userDTO, otp, expiredAt);
+            sendOtpEmail(userDTO.getEmail(), otp);
+            return Map.of("message", "Đã gửi OTP tới email, vui lòng xác thực", "email", userDTO.getEmail());
+        }
+
+        // Create user directly if no email is provided
+        User user = new User();
+        user.setUsername(userDTO.getUsername());
+        user.setEmail(userDTO.getEmail() != null && !userDTO.getEmail().isBlank() ? userDTO.getEmail() : "unknown");
+        user.setPhone(userDTO.getPhone());
+        user.setGender(userDTO.getGender() != null ? userDTO.getGender() : "Nam"); 
+        user.setBirthdate(userDTO.getBirthdate());
+        user.setPassword(passwordEncoder.encode("123456")); // Default password
+        user.setRole(userDTO.getRole() != null ? userDTO.getRole() : "USER");
+        user.setAvatar_url(userDTO.getAvatar_url());
+        user.setJoined_date(LocalDate.now());
+        userRepository.save(user);
+
+        return Map.of(
+                "message", "Tạo người dùng thành công",
+                "data", Map.of(
+                        "id", user.getId(),
+                        "username", user.getUsername(),
+                        "email", user.getEmail(),
+                        "phone", user.getPhone() != null ? user.getPhone() : "",
+                        "birthdate", user.getBirthdate() != null ? user.getBirthdate().toString() : "",
+                        "role", user.getRole(),
+                        "gender", user.getGender() != null ? user.getGender() : "",
+                        "avatar_url", user.getAvatar_url() != null ? user.getAvatar_url() : ""));
+    }
+
     public Map<String, Object> verifyOtpAndCreate(String email, String otp) {
-        PendingUser pending = TempStorage.getPendingUser(email);
+        TempStorage.PendingUser pending = TempStorage.getPendingUser(email);
         if (pending == null || !pending.getOtp().equals(otp) || LocalDateTime.now().isAfter(pending.getExpiredAt())) {
             return null;
         }
@@ -79,14 +126,24 @@ public class UserService {
         user.setEmail(pending.getUserDTO().getEmail());
         user.setGender(pending.getUserDTO().getGender());
         user.setBirthdate(pending.getUserDTO().getBirthdate());
-        user.setPassword(passwordEncoder.encode(pending.getUserDTO().getPassword()));
+        user.setPassword(passwordEncoder.encode("123456")); // Default password
         user.setRole(pending.getUserDTO().getRole() != null ? pending.getUserDTO().getRole() : "USER");
         user.setAvatar_url(pending.getUserDTO().getAvatar_url());
         user.setJoined_date(LocalDate.now());
         userRepository.save(user);
         TempStorage.removePendingUser(email);
 
-        return Map.of("message", "Đăng ký thành công bằng email");
+        return Map.of(
+                "message", "Đăng ký thành công bằng email",
+                "data", Map.of(
+                        "id", user.getId(),
+                        "username", user.getUsername(),
+                        "email", user.getEmail(),
+                        "phone", user.getPhone() != null ? user.getPhone() : "",
+                        "birthdate", user.getBirthdate() != null ? user.getBirthdate().toString() : "",
+                        "role", user.getRole(),
+                        "gender", user.getGender() != null ? user.getGender() : "",
+                        "avatar_url", user.getAvatar_url() != null ? user.getAvatar_url() : ""));
     }
 
     public Map<String, Object> login(String emailOrPhone, String password) {
@@ -107,8 +164,8 @@ public class UserService {
             return Map.of("message", "Đã gửi OTP tới email, vui lòng xác thực", "email", user.getEmail());
         }
 
-        String accessToken = JwtUtil.generateAccessToken(user.getUsername());
-        String refreshToken = JwtUtil.generateRefreshToken(user.getUsername());
+        String accessToken = tokenService.createAccessToken(user.getId(), user.getRole());
+        String refreshToken = tokenService.createRefreshToken(user.getId());
 
         // Đảm bảo avatar_url không là chuỗi rỗng
         String avatarUrl = user.getAvatar_url() != null && !user.getAvatar_url().isEmpty() ? user.getAvatar_url()
@@ -125,9 +182,8 @@ public class UserService {
                                 "email", user.getEmail() != null ? user.getEmail() : "",
                                 "phone", user.getPhone() != null ? user.getPhone() : "",
                                 "fullname", user.getFullname() != null ? user.getFullname() : "",
-                                "birthdate", user.getBirthdate() != null ? user.getBirthdate().toString() : ""),
-                                "role", user.getRole()));
-
+                                "birthdate", user.getBirthdate() != null ? user.getBirthdate().toString() : "",
+                                "role", user.getRole())));
     }
 
     public Map<String, Object> verifyOtpAndLoginForAdmin(String email, String otp) {
@@ -140,8 +196,8 @@ public class UserService {
             return null;
         }
 
-        String accessToken = JwtUtil.generateAccessToken(user.getUsername());
-        String refreshToken = JwtUtil.generateRefreshToken(user.getUsername());
+        String accessToken = tokenService.createAccessToken(user.getId(), user.getRole());
+        String refreshToken = tokenService.createRefreshToken(user.getId());
         TempStorage.removePendingUser(email);
 
         return Map.of(
@@ -155,18 +211,67 @@ public class UserService {
                                 "email", user.getEmail() != null ? user.getEmail() : "",
                                 "phone", user.getPhone() != null ? user.getPhone() : "",
                                 "fullname", user.getFullname() != null ? user.getFullname() : "",
-                                "birthdate", user.getBirthdate() != null ? user.getBirthdate().toString() : ""),
-                                "role", user.getRole()));
+                                "birthdate", user.getBirthdate() != null ? user.getBirthdate().toString() : "",
+                                "role", user.getRole())));
+    }
 
+    public Map<String, Object> updateUser(Long id, UserDTO userDTO) {
+        Optional<User> userOpt = userRepository.findById(id);
+        if (userOpt.isEmpty()) {
+            return null;
+        }
+
+        User user = userOpt.get();
+        if (userDTO.getUsername() != null) {
+            user.setUsername(userDTO.getUsername());
+        }
+        if (userDTO.getEmail() != null && !userDTO.getEmail().isBlank()) {
+            if (!userDTO.getEmail().equals(user.getEmail())
+                    && userRepository.findByEmail(userDTO.getEmail()).isPresent()) {
+                return null; // Email already exists
+            }
+            user.setEmail(userDTO.getEmail());
+        }
+        if (userDTO.getPhone() != null && !userDTO.getPhone().isBlank()) {
+            if (!userDTO.getPhone().equals(user.getPhone())
+                    && userRepository.findByPhone(userDTO.getPhone()).isPresent()) {
+                return null; // Phone already exists
+            }
+            user.setPhone(userDTO.getPhone());
+        }
+        if (userDTO.getBirthdate() != null) {
+            user.setBirthdate(userDTO.getBirthdate());
+        }
+        if (userDTO.getRole() != null) {
+            user.setRole(userDTO.getRole());
+        }
+        if (userDTO.getAvatar_url() != null) {
+            user.setAvatar_url(userDTO.getAvatar_url());
+        }
+        userRepository.save(user);
+
+        return Map.of(
+                "message", "Cập nhật người dùng thành công",
+                "data", Map.of(
+                        "id", user.getId(),
+                        "username", user.getUsername(),
+                        "email", user.getEmail(),
+                        "phone", user.getPhone() != null ? user.getPhone() : "",
+                        "birthdate", user.getBirthdate() != null ? user.getBirthdate().toString() : "",
+                        "role", user.getRole(),
+                        "avatar_url", user.getAvatar_url() != null ? user.getAvatar_url() : ""));
     }
 
     public Map<String, Object> refreshAccessToken(String refreshToken) {
-        String username = JwtUtil.validateToken(refreshToken);
-        User user = userRepository.findByUsername(username).orElse(null);
+        Long id = tokenService.getIdFromToken(refreshToken);
+        if (id == null) {
+            return null;
+        }
+        User user = userRepository.findById(id).orElse(null);
         if (user == null) {
             return null;
         }
-        String newAccessToken = JwtUtil.generateAccessToken(user.getUsername());
+        String newAccessToken = tokenService.createAccessToken(user.getId(), user.getRole());
         return Map.of(
                 "message", "Làm mới access token thành công",
                 "data", Map.of("accessToken", newAccessToken));
@@ -238,8 +343,8 @@ public class UserService {
             user = userOpt.get();
         }
 
-        String accessToken = JwtUtil.generateAccessToken(user.getUsername());
-        String refreshToken = JwtUtil.generateRefreshToken(user.getUsername());
+        String accessToken = tokenService.createAccessToken(user.getId(), user.getRole());
+        String refreshToken = tokenService.createRefreshToken(user.getId());
 
         return Map.of(
                 "message", "Đăng nhập bằng Google thành công",
@@ -252,7 +357,8 @@ public class UserService {
                                 "email", user.getEmail() != null ? user.getEmail() : "",
                                 "phone", user.getPhone() != null ? user.getPhone() : "",
                                 "fullname", user.getFullname() != null ? user.getFullname() : "",
-                                "birthdate", user.getBirthdate() != null ? user.getBirthdate().toString() : "")));
+                                "birthdate", user.getBirthdate() != null ? user.getBirthdate().toString() : "",
+                                "role", user.getRole())));
     }
 
     public String getEmailFromGoogleIdToken(String idToken) {

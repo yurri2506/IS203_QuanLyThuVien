@@ -1,13 +1,9 @@
 package com.library_web.library.service;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-// import com.library_web.library.model.Cart;
-// import com.library_web.library.model.Favor;
 import com.library_web.library.model.User;
-// import com.library_web.library.repository.CartRepository;
-// import com.library_web.library.repository.FavorRepository;
 import com.library_web.library.repository.UserRepository;
-import com.library_web.library.security.JwtUtil;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -24,15 +20,11 @@ public class GoogleAuthService {
     @Autowired
     private UserRepository userRepository;
 
-    // @Autowired
-    // private CartRepository cartRepository;
-
-    // @Autowired
-    // private FavorRepository favorRepository;
-
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private TokenService tokenService;
 
     public Map<String, Object> signInWithGoogle(String accessToken) {
         try {
@@ -66,20 +58,14 @@ public class GoogleAuthService {
                 newUser.setProvider("GOOGLE");
                 newUser.setProviderId(googleId);
                 newUser.setPassword(passwordEncoder.encode("")); // Có thể để ""
-                //newUser.setPhone("");
+                newUser.setRole("USER"); // Gán role mặc định
                 userRepository.save(newUser);
                 return newUser;
             });
 
-            // Tạo Cart và Favor nếu là user mới
-            // if (optionalUser.isEmpty()) {
-            //     cartRepository.save(new Cart(user));
-            //     favorRepository.save(new Favor(user));
-            // }
-
-            // Tạo JWT token
-            String accessTokenJwt = JwtUtil.generateAccessToken(user.getId().toString());
-            String refreshTokenJwt = JwtUtil.generateRefreshToken(user.getId().toString());
+            // Tạo JWT token bằng TokenService
+            String accessTokenJwt = tokenService.createAccessToken(user.getId(), user.getRole());
+            String refreshTokenJwt = tokenService.createRefreshToken(user.getId());
 
             Map<String, Object> result = new HashMap<>();
             result.put("status", "OK");
@@ -98,4 +84,3 @@ public class GoogleAuthService {
         }
     }
 }
-
