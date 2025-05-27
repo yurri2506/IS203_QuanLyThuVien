@@ -26,6 +26,7 @@ const Page = () => {
       });
       setUserList(response.data.data || []);
       setFilteredUsers(response.data.data || []);
+      toast.success("Lấy danh sách người dùng thành công"); // Added success toast
     } catch (error) {
       console.error("Error fetching users:", error);
       toast.error("Không thể tải danh sách người dùng");
@@ -59,12 +60,12 @@ const Page = () => {
   // Handle delete user using axios
   const handleDelete = async (user) => {
     try {
-      await axios.delete(`/api/admin/users/${user.id}`, {
+      await axios.delete(`http://localhost:8080/api/admin/users/${user.id}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
         },
       });
-      toast.success("Xóa người dùng thành công");
+      toast.success("Xóa người dùng thành công"); // Success toast already present
       setPopUpOpen(false);
       setDeleteOne(null);
       await fetchUsers(); // Refresh user list

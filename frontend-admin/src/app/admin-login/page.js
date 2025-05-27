@@ -143,7 +143,7 @@ const Page = () => {
 
       localStorage.setItem("accessToken", result.data.accessToken);
       localStorage.setItem("id", result.data.admin.id || "");
-      localStorage.setItem("role", result.data.admin.role || "ABC");
+
 
       Cookies.set("refreshToken", result.data.refreshToken, {
         expires: 7,
