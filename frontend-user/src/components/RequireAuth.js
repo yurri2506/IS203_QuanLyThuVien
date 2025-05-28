@@ -1,20 +1,18 @@
-"use client"; // Thêm dòng này ở đầu file
+"use client";
 
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Header from "@/app/components/Header";
-
 
 const RequireAuth = ({ children }) => {
   const router = useRouter();
   const pathname = usePathname();
   const [isLoading, setIsLoading] = useState(true);
 
-  const publicRoutes = ["/user-login"]; // thêm các route không cần login
+  const publicRoutes = ["/user-login"]; // các trang không yêu cầu đăng nhập
 
-  // Kiểm tra token khi có sự thay đổi pathname
   useEffect(() => {
-    const token = localStorage.getItem("accessToken"); // Lấy token từ localStorage
+    const token = localStorage.getItem("accessToken");
     console.log("TOKEN:", token);
 
     if (!token && !publicRoutes.includes(pathname)) {
@@ -24,20 +22,21 @@ const RequireAuth = ({ children }) => {
     }
   }, [pathname, router]);
 
-  if (isLoading) return null; // Hoặc loading spinner
+  if (isLoading) return null;
 
-  // Hàm hiển thị layout với hoặc không có Header
   const LayoutWithHeader = () => {
-    // Nếu đang ở trên trang /user-login, không hiển thị Header
+    // Nếu là trang login, không cần Header, không cần wrapper
     if (pathname === "/user-login") {
       return <>{children}</>;
     }
 
-    // Nếu không phải trang đăng nhập, hiển thị Header
+    // Các trang khác: có Header và wrapper để canh giữa nội dung
     return (
       <>
         <Header />
-        {children}
+        <main style={{ padding: "0 180px 0 0px", maxWidth: "100%", boxSizing: "border-box" }}>
+          {children}
+        </main>
       </>
     );
   };
