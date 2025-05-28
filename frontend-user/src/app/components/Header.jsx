@@ -230,7 +230,7 @@ const Header = () => {
               </div>
 
               {/* Navigation Links */}
-              <div className="hidden sm:flex space-x-6">
+              <div className="hidden sm:flex space-x-20">
                 {navigation.map((item) => (
                   <Link
                     key={item.name}
@@ -345,6 +345,30 @@ const Header = () => {
                           }`}
                         >
                           Hồ sơ của bạn
+                        </Link>
+                      )}
+                    </MenuItem>
+                    <MenuItem>
+                      {({ active }) => (
+                        <Link
+                          href="/borrowed-card"
+                          className={`block px-4 py-2 text-gray-700 ${
+                            active && "bg-gray-100"
+                          }`}
+                        >
+                          Phiếu mượn
+                        </Link>
+                      )}
+                    </MenuItem>
+                    <MenuItem>
+                      {({ active }) => (
+                        <Link
+                          href="/fine"
+                          className={`block px-4 py-2 text-gray-700 ${
+                            active && "bg-gray-100"
+                          }`}
+                        >
+                          Phiếu phạt
                         </Link>
                       )}
                     </MenuItem>
