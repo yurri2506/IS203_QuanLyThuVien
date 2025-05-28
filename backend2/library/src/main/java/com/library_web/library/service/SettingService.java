@@ -35,4 +35,5 @@ public class SettingService {
         existing.setStartToMail(newSetting.getStartToMail());
         return SettingRepo.save(existing);
     }
+  
 }

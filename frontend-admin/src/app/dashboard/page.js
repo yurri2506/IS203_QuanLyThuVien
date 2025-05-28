@@ -47,9 +47,9 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="flex flex-row w-full h-screen bg-[#F4F7FE]">
+    <div className="flex flex-row w-full min-h-screen bg-[#F4F7FE]">
       <Sidebar />
-      <main className="self-stretch pr-[1.25rem] md:pl-52 ml-[1.25rem] my-auto w-full max-md:max-w-full py-[2rem]">
+      <main className="self-stretch pr-[1.25rem] md:pl-52 ml-[1.25rem] my-auto w-full max-md:max-w-full py-[2rem] ">
         <section className="grid lg:grid-cols-4 md:grid-cols-2 grid-cols-1 self-stretch shrink gap-4 justify-between items-center w-full leading-none text-white h-full max-md:max-w-full">
           <StatisticsCard
             icon="https://cdn.builder.io/api/v1/image/assets/TEMP/e444cbee3c99f14768fa6c876faa966d9bede995?placeholderIfAbsent=true&apiKey=d911d70ad43c41e78d81b9650623c816"
@@ -76,7 +76,7 @@ const Dashboard = () => {
 
         {/* Hiển thị chi tiết sách mượn tuần trước khi bấm vào */}
         {showBorrowDetails && (
-          <div className="mt-6 bg-white rounded-lg shadow-lg p-4">
+          <div className="mt-6 bg-white rounded-lg shadow-lg p-4 ">
             <h2 className="text-xl font-semibold text-gray-800 mb-4">Chi tiết sách mượn tuần trước</h2>
             {borrowStartLastWeek.bookDetails.length > 0 ? (
               <table className="w-full text-left border-collapse">

@@ -1,22 +1,7 @@
 package com.library_web.library.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Embeddable;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.*;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 @Entity
 @Table(name = "borrowed_books")
 public class BorrowedBook {
@@ -26,7 +11,7 @@ public class BorrowedBook {
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "borrow_card_id", nullable = false)
-  private BorrowCard borrowCard; // Quan hệ ngược với BorrowCard
+  private BorrowCard borrowCard;
 
   @Column(name = "book_id")
   private Long bookId;
@@ -34,27 +19,19 @@ public class BorrowedBook {
   @Column(name = "child_book_id")
   private String childBookId;
 
+  public BorrowedBook() {}
+
   public BorrowedBook(Long bookId, String childBookId) {
     this.bookId = bookId;
     this.childBookId = childBookId;
   }
 
-  public void setBookId(Long bookId) {
-    this.bookId = bookId;
-  }
-
-  public void setChildBookId(String childBookId) {
-    this.childBookId = childBookId;
-  }
-
-  public Long getBookId() {
-    return bookId;
-  }
-
-  public String getChildBookId() {
-    return childBookId;
-  }
-
-  // The constructor is removed because @AllArgsConstructor generates it
-  // automatically.
+  public Long getId() { return id; }
+  public void setId(Long id) { this.id = id; }
+  public BorrowCard getBorrowCard() { return borrowCard; }
+  public void setBorrowCard(BorrowCard borrowCard) { this.borrowCard = borrowCard; }
+  public Long getBookId() { return bookId; }
+  public void setBookId(Long bookId) { this.bookId = bookId; }
+  public String getChildBookId() { return childBookId; }
+  public void setChildBookId(String childBookId) { this.childBookId = childBookId; }
 }
