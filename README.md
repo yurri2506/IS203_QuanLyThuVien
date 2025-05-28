@@ -110,9 +110,14 @@ Dự án sử dụng **Supabase** (dựa trên PostgreSQL) làm cơ sở dữ li
 1. **Kiểm tra file cấu hình**:
    - File `application.properties` đã có sẵn trong thư mục `backend2/library/src/main/resources/` khi clone project. File này chứa thông tin kết nối Supabase:
     ```properties
-    spring.datasource.url=jdbc:postgresql://aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres?prepareThreshold=0&useServerPrepStmts=false
-    spring.datasource.username=postgres.bodplopetgopwanaxmej
-    spring.datasource.password=matkhau123
+    # URL kết nối đến Supabase
+    spring.datasource.url=<YOUR_SUPABASE_URL>
+    # Tên người dùng Supabase
+    spring.datasource.username=<YOUR_SUPABASE_USERNAME>
+    # Mật khẩu Supabase
+    spring.datasource.password=<YOUR_SUPABASE_PASSWORD>
+
+    # Cấu hình driver và Hibernate
     spring.datasource.driver-class-name=org.postgresql.Driver
     spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
     spring.jpa.hibernate.ddl-auto=update
@@ -123,9 +128,9 @@ Dự án sử dụng **Supabase** (dựa trên PostgreSQL) làm cơ sở dữ li
    - SBackend đã được cấu hình để tự động tạo và cập nhật bảng (với `spring.jpa.hibernate.ddl-auto=update`).
    - Nếu bạn cần chỉnh sửa bảng thủ công, có thể vào giao diện Supabase (**Settings > Database**) để xem và quản lý.
 
-**Lưu ý**: Kiểm tra kết nối database trước khi chạy backend bằng cách chạy lệnh:
+**Lưu ý**: Kiểm tra kết nối database trước khi chạy backend bằng cách chạy lệnh (ví dụ sử dụng psql):
 ```bash
-psql -h aws-0-ap-southeast-1.pooler.supabase.com -p 6543 -U postgres.bodplopetgopwanaxmej -d postgres
+psql -h <YOUR_SUPABASE_HOST> -p <YOUR_SUPABASE_PORT> -U <YOUR_SUPABASE_USERNAME> -d <YOUR_SUPABASE_DATABASE>
 ```
 
 ---
@@ -137,12 +142,12 @@ psql -h aws-0-ap-southeast-1.pooler.supabase.com -p 6543 -U postgres.bodplopetgo
 Dự án sử dụng Cloudinary để lưu trữ hình ảnh sách. Cập nhật thông tin Cloudinary trong file `application.properties`:
 
 ```properties
-cloudinary.cloud-name=dqkr3b1dq
-cloudinary.api-key=882773794654671
-cloudinary.api-secret=nIaF3SmbiyEf9I-IAi3YFq6H-v4
+cloudinary.cloud-name=<YOUR_CLOUDINARY_CLOUD_NAME>
+cloudinary.api-key=<YOUR_CLOUDINARY_API_KEY>
+cloudinary.api-secret=<YOUR_CLOUDINARY_API_SECRET>
 ```
-
 - Đăng ký tài khoản [Cloudinary](https://cloudinary.com/) và lấy các giá trị trên từ dashboard.
+- Thay các placeholder <YOUR_...> bằng giá trị từ dashboard Cloudinary của bạn.
 - Đảm bảo các API liên quan đến upload hình ảnh được gọi đúng.
 
 ### 2. Email (Gửi thông báo)
@@ -150,23 +155,24 @@ cloudinary.api-secret=nIaF3SmbiyEf9I-IAi3YFq6H-v4
 Dự án sử dụng Gmail SMTP để gửi email thông báo. Cập nhật thông tin trong `application.properties`:
 
 ```properties
+# Gmail SMTP
 spring.mail.host=smtp.gmail.com
 spring.mail.port=587
-spring.mail.username=${MAIL_USERNAME}
-spring.mail.password=${MAIL_PASSWORD}
+spring.mail.username=<YOUR_GMAIL_ADDRESS>
+spring.mail.password=<YOUR_GMAIL_APP_PASSWORD>
 spring.mail.properties.mail.smtp.auth=true
 spring.mail.properties.mail.smtp.starttls.enable=true
 ```
 
-- Thay `${MAIL_USERNAME}` và `${MAIL_PASSWORD}` bằng email và **App Password** của Gmail (tạo từ [Google Account Settings](https://myaccount.google.com/security)).
-- Đảm bảo bật **2-Step Verification** và tạo **App Password** cho ứng dụng.
+- <YOUR_GMAIL_ADDRESS>: địa chỉ Gmail dùng gửi email.
+- <YOUR_GMAIL_APP_PASSWORD>: App Password tạo từ trang quản lý Google Account (bật Xác thực 2 bước trước).
 
 ### 3. OAuth2 (Tùy chọn)
 
 Dự án hỗ trợ đăng nhập bằng Google OAuth2. Cập nhật thông tin trong `application.properties`:
 
 ```properties
-spring.security.oauth2.client.registration.google.client-id=376530680599-mlb7pbrp0inmjnfqmit5q6v4a38e6t09.apps.googleusercontent.com
+spring.security.oauth2.client.registration.google.client-id=<YOUR_GOOGLE_CLIENT_ID>
 spring.security.oauth2.client.registration.google.client-secret=<YOUR_GOOGLE_CLIENT_SECRET>
 spring.security.oauth2.client.registration.google.scope=email,profile
 ```
