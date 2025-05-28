@@ -6,7 +6,7 @@ import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
 import { useRouter } from "next/navigation";
 import { Pencil, Plus, Search, Trash2 } from "lucide-react";
-import toast from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 
 const Page = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -22,14 +22,26 @@ const Page = () => {
       const response = await axios.get("http://localhost:8080/api/admin/users", {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          "Content-Type": "application/json",
+          "Accept": "*/*",
         },
       });
       setUserList(response.data.data || []);
       setFilteredUsers(response.data.data || []);
-      toast.success("Lấy danh sách người dùng thành công"); // Added success toast
+      toast.success("Lấy danh sách người dùng thành công", {
+        style: { background: "#d1fae5", color: "#065f46" },
+      });
     } catch (error) {
-      console.error("Error fetching users:", error);
-      toast.error("Không thể tải danh sách người dùng");
+      console.error("Error fetching users:", {
+        message: error.message,
+        response: error.response ? {
+          status: error.response.status,
+          data: error.response.data,
+        } : "No response data",
+      });
+      toast.error("Không thể tải danh sách người dùng", {
+        style: { background: "#fee2e2", color: "#991b1b" },
+      });
     }
   };
 
@@ -49,7 +61,9 @@ const Page = () => {
           (user.phone && user.phone.toLowerCase().includes(searchQuery.toLowerCase()))
       );
       if (filtered.length === 0) {
-        toast.error("Không tìm thấy người dùng");
+        toast.error("Không tìm thấy người dùng", {
+          style: { background: "#fee2e2", color: "#991b1b" },
+        });
       }
       setFilteredUsers(filtered);
     } else {
@@ -60,18 +74,44 @@ const Page = () => {
   // Handle delete user using axios
   const handleDelete = async (user) => {
     try {
-      await axios.delete(`http://localhost:8080/api/admin/users/${user.id}`, {
+      const token = localStorage.getItem("accessToken");
+      if (!token) {
+        toast.error("Không tìm thấy token xác thực. Vui lòng đăng nhập lại.", {
+          style: { background: "#fee2e2", color: "#991b1b" },
+        });
+        router.push("/login");
+        return;
+      }
+
+      const response = await axios.delete(`http://localhost:8080/api/admin/users/${user.id}`, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          "Accept": "*/*",
         },
       });
-      toast.success("Xóa người dùng thành công"); // Success toast already present
+
+      toast.success("Xóa người dùng thành công", {
+        style: { background: "#d1fae5", color: "#065f46" },
+      });
       setPopUpOpen(false);
       setDeleteOne(null);
-      await fetchUsers(); // Refresh user list
+      await fetchUsers();
     } catch (error) {
-      console.error("Error deleting user:", error);
-      toast.error("Không thể xóa người dùng");
+      console.error("Error deleting user:", {
+        message: error.message,
+        response: error.response ? {
+          status: error.response.status,
+          data: error.response.data,
+          headers: error.response.headers,
+        } : "No response data",
+      });
+
+      const errorMessage = error.response?.data?.message || "Không thể xóa người dùng";
+      toast.error(errorMessage, {
+        style: { background: "#fee2e2", color: "#991b1b" },
+      });
+      setPopUpOpen(false);
     }
   };
 
@@ -102,14 +142,14 @@ const Page = () => {
           <p>Vai trò: {user.role || "USER"}</p>
           <div className="flex justify-end gap-5">
             <Button
-              className="w-10 md:w-40 h-10 bg-[#062D76] hover:bg-gray-700"
+              className="w-10 md:w-40 h-10 bg-[#062D76] hover:bg-gray-700 cursor-pointer"
               onClick={() => handleEdit(user.id)}
             >
               <Pencil className="w-5 h-5" color="white" />
               <p className="hidden md:block">Sửa người dùng</p>
             </Button>
             <Button
-              className="w-10 md:w-40 h-10 bg-[#D66766] hover:bg-gray-700"
+              className="w-10 md:w-40 h-10 bg-[#D66766] hover:bg-gray-700 cursor-pointer"
               onClick={() => {
                 setDeleteOne(user);
                 setPopUpOpen(true);
@@ -125,7 +165,8 @@ const Page = () => {
   };
 
   return (
-    <div className="flex flex-row w-full h-full bg-[#EFF3FB]">
+    <div className="flex flex-row w-full min-h-screen bg-[#EFF3FB]">
+      <Toaster position="top-center" reverseOrder={false} />
       <Sidebar />
       <div className="flex w-full flex-col py-6 md:ml-52 mt-5 gap-2 items-center px-10">
         <div className="flex w-full items-center justify-between mb-10">
@@ -138,14 +179,14 @@ const Page = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
             <Button
-              className="w-10 h-10 bg-[#062D76] hover:bg-gray-700 rounded-[10px]"
+              className="w-10 h-10 bg-[#062D76] hover:bg-gray-700 rounded-[10px] cursor-pointer"
               onClick={handleSearch}
             >
               <Search className="w-6 h-6" color="white" />
             </Button>
           </div>
           <Button
-            className="w-40 h-10 bg-[#062D76] hover:bg-gray-700 rounded-[10px]"
+            className="w-40 h-10 bg-[#062D76] hover:bg-gray-700 rounded-[10px] cursor-pointer"
             onClick={handleAddUser}
           >
             <Plus className="w-5 h-5" color="white" />
@@ -179,17 +220,17 @@ const Page = () => {
               </div>
               <div className="flex justify-end mt-4 gap-4">
                 <Button
-                  className="bg-gray-500 hover:bg-gray-700 text-white"
+                  className="bg-gray-500 hover:bg-gray-700 text-white cursor-pointer"
                   onClick={() => setPopUpOpen(false)}
                 >
                   Hủy
                 </Button>
                 <Button
-                  className="bg-red-500 hover:bg-red-700 text-white"
+                  className="bg-red-500 hover:bg-red-700 text-white cursor-pointer"
                   onClick={() => handleDelete(deleteOne)}
                 >
                   Xóa
-                </Button>
+                </Button> 
               </div>
             </div>
           </div>

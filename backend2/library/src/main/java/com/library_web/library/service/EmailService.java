@@ -166,22 +166,22 @@ public class EmailService {
         : fine.getNoiDung();
     String money = Double.toString(fine.getSoTien()) + " đồng";
     String subject = "Thanh toán phiếu phạt thành công";
-    String body = String.format(
-        """
-                <h3><b>Xin chào %s,</b></h3>
-                <p><b>Ja97 Library Web</b> xin thông báo rằng thanh toán thành công cho phiếu phạt của bạn.</p>
-                <p>Thông tin chi tiết phiếu phạt:</p>
-                <ul>
-                <li><b>Mã phiếu:</b> %s</li>
-                <li><b>Lý do:</b> %s</li>
-                <li><b>Số tiền:</b> %s</li>
-                <li><b>Ngày thanh toán:</b> %s</li>
-                </ul>
-                <p>Chúng tôi xin chân thành cảm ơn Quý bạn vì sự hợp tác và trách nhiệm trong việc sử dụng dịch vụ thư viện.</p>
-                <p>Việc thanh toán của Quý bạn đã được ghi nhận thành công trong hệ thống. Nếu bạn có bất kỳ thắc mắc nào về phiếu phạt này, xin vui lòng liên hệ với chúng tôi qua email <b>librarywebja97@gmail.com</b> hoặc số điện thoại <b>0779765688</b>.</p>
-                <p>Trân trọng,<br><b>Ja97 Library Web</b></p>
-            """,
-        tenND, idPhieu, reason, money, today);
-    emailConfig.sendEmail(List.of(email), subject, body);
-  }
-}
+  //   String body = String.format(
+  //       """
+  //               <h3><b>Xin chào %s,</b></h3>
+  //               <p><b>Ja97 Library Web</b> xin thông báo rằng thanh toán thành công cho phiếu phạt của bạn.</p>
+  //               <p>Thông tin chi tiết phiếu phạt:</p>
+  //               <ul>
+  //               <li><b>Mã phiếu:</b> %s</li>
+  //               <li><b>Lý do:</b> %s</li>
+  //               <li><b>Số tiền:</b> %s</li>
+  //               <li><b>Ngày thanh toán:</b> %s</li>
+  //               </ul>
+  //               <p>Chúng tôi xin chân thành cảm ơn Quý bạn vì sự hợp tác và trách nhiệm trong việc sử dụng dịch vụ thư viện.</p>
+  //               <p>Việc thanh toán của Quý bạn đã được ghi nhận thành công trong hệ thống. Nếu bạn có bất kỳ thắc mắc nào về phiếu phạt này, xin vui lòng liên hệ với chúng tôi qua email <b>librarywebja97@gmail.com</b> hoặc số điện thoại <b>0779765688</b>.</p>
+  //               <p>Trân trọng,<br><b>Ja97 Library Web</b></p>
+  //           """,
+  //       tenND, idPhieu, reason, money, today);
+  //   emailConfig.sendEmail(List.of(email), subject, body);
+  // }
+}}

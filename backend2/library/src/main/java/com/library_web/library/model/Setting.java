@@ -29,4 +29,29 @@ public class Setting {
         this.borrowDay = borrowDay;
         this.startToMail = startToMail;
     }
+    public int getFinePerDay() {
+        return finePerDay;
+    }
+    public void setFinePerDay(int finePerDay) {
+        this.finePerDay = finePerDay;
+    }
+    public int getWaitingToTake() {
+        return waitingToTake;
+    }
+    public void setWaitingToTake(int waitingToTake) {
+        this.waitingToTake = waitingToTake;
+    }
+    public int getBorrowDay() {
+        return borrowDay;
+    }
+    public void setBorrowDay(int borrowDay) {
+        this.borrowDay = borrowDay;
+    }
+    public int getStartToMail() {
+        return startToMail;
+    }
+    public void setStartToMail(int startToMail) {
+        this.startToMail = startToMail;
+    }
+    
 }

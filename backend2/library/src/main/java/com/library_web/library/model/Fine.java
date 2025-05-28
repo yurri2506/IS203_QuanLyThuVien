@@ -40,9 +40,12 @@ public class Fine {
 
     private final String moTa;
 
+
     TrangThai(String moTa) {
       this.moTa = moTa;
     }
+
+   
 
     public String getMoTa() {
       return moTa;
@@ -56,4 +59,46 @@ public class Fine {
   public void setOrderId(String orderId) {
     this.orderId = orderId;
   }
+  public TrangThai getTrangThai() {
+    return trangThai;
+  }
+  public void setTrangThai(TrangThai trangThai) {
+    this.trangThai = trangThai;
+  }
+  public LocalDateTime getNgayThanhToan() {
+    return ngayThanhToan;
+  }
+  public void setNgayThanhToan(LocalDateTime ngayThanhToan) {
+    this.ngayThanhToan = ngayThanhToan;
+  }
+  public User getUserId() {
+    return userId;
+  }
+  public void setUserId(User userId) {
+    this.userId = userId;
+  }
+  public Long getId() {
+    return id;
+  }
+  public void setId(Long id) {
+    this.id = id;
+  }
+  public double getSoTien() {
+    return soTien;
+  }
+  public void setSoTien(double soTien) {
+    this.soTien = soTien;
+  }
+  public String getNoiDung() {
+    return noiDung;
+  }
+  public void setNoiDung(String noiDung) {
+    this.noiDung = noiDung;
+  }
+  public BorrowCard getCardId() {
+    return cardId;
+  }
+  public void setCardId(BorrowCard cardId) {
+    this.cardId = cardId;
+}
 }

@@ -64,17 +64,17 @@ const DatePickerField = ({ value, onChange }) => {
   };
 
   return (
-    <div className="flex flex-col w-[300px] max-md:w-full">
+    <div className="flex flex-col w-full">
       <label className="mb-2 ml-2 text-lg font-bold text-black">Ngày Sinh</label>
       <div className="relative flex items-center">
         <DatePicker
           selected={startDate}
           onChange={handleDateChange}
           dateFormat="dd/MM/yyyy"
-          className="p-2 w-full text-lg bg-white rounded-[10px] h-10"
+          className="p-2 w-full text-lg bg-white rounded-[10px] h-10 "
         />
         <Button
-          className="absolute right-2 h-8 w-8 bg-[#062D76] hover:bg-gray-700 rounded-[10px]"
+          className="absolute right-2 h-8 w-8 bg-[#062D76]  rounded-[10px] cursor-pointer"
           onClick={() => document.querySelector(".react-datepicker__input-container input").focus()}
         >
           <Calendar className="w-5 h-5" color="white" />
@@ -109,8 +109,8 @@ const AvatarUpload = ({ avatarUrl, onAvatarChange }) => {
   };
 
   return (
-    <div className="flex flex-col items-center w-[380px] max-md:w-full">
-      <h2 className="mb-2 ml-2 text-lg font-bold text-black">Ảnh Đại Diện</h2>
+    <div className="flex flex-col w-[380px] max-md:w-full mt-8 ">
+      <h2 className="mb-2 ml-10 text-lg font-bold text-black">Ảnh Đại Diện</h2>
       <img
         src={avatarUrl || "/default-avatar.png"}
         alt="Avatar"
@@ -149,17 +149,17 @@ const RoleSelector = ({ value, onChange }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="flex flex-col w-[300px] max-md:w-full relative">
+    <div className="flex flex-col w-full relative">
       <h2 className="mb-2 ml-2 text-lg font-bold text-black">Vai Trò</h2>
       <Button
-        className="flex justify-between items-center h-10 bg-white text-black rounded-[10px] shadow-sm"
+        className="flex justify-between items-center h-10 bg-white text-black hover:bg-[#D66766] rounded-[10px] shadow-sm cursor-pointer"
         onClick={() => setIsOpen(!isOpen)}
       >
         <span>{reverseRoleMap[value] || value || "Chọn vai trò"}</span>
-        <ChevronDown className="w-5 h-5" color="#D66766" />
+        <ChevronDown className="w-5 h-5" color="#000" />
       </Button>
       {isOpen && (
-        <ul className="absolute top-12 w-full bg-white shadow-lg rounded-[10px] z-10">
+        <ul className="absolute top-20 w-full bg-white shadow-lg rounded-[10px] z-20">
           {roles.map((role) => (
             <li
               key={role}
@@ -184,17 +184,17 @@ const GenderSelector = ({ value, onChange }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="flex flex-col w-[300px] max-md:w-full relative">
+    <div className="flex flex-col w-full relative">
       <h2 className="mb-2 ml-2 text-lg font-bold text-black">Giới Tính</h2>
       <Button
-        className="flex justify-between items-center h-10 bg-white text-black rounded-[10px] shadow-sm"
+        className="flex justify-between items-center h-10 bg-white text-black rounded-[10px] hover:bg-[#D66766] shadow-sm cursor-pointer"
         onClick={() => setIsOpen(!isOpen)}
       >
         <span>{value || "Chọn giới tính"}</span>
-        <ChevronDown className="w-5 h-5" color="#D66766" />
+        <ChevronDown className="w-5 h-5" color="#000" />
       </Button>
       {isOpen && (
-        <ul className="absolute top-12 w-full bg-white shadow-lg rounded-[10px] z-10">
+        <ul className="absolute top-20 w-full bg-white shadow-lg rounded-[10px] z-10">
           {genders.map((gender) => (
             <li
               key={gender}
@@ -444,7 +444,7 @@ export default function Page() {
     <div className="flex flex-row w-full h-full bg-[#EFF3FB]">
       <Sidebar />
       <main className="relative mx-auto my-0 w-full max-w-[1420px] py-6 md:ml-52 px-10 max-md:px-5 max-sm:px-2.5">
-        <div className="mb-6">
+        <div className="mb-6 cursor-pointer">
           <BackButton />
         </div>
 
@@ -465,20 +465,20 @@ export default function Page() {
           />
         </section>
 
-        <div className="flex flex-wrap gap-6 mb-6">
-          <section className="w-[400px] max-md:w-full">
+        <div className="grid grid-cols-2 gap-6">
+          <section className="w-full">
             <InputField label="Số Điện Thoại" value={formData.phone} onChange={handlePhoneChange} />
           </section>
 
-          <section className="max-md:w-full">
+          <section className="w-full">
             <DatePickerField value={formData.birthDate} onChange={handleDateChange} />
           </section>
 
-          <section className="max-md:w-full">
+          <section className="w-full">
             <RoleSelector value={formData.role} onChange={handleRoleChange} />
           </section>
 
-          <section className="max-md:w-full">
+          <section className="w-full">
             <GenderSelector value={formData.gender} onChange={handleGenderChange} />
           </section>
         </div>
@@ -508,7 +508,7 @@ export default function Page() {
             <Button
               onClick={handleVerifyOtp}
               className={`flex items-center gap-2 h-10 w-[200px] rounded-[10px] ${
-                otp ? "bg-[#062D76] hover:bg-gray-700" : "bg-gray-400 cursor-not-allowed"
+                otp ? "bg-[#062D76] hover:bg-gray-700 cursor-pointer" : "bg-gray-400 cursor-not-allowed"
               }`}
               disabled={!otp}
             >
@@ -519,7 +519,7 @@ export default function Page() {
             <Button
               onClick={handleSubmit}
               className={`flex items-center gap-2 h-10 w-[200px] rounded-[10px] ${
-                isFormChanged ? "bg-[#062D76] hover:bg-gray-700" : "bg-gray-400 cursor-not-allowed"
+                isFormChanged ? "bg-[#062D76] hover:bg-gray-700 cursor-pointer" : "bg-gray-400 cursor-not-allowed"
               }`}
               disabled={!isFormChanged}
             >
