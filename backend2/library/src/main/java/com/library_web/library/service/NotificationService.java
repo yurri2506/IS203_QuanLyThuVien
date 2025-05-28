@@ -24,7 +24,7 @@ public class NotificationService {
     Notification notification = new Notification();
     User user = userRepository.findById(userId)
         .orElseThrow(() -> new RuntimeException("User not found"));
-    notification.setUser(user);
+    notification.setUserId(user);
     notification.setMessage(message);
     notification.setTimestamp(LocalDateTime.now());
     notification.setRead(false);
