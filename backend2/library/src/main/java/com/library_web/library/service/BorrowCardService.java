@@ -19,7 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -95,7 +94,7 @@ public class BorrowCardService {
     public BorrowCard create(Long userId, List<Long> bookIds) {
         System.out.println("dữ liệu: " + bookIds);
         LocalDateTime borrowDate = LocalDateTime.now();
-        int waitingToTake = 3;
+        int waitingToTake = settingService.getSetting().getWaitingToTake();
         List<BorrowedBook> borrowedBooks = bookIds.stream()
                 .map(id -> new BorrowedBook(id, null))
                 .toList();
@@ -131,7 +130,7 @@ public class BorrowCardService {
 
         borrowCard.setStatus(BorrowCard.Status.BORROWED.getStatusDescription());
         borrowCard.setGetBookDate(LocalDateTime.now());
-        int borrowDay = 7;
+        int borrowDay = settingService.getSetting().getBorrowDay();
         borrowCard.setDueDate(LocalDateTime.now().plusDays(borrowDay));
 
         List<BorrowedBook> borrowedBooks = borrowCard.getBorrowedBooks();

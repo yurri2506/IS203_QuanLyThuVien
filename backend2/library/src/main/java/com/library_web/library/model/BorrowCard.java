@@ -1,4 +1,5 @@
 package com.library_web.library.model;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
@@ -17,6 +18,7 @@ public class BorrowCard {
   @Column(name = "user_id", nullable = false)
   private Long userId;
 
+  @JsonManagedReference
   @OneToMany(mappedBy = "borrowCard", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
   private List<BorrowedBook> borrowedBooks = new ArrayList<>();
 
