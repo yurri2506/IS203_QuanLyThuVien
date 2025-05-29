@@ -14,4 +14,6 @@ public interface FineRepository extends JpaRepository<Fine, Long> {
   List<Fine> findByUserId(User user);
 
   Optional<Fine> findByCardId(BorrowCard card);
+  List<Fine> findByCardIdIn(List<BorrowCard> cards);
+  Optional<Fine> findByOrderId(String orderId);
 }
