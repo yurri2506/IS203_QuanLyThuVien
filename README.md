@@ -101,6 +101,22 @@ npm run dev
 ```
 - Truy cập: [http://localhost:3001](http://localhost:3001)
 
+### 🗂️ Cấu hình môi trường Frontend
+
+- Dự án sử dụng biến môi trường `.env.local` để kết nối Supabase và cấu hình Google OAuth. Tạo file `.env.local` trong thư mục `frontend-user` và `frontend-admin` với nội dung:
+
+```bash
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=<YOUR_SUPABASE_URL>
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<YOUR_SUPABASE_ANON_KEY>
+
+# OAuth
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=<YOUR_GOOGLE_CLIENT_ID>
+```
+### 📌 Hướng dẫn lấy thông tin:
+ - `Supabase URL & Anon Key`: Vào Supabase → chọn dự án → Settings > API → mục Project API keys.
+ - `Google Client ID`: Vào Google Cloud Console → API & Services → Credentials → tạo OAuth Client ID.
+
 ---
 
 ## 🗄️ Cấu hình cơ sở dữ liệu
