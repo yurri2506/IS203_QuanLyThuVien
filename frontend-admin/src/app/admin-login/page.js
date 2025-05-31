@@ -84,9 +84,10 @@ const Page = () => {
       const payload = {
         [isEmail ? "email" : "phone"]: data.loginInput,
         password: data.password,
+        isFEAdmin: true,
       };
 
-      const response = await fetch("http://localhost:8080/api/admin/login", {
+      const response = await fetch("http://localhost:8080/api/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

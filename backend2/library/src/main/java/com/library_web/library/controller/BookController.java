@@ -4,6 +4,7 @@ import com.library_web.library.dto.BookWithQuantity;
 import com.library_web.library.dto.BookDTO;
 import com.library_web.library.model.Book;
 import com.library_web.library.service.BookService;
+import com.library_web.library.service.BorrowCardService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -11,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -20,9 +22,11 @@ import java.util.stream.Collectors;
 @CrossOrigin
 public class BookController {
     private final BookService service;
+    private final BorrowCardService borrowCardService; // Declare as a field
 
-    public BookController(BookService service) {
+    public BookController(BookService service, BorrowCardService borrowCardService) {
         this.service = service;
+        this.borrowCardService = borrowCardService; // Inject BorrowCardService
     }
 
     @GetMapping
@@ -35,8 +39,7 @@ public class BookController {
                         b.getTongSoLuong(), b.getSoLuongMuon(), b.getSoLuongXoa(),
                         b.getTrangThai().name(), b.getHinhAnh(),
                         b.getCategoryChild().getId(), b.getCategoryChild().getName(),
-                        b.getCategoryChild().getCategoryName()
-                ))
+                        b.getCategoryChild().getCategoryName()))
                 .collect(Collectors.toList());
     }
 
@@ -50,8 +53,7 @@ public class BookController {
                 b.getTongSoLuong(), b.getSoLuongMuon(), b.getSoLuongXoa(),
                 b.getTrangThai().name(), b.getHinhAnh(),
                 b.getCategoryChild().getId(), b.getCategoryChild().getName(),
-                b.getCategoryChild().getCategoryName()
-        );
+                b.getCategoryChild().getCategoryName());
     }
 
     @PostMapping
@@ -76,8 +78,7 @@ public class BookController {
                 b.getHinhAnh(),
                 b.getCategoryChild().getId(),
                 b.getCategoryChild().getName(),
-                b.getCategoryChild().getCategoryName()
-        );
+                b.getCategoryChild().getCategoryName());
     }
 
     @PatchMapping("/{id}")
@@ -90,8 +91,7 @@ public class BookController {
                 b.getTongSoLuong(), b.getSoLuongMuon(), b.getSoLuongXoa(),
                 b.getTrangThai().name(), b.getHinhAnh(),
                 b.getCategoryChild().getId(), b.getCategoryChild().getName(),
-                b.getCategoryChild().getCategoryName()
-        );
+                b.getCategoryChild().getCategoryName());
     }
 
     @DeleteMapping("/{id}")
@@ -109,10 +109,10 @@ public class BookController {
             @RequestParam(defaultValue = "false") boolean sortByBorrowCount,
             @RequestParam(required = false) String title,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
-    ) {
+            @RequestParam(defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<Book> booksPage = service.searchBooks(author, category, publisher, year, title, sortByBorrowCount, pageable);
+        Page<Book> booksPage = service.searchBooks(author, category, publisher, year, title, sortByBorrowCount,
+                pageable);
         Page<BookDTO> bookDTOPage = booksPage.map(b -> new BookDTO(
                 b.getMaSach(), b.getTenSach(), b.getMoTa(),
                 b.getTenTacGia(), b.getNxb(), b.getNam(),
@@ -120,15 +120,13 @@ public class BookController {
                 b.getTongSoLuong(), b.getSoLuongMuon(), b.getSoLuongXoa(),
                 b.getTrangThai().name(), b.getHinhAnh(),
                 b.getCategoryChild().getId(), b.getCategoryChild().getName(),
-                b.getCategoryChild().getCategoryName()
-        ));
+                b.getCategoryChild().getCategoryName()));
         return ResponseEntity.ok(bookDTOPage);
     }
 
     @GetMapping("/category/{categoryChildId}")
     public List<BookDTO> getByCategory(
-            @PathVariable String categoryChildId
-    ) {
+            @PathVariable String categoryChildId) {
         return service.getBooksByCategoryChild(categoryChildId).stream()
                 .map(b -> new BookDTO(
                         b.getMaSach(), b.getTenSach(), b.getMoTa(),
@@ -138,42 +136,46 @@ public class BookController {
                         b.getTrangThai().name(), b.getHinhAnh(),
                         b.getCategoryChild().getId(),
                         b.getCategoryChild().getName(),
-                        b.getCategoryChild().getCategoryName()
-                ))
+                        b.getCategoryChild().getCategoryName()))
                 .collect(Collectors.toList());
     }
 
-    @GetMapping("/total-books")
-    public ResponseEntity<Long> getTotalBooks() {
+    @GetMapping("/dashboard")
+    public ResponseEntity<Map<String, Object>> getDashboardStats() {
+        Map<String, Object> stats = new HashMap<>();
+
+        // Total books
         long totalBooks = service.getTotalBooks();
-        return ResponseEntity.ok(totalBooks);
-    }
+        stats.put("totalBooks", totalBooks);
 
-    @GetMapping("/total-book-quantity")
-    public ResponseEntity<Long> getTotalBookQuantity() {
-        long totalQuantity = service.getTotalBookQuantity();
-        return ResponseEntity.ok(totalQuantity);
-    }
+        // Total book quantity
+        long totalBookQuantity = service.getTotalBookQuantity();
+        stats.put("totalBookQuantity", totalBookQuantity);
 
-    @GetMapping("/new-books-this-week")
-    public ResponseEntity<Long> getNewBooksThisWeek() {
-        long newBooks = service.getNewBooksThisWeek();
-        return ResponseEntity.ok(newBooks);
-    }
+        // New books this week
+        long newBooksThisWeek = service.getNewBooksThisWeek();
+        stats.put("newBooksThisWeek", newBooksThisWeek);
 
-    @GetMapping("/restock")
-    public List<BookDTO> getBooksNeedingRestock() {
-        return service.findBooksNeedingRestock(5).stream()
+        // Borrow stats last week
+        // Placeholder since borrowCardService is not injected yet
+        Map<String, Object> borrowStartLastWeek = new HashMap<>();
+        borrowStartLastWeek.put("totalBorrows", 0L);
+        borrowStartLastWeek.put("bookDetails", List.of());
+        stats.put("borrowStartLastWeek", borrowStartLastWeek);
+
+        // Books needing restock
+        List<BookDTO> booksToRestock = service.findBooksNeedingRestock(5).stream()
                 .map(b -> new BookDTO(
                         b.getMaSach(), b.getTenSach(), b.getMoTa(),
                         b.getTenTacGia(), b.getNxb(), b.getNam(),
                         b.getTrongLuong(), b.getDonGia(),
                         b.getTongSoLuong(), b.getSoLuongMuon(), b.getSoLuongXoa(),
                         b.getTrangThai().name(), b.getHinhAnh(),
-                        b.getCategoryChild().getId(),
-                        b.getCategoryChild().getName(),
-                        b.getCategoryChild().getCategoryName()
-                ))
+                        b.getCategoryChild().getId(), b.getCategoryChild().getName(),
+                        b.getCategoryChild().getCategoryName()))
                 .collect(Collectors.toList());
+        stats.put("booksToRestock", booksToRestock);
+
+        return ResponseEntity.ok(stats);
     }
 }

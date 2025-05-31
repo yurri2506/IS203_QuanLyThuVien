@@ -83,8 +83,13 @@ public class AuthController {
             emailOrPhone = request.get("phone");
         }
         String password = request.get("password");
+        String isFEAdmin = request.get("isFEAdmin");
+        if (isFEAdmin == null) {
+            isFEAdmin = "false"; // Mặc định là false nếu không có trường này
+        }
+        Boolean isAdmin = Boolean.parseBoolean(isFEAdmin);
 
-        Map<String, Object> response = userService.login(emailOrPhone, password);
+        Map<String, Object> response = userService.login(emailOrPhone, password, isAdmin);
         if (response == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email/số điện thoại hoặc mật khẩu không đúng");
         }
