@@ -76,10 +76,10 @@ public class BorrowCardController {
   }
 
   //Thống kê lượt mượn sách trong tuần vừa qua
-  @GetMapping("/stats/last-week")
-  public ResponseEntity<BorrowStatsDTO> getBorrowStatsLastWeek() {
-    BorrowStatsDTO stats = service.getBorrowStatsLastWeek();
-    return ResponseEntity.ok(stats);
-  }
+  // @GetMapping("/stats/last-week")
+  // public ResponseEntity<BorrowStatsDTO> getBorrowStatsLastWeek() {
+  //   BorrowStatsDTO stats = service.getBorrowStatsLastWeek();
+  //   return ResponseEntity.ok(stats);
+  // }
 
 }
