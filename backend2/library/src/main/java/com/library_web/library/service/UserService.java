@@ -146,7 +146,7 @@ public class UserService {
                         "avatar_url", user.getAvatar_url() != null ? user.getAvatar_url() : ""));
     }
 
-    public Map<String, Object> login(String emailOrPhone, String password) {
+    public Map<String, Object> login(String emailOrPhone, String password, Boolean isAdmin) {
         Optional<User> userOpt = userRepository.findByEmail(emailOrPhone);
         if (userOpt.isEmpty()) {
             userOpt = userRepository.findByPhone(emailOrPhone);
@@ -156,7 +156,7 @@ public class UserService {
         }
 
         User user = userOpt.get();
-        if (user.getRole().equals("ADMIN")) {
+        if (user.getRole().equals("ADMIN") && isAdmin) {
             String otp = String.valueOf((int) (Math.random() * 900000) + 100000);
             LocalDateTime expiredAt = LocalDateTime.now().plusMinutes(5);
             TempStorage.savePendingOtp(user.getEmail(), otp, expiredAt);

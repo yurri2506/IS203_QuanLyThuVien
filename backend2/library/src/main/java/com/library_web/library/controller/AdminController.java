@@ -23,20 +23,7 @@ public class AdminController {
     @Autowired
     private UserService userService;
 
-    @PostMapping("/login")
-    public Map<String, Object> login(@RequestBody Map<String, String> request) {
-        String emailOrPhone = request.get("email");
-        if (emailOrPhone == null || emailOrPhone.isBlank()) {
-            emailOrPhone = request.get("phone");
-        }
-        String password = request.get("password");
 
-        Map<String, Object> response = userService.login(emailOrPhone, password);
-        if (response == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Đăng nhập không thành công");
-        }
-        return response;
-    }
 
     @PostMapping("/verify-otp")
     public Map<String, Object> verifyOtp(@RequestBody Map<String, String> request) {
