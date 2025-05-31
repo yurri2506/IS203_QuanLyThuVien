@@ -56,6 +56,7 @@ const Header = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isHovered, setIsHovered] = useState(false); // State để kiểm soát hover
 
   // Load read status from localStorage
   const [readStatus, setReadStatus] = useState(() => {
@@ -68,7 +69,7 @@ const Header = () => {
     localStorage.setItem("notificationReadStatus", JSON.stringify(readStatus));
   }, [readStatus]);
 
-  const user = JSON.parse(localStorage.getItem("persist:root")) //|| { id: "54" }; // Default to 54 if no user
+  const user = JSON.parse(localStorage.getItem("persist:root")) || { id: "54" }; // Default to 54 if no user
 
   // Fetch cart
   const fetchCart = async () => {
@@ -90,11 +91,9 @@ const Header = () => {
   const fetchNotifications = async () => {
     const notificationList = [];
     try {
-      // console.log("Fetching new books...");
-      const newBooksResponse = await axios.get("http://localhost:8080/api/book/new-books-this-week");
-      if (newBooksResponse.status === 200) {
-        const newBooksCount = newBooksResponse.data;
-        // console.log("New books count:", newBooksCount);
+      const dashboardResponse = await axios.get("http://localhost:8080/api/book/dashboard");
+      if (dashboardResponse.status === 200) {
+        const newBooksCount = dashboardResponse.data.newBooksThisWeek || 0;
         if (newBooksCount > 0) {
           notificationList.push({
             id: `new-books-${new Date().toISOString()}`,
@@ -104,26 +103,19 @@ const Header = () => {
             timestamp: new Date().toISOString(),
           });
         }
-      } else {
-        console.log("New books API failed:", newBooksResponse.status);
       }
 
       const userId = user.id;
-      // console.log("Fetching borrow cards for userId:", userId);
       const borrowCardsResponse = await axios.post(`http://localhost:8080/api/borrow-cards/user/${userId}`);
       if (borrowCardsResponse.status === 200) {
         const borrowCards = borrowCardsResponse.data;
-        // console.log("Borrow cards data:", borrowCards);
-        const currentDate = new Date(); // May 19, 2025, 06:46 PM +07
+        const currentDate = new Date();
 
         for (const card of borrowCards) {
-          // console.log("Processing card:", card);
           if (card.borrowedBooks && Array.isArray(card.borrowedBooks)) {
             for (const borrowedBook of card.borrowedBooks) {
-              // console.log("Processing borrowed book:", borrowedBook);
               const bookResponse = await axios.get(`http://localhost:8080/api/book/${borrowedBook.bookId}`);
               const bookName = bookResponse.status === 200 ? bookResponse.data.tenSach : `Sách ${borrowedBook.bookId}`;
-              // console.log("Book name fetched:", bookName);
               const dueDate = card.dueDate ? new Date(card.dueDate) : null;
               const daysDiff = dueDate ? Math.ceil((dueDate - currentDate) / (1000 * 60 * 60 * 24)) : null;
               const daysSinceDue = dueDate ? Math.ceil((currentDate - dueDate) / (1000 * 60 * 60 * 24)) : null;
@@ -178,12 +170,8 @@ const Header = () => {
                 });
               }
             }
-          } else {
-            console.log("No borrowedBooks array found in card:", card);
           }
         }
-      } else {
-        console.log("Borrow cards API failed:", borrowCardsResponse.status, borrowCardsResponse.data);
       }
 
       const sortedNotifications = notificationList.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
@@ -212,6 +200,10 @@ const Header = () => {
   const handleNotificationClick = (notificationId, link) => {
     setReadStatus((prev) => ({ ...prev, [notificationId]: true }));
     router.push(link);
+  };
+
+  const handleBellClick = () => {
+    router.push("/notification");
   };
 
   return (
@@ -268,13 +260,18 @@ const Header = () => {
                   </Link>
                 </button>
 
-                {/* Notification Dropdown */}
-                <Menu as="div" className="relative">
-                  <MenuButton
-                    className={`relative p-2 rounded-full cursor-pointer hover:bg-white hover:text-[#052259] ${
-                      pathname === "/notifications"
+                {/* Notification - Tùy chỉnh hover và click */}
+                <div
+                  className="relative"
+                  onMouseEnter={() => setIsHovered(true)}
+                  onMouseLeave={() => setIsHovered(false)}
+                >
+                  <button
+                    onClick={handleBellClick}
+                    className={`relative p-2 rounded-full cursor-pointer hover:bg-white hover:text-[#052259] transition duration-200 ${
+                      pathname === "/notification"
                         ? "bg-white text-[#052259]"
-                        : "hover:bg-white hover:text-[#052259]"
+                        : ""
                     }`}
                   >
                     {unreadCount > 0 && <NotificationBadge count={unreadCount} />}
@@ -286,43 +283,42 @@ const Header = () => {
                       }}
                       className="size-6"
                     />
-                  </MenuButton>
-                  <MenuItems className="absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg ring-1 ring-black/5 max-h-96 overflow-y-auto">
-                    {loading && (
-                      <div className="px-4 py-2 text-gray-500 w-full">Đang tải thông báo...</div>
-                    )}
-                    {error && (
-                      <div className="px-4 py-2 text-red-500 w-full">Lỗi: {error}</div>
-                    )}
-                    {!loading && !error && notifications.length === 0 && (
-                      <div className="px-4 py-2 text-gray-500 w-full">Không có thông báo nào.</div>
-                    )}
-                    {!loading && !error && notifications.length > 0 && (
-                      notifications.map((notification) => (
-                        <MenuItem key={notification.id}>
-                          {({ active }) => (
-                            <div
-                              className={`w-full h-16 px-4 py-2 text-gray-700 cursor-pointer flex items-center justify-between ${
-                                active ? "bg-gray-100" : ""
-                              } ${readStatus[notification.id] ? "opacity-75" : "font-semibold"}`}
-                              onClick={() => handleNotificationClick(notification.id, notification.link)}
-                            >
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm truncate">{notification.message}</p>
-                                <p className="text-xs text-gray-500 truncate">
-                                  {new Date(notification.timestamp).toLocaleString()}
-                                </p>
-                              </div>
-                              {!readStatus[notification.id] && (
-                                <span className="w-2 h-2 bg-blue-500 rounded-full ml-2 flex-shrink-0"></span>
-                              )}
+                  </button>
+                  {isHovered && (
+                    <div className="absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg ring-1 ring-black/5 max-h-96 overflow-y-auto z-50">
+                      {loading && (
+                        <div className="px-4 py-2 text-gray-500 w-full">Đang tải thông báo...</div>
+                      )}
+                      {error && (
+                        <div className="px-4 py-2 text-red-500 w-full">Lỗi: {error}</div>
+                      )}
+                      {!loading && !error && notifications.length === 0 && (
+                        <div className="px-4 py-2 text-gray-500 w-full">Không có thông báo nào.</div>
+                      )}
+                      {!loading && !error && notifications.length > 0 && (
+                        notifications.map((notification) => (
+                          <div
+                            key={notification.id}
+                            className={`w-full h-16 px-4 py-2 text-gray-700 cursor-pointer flex items-center justify-between hover:bg-gray-100 ${
+                              readStatus[notification.id] ? "opacity-75" : "font-semibold"
+                            }`}
+                            onClick={() => handleNotificationClick(notification.id, notification.link)}
+                          >
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm truncate">{notification.message}</p>
+                              <p className="text-xs text-gray-500 truncate">
+                                {new Date(notification.timestamp).toLocaleString()}
+                              </p>
                             </div>
-                          )}
-                        </MenuItem>
-                      ))
-                    )}
-                  </MenuItems>
-                </Menu>
+                            {!readStatus[notification.id] && (
+                              <span className="w-2 h-2 bg-blue-500 rounded-full ml-2 flex-shrink-0"></span>
+                            )}
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  )}
+                </div>
 
                 {/* Profile Dropdown */}
                 <Menu as="div" className="relative">
