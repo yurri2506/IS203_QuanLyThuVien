@@ -7,7 +7,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
-import { List, Pencil, Search, Trash2 } from "lucide-react";
+import { Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 const Dashboard = () => {
@@ -34,8 +34,6 @@ const Dashboard = () => {
     sortByBorrowCount: false,
   });
   const [booksToRestock, setBooksToRestock] = useState([]);
-  const [popUpOpen, setPopUpOpen] = useState(false);
-  const [deleteOne, setDeleteOne] = useState(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
@@ -43,53 +41,22 @@ const Dashboard = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // Fetch dashboard statistics
-        const totalBooksResponse = await axios.get(
-          "http://localhost:8080/api/book/total-books",
-          {
-            headers: { "Cache-Control": "no-cache" },
-          }
+        const response = await axios.get(
+          "http://localhost:8080/api/book/dashboard",
+          { headers: { "Cache-Control": "no-cache" } }
         );
-        setTotalBooks(totalBooksResponse.data);
+        console.log("Dashboard data:", response.data);
 
-        const totalBookQuantityResponse = await axios.get(
-          "http://localhost:8080/api/book/total-book-quantity",
-          {
-            headers: { "Cache-Control": "no-cache" },
-          }
-        );
-        setTotalBookQuantity(totalBookQuantityResponse.data);
+        setTotalBooks(response.data.totalBooks || 0);
+        setTotalBookQuantity(response.data.totalBookQuantity || 0);
+        setNewBooksThisWeek(response.data.newBooksThisWeek || 0);
+        setBorrowStartLastWeek(response.data.borrowStartLastWeek || { totalBorrows: 0, bookDetails: [] });
+        setBooksToRestock(response.data.booksToRestock || []);
 
-        const newBooksThisWeekResponse = await axios.get(
-          "http://localhost:8080/api/book/new-books-this-week",
-          {
-            headers: { "Cache-Control": "no-cache" },
-          }
-        );
-        setNewBooksThisWeek(newBooksThisWeekResponse.data);
-
-        const getBorrowStartLastWeekResponse = await axios.get(
-          "http://localhost:8080/api/borrow-cards/stats/last-week",
-          {
-            headers: { "Cache-Control": "no-cache" },
-          }
-        );
-        setBorrowStartLastWeek(getBorrowStartLastWeekResponse.data);
-
-        // Fetch books needing restocking
-        const restockResponse = await axios.get(
-          "http://localhost:8080/api/book/restock",
-          {
-            headers: { "Cache-Control": "no-cache" },
-          }
-        );
-        setBooksToRestock(restockResponse.data);
-
-        // Fetch paginated books
         await fetchBooks(currentPage);
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
-        toast.error("Unable to fetch dashboard data.");
+        toast.error("Không thể tải dữ liệu dashboard.");
       } finally {
         setLoading(false);
       }
@@ -100,6 +67,7 @@ const Dashboard = () => {
 
   const fetchBooks = async (page) => {
     try {
+      setLoading(true);
       console.log(`Fetching books for page ${page} with params:`, {
         ...searchParams,
         page: page - 1,
@@ -112,17 +80,13 @@ const Dashboard = () => {
 
       // Map mode to the appropriate search parameter
       if (searchParams.mode !== "all" && searchParams.mode !== "restock") {
-        if (searchParams.mode === "title" && searchParams.title)
-          params.title = searchParams.title;
-        else if (searchParams.mode === "author" && searchParams.title)
-          params.author = searchParams.title;
-        else if (searchParams.mode === "category" && searchParams.title)
-          params.category = searchParams.title;
-        else if (searchParams.mode === "publisher" && searchParams.title)
-          params.publisher = searchParams.title;
-        else if (searchParams.mode === "year" && searchParams.title) {
-          if (/^\d{4}$/.test(searchParams.title.trim())) {
-            params.year = Number(searchParams.title.trim());
+        if (searchParams.mode === "title" && searchParams.title) params.title = searchParams.title;
+        else if (searchParams.mode === "author" && searchParams.author) params.author = searchParams.author;
+        else if (searchParams.mode === "category" && searchParams.category) params.category = searchParams.category;
+        else if (searchParams.mode === "publisher" && searchParams.publisher) params.publisher = searchParams.publisher;
+        else if (searchParams.mode === "year" && searchParams.year) {
+          if (/^\d{4}$/.test(searchParams.year.trim())) {
+            params.year = Number(searchParams.year.trim());
           } else {
             toast.error("Nhập năm theo dạng YYYY");
             return;
@@ -144,9 +108,11 @@ const Dashboard = () => {
       setTotalPages(response.data.totalPages || 1);
     } catch (error) {
       console.error("Error fetching books:", error);
-      toast.error("Unable to fetch books.");
+      toast.error("Không thể tải danh sách sách.");
       setBooks([]);
       setTotalPages(1);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -217,6 +183,9 @@ const Dashboard = () => {
     <div className="flex flex-row w-full min-h-screen bg-[#F4F7FE]">
       <Sidebar />
       <main className="self-stretch pr-[1.25rem] md:pl-52 ml-[1.25rem] my-auto w-full max-md:max-w-full py-[2rem]">
+        {/* Loading Indicator */}
+        {loading && <div className="text-center py-4">Đang tải dữ liệu...</div>}
+
         {/* Statistics Section */}
         <section className="grid lg:grid-cols-4 md:grid-cols-2 grid-cols-1 self-stretch shrink gap-4 justify-between items-center w-full leading-none text-white h-full max-md:max-w-full">
           <StatisticsCard
@@ -278,7 +247,6 @@ const Dashboard = () => {
         )}
 
         {/* Search Form */}
-
         <div className="flex gap-2 p-2 mt-8 rounded-md w-full items-center justify-center">
           <select
             name="mode"
@@ -297,12 +265,35 @@ const Dashboard = () => {
           <Input
             type="text"
             placeholder="Tìm kiếm..."
-            value={searchParams.title}
-            name="title"
+            value={
+              searchParams.mode === "title"
+                ? searchParams.title
+                : searchParams.mode === "author"
+                ? searchParams.author
+                : searchParams.mode === "category"
+                ? searchParams.category
+                : searchParams.mode === "publisher"
+                ? searchParams.publisher
+                : searchParams.mode === "year"
+                ? searchParams.year
+                : ""
+            }
+            name={
+              searchParams.mode === "title"
+                ? "title"
+                : searchParams.mode === "author"
+                ? "author"
+                : searchParams.mode === "category"
+                ? "category"
+                : searchParams.mode === "publisher"
+                ? "publisher"
+                : searchParams.mode === "year"
+                ? "year"
+                : "title"
+            }
             onChange={handleSearchChange}
             className="flex-1 p-3 text-black bg-white shadow font-thin italic cursor-text"
           />
-
           <Button
             onClick={handleSearchSubmit}
             className="w-10 h-10 bg-[#062D76] hover:bg-gray-700 shadow rounded-md cursor-pointer"
