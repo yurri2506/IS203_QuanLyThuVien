@@ -98,7 +98,7 @@ const benefits = [
 
 const page = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-yellow-50 to-pink-100 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-b from-yellow-50 to-pink-100 flex flex-col -mr-[180px]">
       {/* Header */}
       <header className="bg-white py-4 shadow-md">
         <div className="container mx-auto px-4 text-center">

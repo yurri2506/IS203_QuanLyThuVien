@@ -22,7 +22,8 @@ const Dashboard = () => {
   const [booksToRestock, setBooksToRestock] = useState([]);
   const [showBorrowDetails, setShowBorrowDetails] = useState(false);
   const [showRestockDetails, setShowRestockDetails] = useState(false);
-  const [books, setBooks] = useState([]);
+  const [allBooks, setAllBooks] = useState([]); // Lưu tất cả sách từ API
+  const [filteredBooks, setFilteredBooks] = useState([]); // Sách sau khi lọc
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const booksPerPage = 10;
@@ -43,99 +44,95 @@ const Dashboard = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const response = await axios.get(
+        // Lấy dữ liệu dashboard
+        const dashboardResponse = await axios.get(
           "http://localhost:8080/api/book/dashboard",
           { headers: { "Cache-Control": "no-cache" } }
         );
-        console.log("Dashboard data:", response.data);
+        console.log("Dashboard data:", dashboardResponse.data);
 
-        setTotalBooks(response.data.totalBooks || 0);
-        setTotalBookQuantity(response.data.totalBookQuantity || 0);
-        setNewBooksThisWeek(response.data.newBooksThisWeek || 0);
+        setTotalBooks(dashboardResponse.data.totalBooks || 0);
+        setTotalBookQuantity(dashboardResponse.data.totalBookQuantity || 0);
+        setNewBooksThisWeek(dashboardResponse.data.newBooksThisWeek || 0);
         setBorrowStartLastWeek(
-          response.data.borrowStartLastWeek || {
+          dashboardResponse.data.borrowStartLastWeek || {
             totalBorrows: 0,
             bookDetails: [],
           }
         );
-        setBooksToRestock(response.data.booksToRestock || []);
+        setBooksToRestock(dashboardResponse.data.booksToRestock || []);
 
-        await fetchBooks(currentPage);
+        // Lấy tất cả sách
+        const booksResponse = await axios.get("http://localhost:8080/api/book", {
+          headers: { "Cache-Control": "no-cache" },
+        });
+        console.log("All books fetched:", booksResponse.data);
+        setAllBooks(booksResponse.data || []);
+        applyFiltersAndSort(booksResponse.data || [], searchParams);
       } catch (error) {
-        console.error("Error fetching dashboard data:", error);
-        toast.error("Không thể tải dữ liệu dashboard.");
+        console.error("Error fetching data:", error);
+        toast.error("Không thể tải dữ liệu.");
+        setAllBooks([]);
+        setFilteredBooks([]);
+        setTotalPages(1);
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, [currentPage]);
+  }, []);
 
-  const fetchBooks = async (page) => {
-    try {
-      setLoading(true);
-      console.log(`Fetching books for page ${page} with params:`, {
-        ...searchParams,
-        page: page - 1,
-        size: booksPerPage,
-      });
+  // Hàm lọc và sắp xếp sách
+  const applyFiltersAndSort = (books, params) => {
+    let filtered = [...books];
 
-      const params = {
-        page: page - 1, // Backend expects 0-based page index
-        size: booksPerPage,
-        sortByBorrowCount: searchParams.sortByBorrowCount,
-      };
-
-      // Chỉ thêm tham số tìm kiếm nếu mode không phải "all" 
-      if (searchParams.mode !== "all") {
-        if (searchParams.mode === "title" && searchParams.title.trim()) {
-          params.title = searchParams.title.trim();
-        } else if (
-          searchParams.mode === "author" &&
-          searchParams.author.trim()
-        ) {
-          params.author = searchParams.author.trim();
-        } else if (
-          searchParams.mode === "category" &&
-          searchParams.category.trim()
-        ) {
-          params.category = searchParams.category.trim();
-        } else if (
-          searchParams.mode === "publisher" &&
-          searchParams.publisher.trim()
-        ) {
-          params.publisher = searchParams.publisher.trim();
-        } else if (searchParams.mode === "year" && searchParams.year.trim()) {
-          if (/^\d{4}$/.test(searchParams.year.trim())) {
-            params.year = Number(searchParams.year.trim());
-          } else {
-            toast.error("Vui lòng nhập năm theo định dạng YYYY (VD: 2023)");
-            setLoading(false);
-            return;
-          }
+    // Lọc theo mode
+    if (params.mode !== "all") {
+      if (params.mode === "title" && params.title.trim()) {
+        filtered = filtered.filter((book) =>
+          book.tenSach.toLowerCase().includes(params.title.trim().toLowerCase())
+        );
+      } else if (params.mode === "author" && params.author.trim()) {
+        filtered = filtered.filter((book) =>
+          book.tenTacGia.toLowerCase().includes(params.author.trim().toLowerCase())
+        );
+      } else if (params.mode === "category" && params.category.trim()) {
+        filtered = filtered.filter((book) =>
+          book.theLoai.toLowerCase().includes(params.category.trim().toLowerCase())
+        );
+      } else if (params.mode === "publisher" && params.publisher.trim()) {
+        filtered = filtered.filter((book) =>
+          book.nhaXuatBan.toLowerCase().includes(params.publisher.trim().toLowerCase())
+        );
+      } else if (params.mode === "year" && params.year.trim()) {
+        if (/^\d{4}$/.test(params.year.trim())) {
+          filtered = filtered.filter(
+            (book) => book.namXuatBan === Number(params.year.trim())
+          );
+        } else {
+          toast.error("Vui lòng nhập năm theo định dạng YYYY (VD: 2023)");
+          return;
         }
       }
-
-      const response = await axios.get(
-        "http://localhost:8080/api/book/search",
-        {
-          params,
-          headers: { "Cache-Control": "no-cache" },
-        }
-      );
-      console.log("Books fetched:", response.data.content);
-      setBooks(response.data.content || []);
-      setTotalPages(response.data.totalPages || 1);
-    } catch (error) {
-      console.error("Error fetching books:", error);
-      toast.error("Không thể tải danh sách sách.");
-      setBooks([]);
-      setTotalPages(1);
-    } finally {
-      setLoading(false);
     }
+
+    // Sắp xếp theo số lượt mượn nếu được chọn
+    if (params.sortByBorrowCount) {
+      filtered.sort((a, b) => (b.soLuongMuon || 0) - (a.soLuongMuon || 0));
+    }
+
+    // Cập nhật danh sách sách đã lọc và tổng số trang
+    setFilteredBooks(filtered);
+    setTotalPages(Math.ceil(filtered.length / booksPerPage) || 1);
+    setCurrentPage(1); // Reset về trang 1 khi lọc hoặc sắp xếp
   };
+
+  // Phân trang cục bộ
+  const paginatedBooks = filteredBooks.slice(
+    (currentPage - 1) * booksPerPage,
+    currentPage * booksPerPage
+  );
 
   const handlePageChange = (page) => {
     if (page >= 1 && page <= totalPages) {
@@ -156,26 +153,21 @@ const Dashboard = () => {
       clearTimeout(debounceTimeout.current);
     }
     debounceTimeout.current = setTimeout(() => {
-      if (searchParams.mode !== "all" && searchParams.mode !== "restock") {
-        setCurrentPage(1);
-        fetchBooks(1);
-      }
+      applyFiltersAndSort(allBooks, { ...searchParams, [name]: type === "checkbox" ? checked : value });
     }, 500); // Delay 500ms
   };
 
   const handleKeyDown = (e) => {
-    if (e.key === "Enter" && searchParams.mode !== "all" ) {
+    if (e.key === "Enter" && searchParams.mode !== "all") {
       e.preventDefault();
-      setCurrentPage(1);
-      fetchBooks(1);
+      applyFiltersAndSort(allBooks, searchParams);
     }
   };
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     console.log("Search submitted with params:", searchParams);
-    setCurrentPage(1); // Reset to first page on new search
-    fetchBooks(1);
+    applyFiltersAndSort(allBooks, searchParams);
   };
 
   const toggleBorrowDetails = () => {
@@ -250,18 +242,6 @@ const Dashboard = () => {
         </div>
       ) : (
         <main className="self-stretch pr-[1.25rem] md:pl-52 ml-[1.25rem] my-auto w-full max-md:max-w-full py-[2rem]">
-          {/* Loading Indicator */}
-          {loading && (
-            <div className="text-center py-4 text-gray-600">
-              <ThreeDot
-                color="#062D76"
-                size="medium"
-                text="Đang tải dữ liệu..."
-                textColor="#062D76"
-              />
-            </div>
-          )}
-
           {/* Statistics Section */}
           <section className="grid lg:grid-cols-5 md:grid-cols-2 grid-cols-1 gap-4 justify-between items-center w-full leading-none text-white h-full max-md:max-w-full">
             <StatisticsCard
@@ -513,33 +493,33 @@ const Dashboard = () => {
               <div className="gap-2.5 self-start px-5 py-2.5 mt-6 mb-6 text-[1.25rem] text-white bg-[#062D76] rounded-lg w-fit">
                 <h1>Danh sách các sách</h1>
               </div>
-              {books.length > 0
-                ? books.map((book) => (
-                    <BookCard key={book.maSach} book={book} />
-                  ))
-                : !loading && (
-                    <p className="text-gray-600 text-center">
-                      Không tìm thấy sách phù hợp.
-                    </p>
-                  )}
+              {paginatedBooks.length > 0 ? (
+                paginatedBooks.map((book) => (
+                  <BookCard key={book.maSach} book={book} />
+                ))
+              ) : (
+                <p className="text-gray-600 text-center">
+                  Không tìm thấy sách phù hợp.
+                </p>
+              )}
               <div className="mt-4 flex justify-center gap-2">
-                <button
+                <Button
                   onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1 || loading}
+                  disabled={currentPage === 1 || totalPages === 1}
                   className="px-4 py-2 bg-[#062D76] text-white rounded cursor-pointer disabled:bg-gray-400 disabled:cursor-not-allowed"
                 >
                   Trang trước
-                </button>
+                </Button>
                 <span className="px-4 py-2 text-gray-700">
                   Trang {currentPage} / {totalPages}
                 </span>
-                <button
+                <Button
                   onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === totalPages || loading}
+                  disabled={currentPage === totalPages || totalPages === 1}
                   className="px-4 py-2 bg-[#062D76] text-white rounded cursor-pointer disabled:bg-gray-400 disabled:cursor-not-allowed"
                 >
                   Trang sau
-                </button>
+                </Button>
               </div>
             </>
           )}
