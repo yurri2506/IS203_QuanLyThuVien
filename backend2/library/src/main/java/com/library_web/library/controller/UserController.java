@@ -37,6 +37,22 @@ public class UserController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @GetMapping()
+    public List<User> layTatCaNguoiDung() {
+        String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+        String currentRole = SecurityContextHolder.getContext().getAuthentication().getAuthorities()
+                .iterator().next().getAuthority();
+
+        if (currentRole.equals("USER")) {
+            User user = userRepository.findByUsername(currentUsername)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                            "Không tìm thấy người dùng với username: " + currentUsername));
+            return List.of(user);
+        }
+
+        return userRepository.findAll();
+    }
+
     @GetMapping("/{id}")
     public User layUserTheoId(@PathVariable Long id) {
         String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();

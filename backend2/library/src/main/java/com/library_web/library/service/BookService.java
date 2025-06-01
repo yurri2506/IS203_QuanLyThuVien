@@ -27,4 +27,6 @@ public interface BookService {
     long getNewBooksThisWeek();
 
     List<Book> findBooksNeedingRestock(int quantity);
+
+    List<Book> searchBooks2(String query);
 }
