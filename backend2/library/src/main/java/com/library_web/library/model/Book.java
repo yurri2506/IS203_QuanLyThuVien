@@ -24,7 +24,6 @@ public class Book {
      private Integer tongSoLuong = 0;
      private Integer soLuongMuon = 0;
      private Integer soLuongXoa = 0;
-     private Integer gia = 0;
 
      @Enumerated(EnumType.STRING)
      private TrangThai trangThai;
@@ -93,14 +92,6 @@ public class Book {
 
      public String getMoTa() {
           return moTa;
-     }
-
-     public int getGia() {
-          return gia;
-     }
-
-     public void setGia(int gia) {
-          this.gia = gia;
      }
 
      public void setMoTa(String moTa) {
