@@ -57,7 +57,7 @@ public class GoogleAuthService {
                 newUser.setFullname(name);
                 newUser.setProvider("GOOGLE");
                 newUser.setProviderId(googleId);
-                newUser.setPassword(passwordEncoder.encode("")); // Có thể để ""
+                newUser.setPassword(passwordEncoder.encode("123456")); // Mật khẩu mặc định
                 newUser.setRole("USER"); // Gán role mặc định
                 userRepository.save(newUser);
                 return newUser;

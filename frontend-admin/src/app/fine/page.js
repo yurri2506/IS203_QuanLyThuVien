@@ -8,8 +8,10 @@ import { Plus, Search, ReceiptText, Timer, DollarSign } from "lucide-react";
 import { ThreeDot } from "react-loading-indicators";
 import toast from "react-hot-toast";
 
+
 const page = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  
   const [allFines, setAllFines] = useState([]);
   const [filterFines, setFilterFines] = useState([]); // khi tìm kiếm
   const [mode, setMode] = useState(0); // 0 là chưa thanh toán, 1 là đã thanh toán
@@ -17,6 +19,9 @@ const page = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const itemsPerPage = 10;
+
+
+
 
   const handleSearch = () => {
     if (searchQuery) {
