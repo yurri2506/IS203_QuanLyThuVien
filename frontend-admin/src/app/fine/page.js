@@ -91,7 +91,7 @@ const page = () => {
       <div className="flex bg-white w-full rounded-lg mt-2 relative drop-shadow-lg p-5 gap-[20px] md:gap-[50px] items-center">
         <div className="flex flex-col gap-[10px] relative w-full">
           <p className="font-bold">ID: {fine.id}</p>
-          <p className="">User ID: {fine.userId.id}</p>
+          <p className="">User ID: {fine.userId}</p>
           <p className="font-bold">Số Tiền: {fine.soTien} đồng</p>
           <p className="">Nội Dung: {fine.noiDung}</p>
         </div>
