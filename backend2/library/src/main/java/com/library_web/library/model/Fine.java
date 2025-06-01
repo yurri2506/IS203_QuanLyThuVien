@@ -18,16 +18,12 @@ public class Fine {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @ManyToOne
-  @JoinColumn(name = "user_id")
-  private User userId;
+  private Long userId;
 
   private double soTien;
   private String noiDung;
 
-  @ManyToOne
-  @JoinColumn(name = "borrow_card_id")
-  private BorrowCard cardId;
+  private String cardId;
 
   private String orderId;
 
@@ -71,10 +67,10 @@ public class Fine {
   public void setNgayThanhToan(LocalDateTime ngayThanhToan) {
     this.ngayThanhToan = ngayThanhToan;
   }
-  public User getUserId() {
+  public Long getUserId() {
     return userId;
   }
-  public void setUserId(User userId) {
+  public void setUserId(Long userId) {
     this.userId = userId;
   }
   public Long getId() {
@@ -95,10 +91,10 @@ public class Fine {
   public void setNoiDung(String noiDung) {
     this.noiDung = noiDung;
   }
-  public BorrowCard getCardId() {
+  public String getCardId() {
     return cardId;
   }
-  public void setCardId(BorrowCard cardId) {
+  public void setCardId(String cardId) {
     this.cardId = cardId;
 }
 }

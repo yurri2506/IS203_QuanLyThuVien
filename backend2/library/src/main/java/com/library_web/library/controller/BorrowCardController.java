@@ -4,6 +4,8 @@ import com.library_web.library.dto.BorrowCardDTO;
 import com.library_web.library.dto.BorrowStatsDTO;
 import com.library_web.library.model.BorrowCard;
 import com.library_web.library.service.BorrowCardService;
+import com.library_web.library.service.EmailService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +19,9 @@ public class BorrowCardController {
 
   @Autowired
   private BorrowCardService service;
+
+  @Autowired
+  private EmailService emailService;
 
   @GetMapping
   public ResponseEntity<List<BorrowCard>> getAll() {
@@ -75,11 +80,32 @@ public class BorrowCardController {
     return ResponseEntity.ok(borrowCard);
   }
 
-  //Thống kê lượt mượn sách trong tuần vừa qua
+  // Cập nhật phiếu mượn khi người dùng trả sách
+  @PutMapping("/expired/{id}")
+  public ResponseEntity<BorrowCard> expiredCard(@PathVariable Long id) {
+    BorrowCard borrowCard = service.expiredCard(id);
+    return ResponseEntity.ok(borrowCard);
+  }
+
+  @PostMapping("/askToReturn")
+  public ResponseEntity<String> mailHoiTraSach(@RequestBody List<BorrowCard> list) {
+    try {
+      emailService.mailHoiTraSach(list);
+      return ResponseEntity.ok("Gửi mail thành công!");
+    } catch (RuntimeException e) {
+      System.out.println("Không tìm thấy!");
+      return ResponseEntity.status(404).body("Không tìm thấy!");
+    } catch (Exception e) {
+      System.out.println("Lỗi khi gửi mail!");
+      return ResponseEntity.status(500).body("Lỗi khi gửi mail!");
+    }
+  }
+
+  // Thống kê lượt mượn sách trong tuần vừa qua
   // @GetMapping("/stats/last-week")
   // public ResponseEntity<BorrowStatsDTO> getBorrowStatsLastWeek() {
-  //   BorrowStatsDTO stats = service.getBorrowStatsLastWeek();
-  //   return ResponseEntity.ok(stats);
+  // BorrowStatsDTO stats = service.getBorrowStatsLastWeek();
+  // return ResponseEntity.ok(stats);
   // }
 
 }
