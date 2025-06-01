@@ -26,4 +26,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     @Query("SELECT b FROM Book b WHERE b.tongSoLuong < :quantity OR b.trangThai != 'CON_SAN'")
     List<Book> findBooksNeedingRestock(@Param("quantity") int quantity);
 
+    List<Book> findByTenSachContainingIgnoreCase(String query);
+    List<Book> findByTenTacGiaContainingIgnoreCase(String query);
+    // List<Book> findByTheLoaiContainingIgnoreCase(String query);
 }

@@ -12,9 +12,10 @@ import {
 import { Menu as MenuIcon, X, Bell, ShoppingCart } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from 'next/navigation';
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import didYouMean from "didyoumean";
 
 const navigation = [
   { name: "Trang chủ", href: "/" },
@@ -57,6 +58,133 @@ const Header = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isHovered, setIsHovered] = useState(false); // State để kiểm soát hover
+  const [searchTerm, setSearchTerm] = useState("");
+  const [suggestions, setSuggestions] = useState([]);
+  const [books, setBooks] = useState([]);
+  const [bookTitles, setBookTitles] = useState([]);
+  const [bookAuthors, setBookAuthors] = useState([]);
+
+  const removeVietnameseTones = (str) => {
+    return str
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/đ/g, "d")
+      .replace(/Đ/g, "D")
+      .toLowerCase();
+  };
+
+  useEffect(() => {
+    if (!searchTerm) {
+      setSuggestions([]);
+      return;
+    }
+
+    // Lọc sách tên chứa từ khóa (case-insensitive)
+    // let filtered = books.filter(
+    //   (book) =>
+    //     book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    //     book.author.toLowerCase().includes(searchTerm.toLowerCase())
+    // );
+    const normalizedTerm = removeVietnameseTones(searchTerm);
+    let filtered = books.filter(
+      (book) =>
+        removeVietnameseTones(book.title).includes(normalizedTerm) ||
+        removeVietnameseTones(book.author).includes(normalizedTerm)
+    );
+
+    // Nếu không có kết quả thì sửa lỗi chính tả với didyoumean
+    // if (filtered.length === 0) {
+    //   const correction = didYouMean(searchTerm, bookTitles ) || didYouMean(searchTerm, bookAuthors);
+    //   if (correction) {
+    //     filtered = books.filter(book => book.title === correction) || books.filter(book => book.author === correction);
+    //   }
+    // }
+    if (filtered.length === 0) {
+      // const correctionTitle = didYouMean(searchTerm, bookTitles);
+      const correctionTitle = didYouMean(
+        normalizedTerm,
+        bookTitles.map(removeVietnameseTones)
+      );
+      // const correctionAuthor = didYouMean(searchTerm, bookAuthors);
+      const correctionAuthor = didYouMean(
+        normalizedTerm,
+        bookAuthors.map(removeVietnameseTones)
+      );
+
+      if (correctionTitle) {
+        filtered = books.filter((book) => book.title === correctionTitle);
+      } else if (correctionAuthor) {
+        filtered = books.filter((book) => book.author === correctionAuthor);
+      }
+    }
+
+    setSuggestions(filtered);
+  }, [searchTerm, books, bookTitles, bookAuthors]);
+
+  const MAX_KEYWORDS = 5;
+
+  const saveSearchTermToCache = (term) => {
+    if (!term.trim()) return;
+
+    // Lấy danh sách từ khóa hiện tại
+    const stored = JSON.parse(localStorage.getItem("searchKeywords") || "[]");
+
+    // Xóa nếu đã tồn tại
+    const updated = stored.filter((item) => item !== term);
+
+    // Thêm từ khóa mới vào đầu mảng
+    updated.unshift(term);
+
+    // Giới hạn số lượng từ khóa
+    const limited = updated.slice(0, MAX_KEYWORDS);
+
+    // Lưu lại vào localStorage
+    localStorage.setItem("searchKeywords", JSON.stringify(limited));
+  };
+
+  // 3. Khi chọn 1 sách trong gợi ý
+  const handleSelect = (book) => {
+    console.log("Selected book:", book);
+    setSearchTerm(book.title);
+    setSuggestions([]);
+    // console.log("Tìm kiếm:", id);
+    // handleSearch();
+    router.push(`/book-detail/${book.id}`); // Chuyển hướng đến trang sách
+  };
+
+  const handleSearch = async () => {
+    try {
+      let res;
+
+      if (!searchTerm.trim()) {
+        res = await axios.get("http://localhost:8080/api/book");
+      } else {
+        res = await axios.get("http://localhost:8080/api/book/search2", {
+          params: { query: searchTerm },
+        });
+      }
+      saveSearchTermToCache(searchTerm.trim());
+      const data = res?.data || [];
+
+      const convertedBooks = Array.isArray(data)
+        ? data.map((book) => ({
+            id: book.maSach,
+            imageSrc: book.hinhAnh[0],
+            available:
+              book.tongSoLuong - book.soLuongMuon - book.soLuongXoa > 0,
+            title: book.tenSach,
+            author: book.tenTacGia,
+            publisher: book.nxb,
+            borrowCount: book.soLuongMuon,
+          }))
+        : [];
+
+      setBooks(convertedBooks);
+    } catch (error) {
+      console.error("Lỗi khi tìm kiếm sách:", error);
+      setBooks([]); // Nếu có lỗi cũng để trống
+    }
+  };
 
   // Load read status from localStorage
   const [readStatus, setReadStatus] = useState(() => {
@@ -91,7 +219,9 @@ const Header = () => {
   const fetchNotifications = async () => {
     const notificationList = [];
     try {
-      const dashboardResponse = await axios.get("http://localhost:8080/api/book/dashboard");
+      const dashboardResponse = await axios.get(
+        "http://localhost:8080/api/book/dashboard"
+      );
       if (dashboardResponse.status === 200) {
         const newBooksCount = dashboardResponse.data.newBooksThisWeek || 0;
         if (newBooksCount > 0) {
@@ -106,7 +236,9 @@ const Header = () => {
       }
 
       const userId = user.id;
-      const borrowCardsResponse = await axios.post(`http://localhost:8080/api/borrow-cards/user/${userId}`);
+      const borrowCardsResponse = await axios.post(
+        `http://localhost:8080/api/borrow-cards/user/${userId}`
+      );
       if (borrowCardsResponse.status === 200) {
         const borrowCards = borrowCardsResponse.data;
         const currentDate = new Date();
@@ -114,11 +246,20 @@ const Header = () => {
         for (const card of borrowCards) {
           if (card.borrowedBooks && Array.isArray(card.borrowedBooks)) {
             for (const borrowedBook of card.borrowedBooks) {
-              const bookResponse = await axios.get(`http://localhost:8080/api/book/${borrowedBook.bookId}`);
-              const bookName = bookResponse.status === 200 ? bookResponse.data.tenSach : `Sách ${borrowedBook.bookId}`;
+              const bookResponse = await axios.get(
+                `http://localhost:8080/api/book/${borrowedBook.bookId}`
+              );
+              const bookName =
+                bookResponse.status === 200
+                  ? bookResponse.data.tenSach
+                  : `Sách ${borrowedBook.bookId}`;
               const dueDate = card.dueDate ? new Date(card.dueDate) : null;
-              const daysDiff = dueDate ? Math.ceil((dueDate - currentDate) / (1000 * 60 * 60 * 24)) : null;
-              const daysSinceDue = dueDate ? Math.ceil((currentDate - dueDate) / (1000 * 60 * 60 * 24)) : null;
+              const daysDiff = dueDate
+                ? Math.ceil((dueDate - currentDate) / (1000 * 60 * 60 * 24))
+                : null;
+              const daysSinceDue = dueDate
+                ? Math.ceil((currentDate - dueDate) / (1000 * 60 * 60 * 24))
+                : null;
 
               if (card.status === "Đã yêu cầu") {
                 notificationList.push({
@@ -174,9 +315,13 @@ const Header = () => {
         }
       }
 
-      const sortedNotifications = notificationList.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      const sortedNotifications = notificationList.sort(
+        (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
+      );
       setNotifications(sortedNotifications);
-      const unread = sortedNotifications.filter((n) => !readStatus[n.id]).length;
+      const unread = sortedNotifications.filter(
+        (n) => !readStatus[n.id]
+      ).length;
       setUnreadCount(unread);
       setLoading(false);
     } catch (err) {
@@ -206,6 +351,11 @@ const Header = () => {
     router.push("/notification");
   };
 
+  useEffect(() => {
+    setSearchTerm("");
+    setSuggestions([]);
+  }, [pathname]);
+
   return (
     <header className="bg-[#062D76] text-white shadow-lg fixed top-0 left-0 w-full z-50">
       <Disclosure as="nav" className="mx-auto">
@@ -222,7 +372,7 @@ const Header = () => {
               </div>
 
               {/* Navigation Links */}
-              <div className="hidden sm:flex space-x-20">
+              <div className="hidden sm:flex space-x-20 ml-50">
                 {navigation.map((item) => (
                   <Link
                     key={item.name}
@@ -240,6 +390,46 @@ const Header = () => {
 
               {/* Right Icons */}
               <div className="flex items-center space-x-4">
+                <div className="hidden lg:flex mx-4 items-center justify-center ml-8 mr-8 w-[350px]">
+                  <div className="relative w-full w-[350px]">
+                    <div className="flex items-center px-4 py-2 bg-white border border-gray-300 rounded-full shadow-md">
+                      <img
+                        src="https://cdn.builder.io/api/v1/image/assets/TEMP/669888cc237b300e928dbfd847b76e4236ef4b5a?placeholderIfAbsent=true&apiKey=d911d70ad43c41e78d81b9650623c816"
+                        alt="Search icon"
+                        className="w-5 h-5"
+                      />
+                      <input
+                        type="search"
+                        id="search-input"
+                        placeholder="Tìm kiếm sách"
+                        className="flex-1 text-sm bg-transparent border-none outline-none px-2 text-black placeholder-black"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            handleSearch();
+                          }
+                        }}
+                      />
+                    </div>
+
+                    {suggestions.length > 0 && (
+                      <ul className="absolute left-0 right-0 mt-2 bg-white border border-gray-300 rounded-lg shadow-lg z-50 max-h-[250px] overflow-y-auto">
+                        {suggestions.map((book, idx) => (
+                          <li
+                            key={idx}
+                            onClick={() => handleSelect(book)}
+                            onMouseDown={(e) => e.preventDefault()}
+                            className="px-4 py-2 cursor-pointer hover:bg-[#f2f2f2] transition-colors text-black"
+                          >
+                            <strong>{book.title}</strong>
+                            {book.author && ` — ${book.author}`}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </div>
                 <button
                   className={`relative pr-2 pl-1.5 py-2 rounded-full cursor-pointer hover:bg-white hover:text-[#052259] ${
                     pathname === "/cart"
@@ -274,7 +464,9 @@ const Header = () => {
                         : ""
                     }`}
                   >
-                    {unreadCount > 0 && <NotificationBadge count={unreadCount} />}
+                    {unreadCount > 0 && (
+                      <NotificationBadge count={unreadCount} />
+                    )}
                     <Bell
                       style={{
                         width: "1.5rem",
@@ -287,35 +479,53 @@ const Header = () => {
                   {isHovered && (
                     <div className="absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg ring-1 ring-black/5 max-h-96 overflow-y-auto z-50">
                       {loading && (
-                        <div className="px-4 py-2 text-gray-500 w-full">Đang tải thông báo...</div>
+                        <div className="px-4 py-2 text-gray-500 w-full">
+                          Đang tải thông báo...
+                        </div>
                       )}
                       {error && (
-                        <div className="px-4 py-2 text-red-500 w-full">Lỗi: {error}</div>
+                        <div className="px-4 py-2 text-red-500 w-full">
+                          Lỗi: {error}
+                        </div>
                       )}
                       {!loading && !error && notifications.length === 0 && (
-                        <div className="px-4 py-2 text-gray-500 w-full">Không có thông báo nào.</div>
+                        <div className="px-4 py-2 text-gray-500 w-full">
+                          Không có thông báo nào.
+                        </div>
                       )}
-                      {!loading && !error && notifications.length > 0 && (
+                      {!loading &&
+                        !error &&
+                        notifications.length > 0 &&
                         notifications.map((notification) => (
                           <div
                             key={notification.id}
                             className={`w-full h-16 px-4 py-2 text-gray-700 cursor-pointer flex items-center justify-between hover:bg-gray-100 ${
-                              readStatus[notification.id] ? "opacity-75" : "font-semibold"
+                              readStatus[notification.id]
+                                ? "opacity-75"
+                                : "font-semibold"
                             }`}
-                            onClick={() => handleNotificationClick(notification.id, notification.link)}
+                            onClick={() =>
+                              handleNotificationClick(
+                                notification.id,
+                                notification.link
+                              )
+                            }
                           >
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm truncate">{notification.message}</p>
+                              <p className="text-sm truncate">
+                                {notification.message}
+                              </p>
                               <p className="text-xs text-gray-500 truncate">
-                                {new Date(notification.timestamp).toLocaleString()}
+                                {new Date(
+                                  notification.timestamp
+                                ).toLocaleString()}
                               </p>
                             </div>
                             {!readStatus[notification.id] && (
                               <span className="w-2 h-2 bg-blue-500 rounded-full ml-2 flex-shrink-0"></span>
                             )}
                           </div>
-                        ))
-                      )}
+                        ))}
                     </div>
                   )}
                 </div>

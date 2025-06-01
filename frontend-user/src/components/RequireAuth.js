@@ -11,7 +11,7 @@ const RequireAuth = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [hasToken, setHasToken] = useState(false);
 
-  const publicRoutes = ["/user-login", "/", "/Categories", "/About", "/Help"];
+  const publicRoutes = ["/user-login", "/", "/Categories", "/About", "/Help", "/book-detail"];
 
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
