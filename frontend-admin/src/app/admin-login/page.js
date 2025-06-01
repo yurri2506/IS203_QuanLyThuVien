@@ -140,7 +140,7 @@ const Page = () => {
       }
 
       const result = await response.json();
-      console.log("Login result:", result);
+      //console.log("Login result:", result);
 
       localStorage.setItem("accessToken", result.data.accessToken);
       localStorage.setItem("id", result.data.admin.id || "");
@@ -219,7 +219,7 @@ const Page = () => {
           )}
         </div>
         <Button
-          className="w-full bg-[#23CAF1] text-white mt-5"
+          className="w-full bg-[#23CAF1] text-white mt-5 cursor-pointer"
           type="submit"
           disabled={loading}
         >
@@ -250,7 +250,7 @@ const Page = () => {
           )}
         </div>
         <Button
-          className="w-full bg-[#23CAF1] text-white mt-5"
+          className="w-full bg-[#23CAF1] text-white mt-5 cursor-pointer"
           type="submit"
           disabled={loading}
         >

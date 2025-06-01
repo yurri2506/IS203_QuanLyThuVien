@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import useSidebarStore from "@/store/sidebarStore";
 import axios from "axios";
+import { useRouter } from "next/navigation";
 
 const ProfileCard = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -33,6 +34,7 @@ const ProfileCard = () => {
       return "Chưa cập nhật";
     }
   };
+  const router = useRouter();
 
   // Hàm kiểm tra và trả về URL ảnh hợp lệ
   const getValidImageUrl = (url) => {
@@ -124,6 +126,10 @@ const ProfileCard = () => {
       setMessage("Vui lòng chọn file ảnh (JPG, PNG, v.v.)");
       setIsError(true);
     }
+  };
+
+  const handlebowrredCard = () => {
+    router.push("/borrowed-card");
   };
 
   const handleSave = async () => {
@@ -452,8 +458,16 @@ const ProfileCard = () => {
 
         <Section title="Thông tin mượn sách">
           <div className="flex gap-3">
-            <StatCard number={8} label="Tài liệu đang mượn" />
-            <StatCard number={4} label="Tài liệu quá hạn" />
+            <StatCard
+              number={8}
+              label="Tài liệu đang mượn"
+              onClick={handlebowrredCard}
+            />
+            <StatCard
+              number={4}
+              label="Tài liệu quá hạn"
+              onClick={handlebowrredCard}
+            />
           </div>
         </Section>
       </div>
