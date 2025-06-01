@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.library_web.library.model.Book;
 import com.library_web.library.model.BookChild;
-import com.library_web.library.model.BorrowCard;
+// import com.library_web.library.model.BorrowCard;
 import com.library_web.library.model.Fine;
 import com.library_web.library.model.User;
 import com.library_web.library.repository.BookRepository;
@@ -17,7 +17,7 @@ import com.library_web.library.repository.BorrowCardRepository;
 import com.library_web.library.repository.BookChildRepository;
 import com.library_web.library.repository.FineRepository;
 import com.library_web.library.repository.UserRepository;
-import com.library_web.library.dto.FineDTO;
+// import com.library_web.library.dto.FineDTO;
 
 @Service
 public class FineService {
@@ -38,8 +38,6 @@ public class FineService {
   private BookRepository bookRepo;
   @Autowired
   private NotificationService notificationService;
-  @Autowired
-  private UserRepository userRepository;
 
   public Fine addFine(Fine fine) {
     fine.setTrangThai(Fine.TrangThai.CHUA_THANH_TOAN);
@@ -52,7 +50,7 @@ public class FineService {
       Book book = bookRepo.findById(child.getBook().getMaSach())
           .orElseThrow(() -> new RuntimeException("Không tìm thấy sách với id: " + child.getBook().getMaSach()));
       book.setSoLuongXoa(book.getSoLuongXoa() + 1);
-      fine.setSoTien(book.getGia());
+      fine.setSoTien(book.getDonGia());
       bookRepo.save(book);
     }
     Fine savedFine = fineRepo.save(fine);
