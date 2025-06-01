@@ -7,6 +7,7 @@ import { Input } from "@/app/components/ui/input";
 import { useRouter } from "next/navigation";
 import { Pencil, Plus, Search, Trash2 } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
+import { ThreeDot } from "react-loading-indicators";
 
 const Page = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -14,16 +15,18 @@ const Page = () => {
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [popUpOpen, setPopUpOpen] = useState(false);
   const [deleteOne, setDeleteOne] = useState(null);
+  const [loading, setLoading] = useState(true); // Add loading state
   const router = useRouter();
 
   // Fetch users from the backend using axios
   const fetchUsers = async () => {
+    setLoading(true); // Set loading to true
     try {
       const response = await axios.get("http://localhost:8080/api/admin/users", {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
           "Content-Type": "application/json",
-          "Accept": "*/*",
+          Accept: "*/*",
         },
       });
       setUserList(response.data.data || []);
@@ -34,14 +37,22 @@ const Page = () => {
     } catch (error) {
       console.error("Error fetching users:", {
         message: error.message,
-        response: error.response ? {
-          status: error.response.status,
-          data: error.response.data,
-        } : "No response data",
+        response: error.response
+          ? {
+              status: error.response.status,
+              data: error.response.data,
+            }
+          : "No response data",
       });
-      toast.error("Không thể tải danh sách người dùng", {
+      toast.error("Quyền truy cập bị từ chối, hãy đăng nhập lại", {
         style: { background: "#fee2e2", color: "#991b1b" },
+        duration: 1500,
       });
+      setTimeout(() => {
+        router.push("/admin-login");
+      }, 1500);
+    } finally {
+      setLoading(false); // Set loading to false
     }
   };
 
@@ -57,8 +68,10 @@ const Page = () => {
         (user) =>
           user.id.toString().includes(searchQuery) ||
           user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          (user.email && user.email.toLowerCase().includes(searchQuery.toLowerCase())) ||
-          (user.phone && user.phone.toLowerCase().includes(searchQuery.toLowerCase()))
+          (user.email &&
+            user.email.toLowerCase().includes(searchQuery.toLowerCase())) ||
+          (user.phone &&
+            user.phone.toLowerCase().includes(searchQuery.toLowerCase()))
       );
       if (filtered.length === 0) {
         toast.error("Không tìm thấy người dùng", {
@@ -73,23 +86,31 @@ const Page = () => {
 
   // Handle delete user using axios
   const handleDelete = async (user) => {
+    setLoading(true); // Set loading to true
     try {
       const token = localStorage.getItem("accessToken");
       if (!token) {
-        toast.error("Không tìm thấy token xác thực. Vui lòng đăng nhập lại.", {
+        toast.error("Quyền truy cập bị từ chối, hãy đăng nhập lại", {
           style: { background: "#fee2e2", color: "#991b1b" },
+          duration: 1500,
         });
-        router.push("/login");
+        setTimeout(() => {
+          router.push("/admin-login");
+        }, 1500);
+        setLoading(false); // Set loading to false
         return;
       }
 
-      const response = await axios.delete(`http://localhost:8080/api/admin/users/${user.id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-          "Accept": "*/*",
-        },
-      });
+      const response = await axios.delete(
+        `http://localhost:8080/api/admin/users/${user.id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+            Accept: "*/*",
+          },
+        }
+      );
 
       toast.success("Xóa người dùng thành công", {
         style: { background: "#d1fae5", color: "#065f46" },
@@ -100,18 +121,25 @@ const Page = () => {
     } catch (error) {
       console.error("Error deleting user:", {
         message: error.message,
-        response: error.response ? {
-          status: error.response.status,
-          data: error.response.data,
-          headers: error.response.headers,
-        } : "No response data",
+        response: error.response
+          ? {
+              status: error.response.status,
+              data: error.response.data,
+              headers: error.response.headers,
+            }
+          : "No response data",
       });
 
-      const errorMessage = error.response?.data?.message || "Không thể xóa người dùng";
-      toast.error(errorMessage, {
+      toast.error("Quyền truy cập bị từ chối, hãy đăng nhập lại", {
         style: { background: "#fee2e2", color: "#991b1b" },
+        duration: 1500,
       });
+      setTimeout(() => {
+        router.push("/admin-login");
+      }, 1500);
       setPopUpOpen(false);
+    } finally {
+      setLoading(false); // Set loading to false
     }
   };
 
@@ -168,74 +196,86 @@ const Page = () => {
     <div className="flex flex-row w-full min-h-screen bg-[#EFF3FB]">
       <Toaster position="top-center" reverseOrder={false} />
       <Sidebar />
-      <div className="flex w-full flex-col py-6 md:ml-52 mt-5 gap-2 items-center px-10">
-        <div className="flex w-full items-center justify-between mb-10">
-          <div className="flex gap-5">
-            <Input
-              type="text"
-              placeholder="Tìm kiếm người dùng (ID, tên, email, số điện thoại)"
-              className="w-full md:w-96 h-10 font-thin italic text-black text-lg bg-white rounded-[10px]"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+      {loading ? (
+        <div className="flex md:ml-52 w-full h-screen justify-center items-center">
+          <ThreeDot
+            color="#062D76"
+            size="large"
+            text="Vui lòng chờ"
+            variant="bounce"
+            textColor="#062D76"
+          />
+        </div>
+      ) : (
+        <div className="flex w-full flex-col py-6 md:ml-52 mt-5 gap-2 items-center px-10">
+          <div className="flex w-full items-center justify-between mb-10">
+            <div className="flex gap-5">
+              <Input
+                type="text"
+                placeholder="Tìm kiếm người dùng (ID, tên, email, số điện thoại)"
+                className="w-full md:w-96 h-10 font-thin italic text-black text-lg bg-white rounded-[10px]"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              <Button
+                className="w-10 h-10 bg-[#062D76] hover:bg-gray-700 rounded-[10px] cursor-pointer"
+                onClick={handleSearch}
+              >
+                <Search className="w-6 h-6" color="white" />
+              </Button>
+            </div>
             <Button
-              className="w-10 h-10 bg-[#062D76] hover:bg-gray-700 rounded-[10px] cursor-pointer"
-              onClick={handleSearch}
+              className="w-40 h-10 bg-[#062D76] hover:bg-gray-700 rounded-[10px] cursor-pointer"
+              onClick={handleAddUser}
             >
-              <Search className="w-6 h-6" color="white" />
+              <Plus className="w-5 h-5" color="white" />
+              Thêm người dùng
             </Button>
           </div>
-          <Button
-            className="w-40 h-10 bg-[#062D76] hover:bg-gray-700 rounded-[10px] cursor-pointer"
-            onClick={handleAddUser}
-          >
-            <Plus className="w-5 h-5" color="white" />
-            Thêm người dùng
-          </Button>
-        </div>
-        {filteredUsers.length > 0 ? (
-          filteredUsers.map((user) => <UserCard key={user.id} user={user} />)
-        ) : (
-          <p className="text-gray-500">Không có người dùng nào để hiển thị</p>
-        )}
-        {popUpOpen && deleteOne && (
-          <div className="fixed inset-0 flex items-center justify-center z-50">
-            <div className="w-full h-full bg-black opacity-80 absolute top-0 left-0"></div>
-            <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md z-10">
-              <h2 className="text-lg font-bold mb-4">Xác nhận xóa</h2>
-              <p>Bạn có chắc chắn muốn xóa người dùng này không?</p>
-              <div className="flex bg-white w-full rounded-lg mt-2 p-5 gap-5 items-center">
-                <img
-                  src={deleteOne.avatar_url || "/default-avatar.png"}
-                  alt={deleteOne.username}
-                  className="w-[145px] h-[205px] object-cover rounded"
-                />
-                <div className="flex flex-col gap-3 w-full">
-                  <p>ID: {deleteOne.id}</p>
-                  <p className="font-bold">{deleteOne.username}</p>
-                  <p>Email: {deleteOne.email || "N/A"}</p>
-                  <p>Số điện thoại: {deleteOne.phone || "N/A"}</p>
-                  <p>Vai trò: {deleteOne.role || "USER"}</p>
+          {filteredUsers.length > 0 ? (
+            filteredUsers.map((user) => <UserCard key={user.id} user={user} />)
+          ) : (
+            <p className="text-gray-500">Không có người dùng nào để hiển thị</p>
+          )}
+          {popUpOpen && deleteOne && (
+            <div className="fixed inset-0 flex items-center justify-center z-50">
+              <div className="w-full h-full bg-black opacity-80 absolute top-0 left-0"></div>
+              <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md z-10">
+                <h2 className="text-lg font-bold mb-4">Xác nhận xóa</h2>
+                <p>Bạn có chắc chắn muốn xóa người dùng này không?</p>
+                <div className="flex bg-white w-full rounded-lg mt-2 p-5 gap-5 items-center">
+                  <img
+                    src={deleteOne.avatar_url || "/default-avatar.png"}
+                    alt={deleteOne.username}
+                    className="w-[145px] h-[205px] object-cover rounded"
+                  />
+                  <div className="flex flex-col gap-3 w-full">
+                    <p>ID: {deleteOne.id}</p>
+                    <p className="font-bold">{deleteOne.username}</p>
+                    <p>Email: {deleteOne.email || "N/A"}</p>
+                    <p>Số điện thoại: {deleteOne.phone || "N/A"}</p>
+                    <p>Vai trò: {deleteOne.role || "USER"}</p>
+                  </div>
+                </div>
+                <div className="flex justify-end mt-4 gap-4">
+                  <Button
+                    className="bg-gray-500 hover:bg-gray-700 text-white cursor-pointer"
+                    onClick={() => setPopUpOpen(false)}
+                  >
+                    Hủy
+                  </Button>
+                  <Button
+                    className="bg-red-500 hover:bg-red-700 text-white cursor-pointer"
+                    onClick={() => handleDelete(deleteOne)}
+                  >
+                    Xóa
+                  </Button>
                 </div>
               </div>
-              <div className="flex justify-end mt-4 gap-4">
-                <Button
-                  className="bg-gray-500 hover:bg-gray-700 text-white cursor-pointer"
-                  onClick={() => setPopUpOpen(false)}
-                >
-                  Hủy
-                </Button>
-                <Button
-                  className="bg-red-500 hover:bg-red-700 text-white cursor-pointer"
-                  onClick={() => handleDelete(deleteOne)}
-                >
-                  Xóa
-                </Button> 
-              </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
