@@ -393,4 +393,24 @@ public List<Book> searchBooks(String all, String title, String author, String ca
     public List<Book> findBooksNeedingRestock(int quantity) {
         return repo.findBooksNeedingRestock(quantity);
     }
+
+    @Override
+    public List<Book> searchBooks2(String query) {
+        // Kiểm tra nếu query không phải là null hoặc rỗng
+        if (query == null || query.trim().isEmpty()) {
+            return List.of(); // Trả về danh sách rỗng nếu không có input
+        }
+
+        // Tìm kiếm theo tên sách, tên tác giả hoặc thể loại (kiểm tra đầy đủ các trường
+        // hợp)
+        List<Book> books = repo.findByTenSachContainingIgnoreCase(query);
+        if (books.isEmpty()) {
+            books = repo.findByTenTacGiaContainingIgnoreCase(query);
+        }
+        // if (books.isEmpty()) {
+        //     books = repo.findByTheLoaiContainingIgnoreCase(query);
+        // }
+
+        return books;
+    }
 }

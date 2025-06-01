@@ -103,8 +103,8 @@ public class BookController {
                         @RequestParam(required = false) String category,
                         @RequestParam(required = false) String publisher,
                         @RequestParam(required = false) Integer year,
-                        @RequestParam(defaultValue = "false") boolean sortByBorrowCount) { 
-                return service.searchBooks( all, title, author, category, publisher, year, sortByBorrowCount).stream()
+                        @RequestParam(defaultValue = "false") boolean sortByBorrowCount) {
+                return service.searchBooks(all, title, author, category, publisher, year, sortByBorrowCount).stream()
                                 .map(b -> new BookDTO(
                                                 b.getMaSach(), b.getTenSach(), b.getMoTa(),
                                                 b.getTenTacGia(), b.getNxb(), b.getNam(),
@@ -169,5 +169,11 @@ public class BookController {
                 stats.put("booksToRestock", booksToRestock);
 
                 return ResponseEntity.ok(stats);
+        }
+
+        @GetMapping("/search2")
+        public ResponseEntity<List<Book>> searchBooks(@RequestParam String query) {
+                List<Book> books = service.searchBooks2(query);
+                return books.isEmpty() ? ResponseEntity.noContent().build() : ResponseEntity.ok(books);
         }
 }
