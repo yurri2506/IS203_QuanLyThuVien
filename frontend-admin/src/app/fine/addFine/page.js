@@ -115,13 +115,12 @@ function AddFine() {
       userId: user?.id,
       soTien: Number.parseFloat(money),
       noiDung: reason,
-      // cardId:
-      //   reason === "Trả sách trễ hạn"
-      //     ? borrow.id
-      //     : reason === "Khác"
-      //     ? more
-      //     : book.id,
-      borrowCardId: reason === "Trả sách trễ hạn" ? borrow.id : null,
+      cardId:
+        reason === "Trả sách trễ hạn"
+          ? borrow.id
+          : reason === "Khác"
+          ? more
+          : book.id,
     };
     console.log(data);
     try {
@@ -144,7 +143,7 @@ function AddFine() {
       toast.error("Đã xảy ra lỗi. Vui lòng thử lại.");
     }
   };
-  
+
   const handleEnterUser = () => {
     const selected = userList.filter((user) => user?.id == userText);
     if (selected.length < 1) {

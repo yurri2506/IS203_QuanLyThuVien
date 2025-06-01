@@ -123,7 +123,7 @@ public class EmailService {
 
   @Async
   public void mailFine(Fine fine) {
-    User user = userRepo.findById(fine.getUserId().getId()).orElseThrow(null);
+    User user = userRepo.findById(Long.valueOf(fine.getUserId())).orElseThrow(null);
     String email = user.getEmail();
     String tenND = user.getFullname();
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
@@ -155,7 +155,7 @@ public class EmailService {
 
   @Async
   public void mailPay(Fine fine) {
-    User user = userRepo.findById(fine.getUserId().getId()).orElseThrow(null);
+    User user = userRepo.findById(Long.valueOf(fine.getUserId())).orElseThrow(null);
     String email = user.getEmail();
     String tenND = user.getFullname();
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");

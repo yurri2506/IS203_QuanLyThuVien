@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.library_web.library.dto.FineDTO;
+
 import com.library_web.library.model.Fine;
 import com.library_web.library.service.FineService;
 
@@ -20,8 +20,8 @@ public class FineController {
     private FineService fineService;
 
     @PostMapping("/addFine")
-    public Fine addFine(@RequestBody FineDTO dto) {
-        return fineService.addFine(dto);
+    public Fine addFine(@RequestBody Fine fine) {
+        return fineService.addFine(fine);
     }
 
     @GetMapping("/fines")
