@@ -31,7 +31,7 @@ const HomePage = () => {
     slidesToScroll: 1, // Chuyển 1 slide mỗi lần
     autoplay: true, // Tự động chuyển slide
     autoplaySpeed: 3000, // Chuyển slide mỗi 3 giây
-    rtl: true, // Di chuyển từ phải sang trái
+    ltr: true,
     responsive: [
       {
         breakpoint: 400,
