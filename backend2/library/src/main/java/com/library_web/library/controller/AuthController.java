@@ -121,37 +121,42 @@ public class AuthController {
         return response;
     }
 
+
+   
     @PostMapping("/auth/google")
-    public ResponseEntity<?> loginWithGoogle(@RequestBody Map<String, String> body) {
-        String accessToken = body.get("googleAccessToken");
-        if (accessToken == null || accessToken.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Google Access Token không được để trống");
-        }
-
-        try {
-            Map<String, Object> response = userService.loginWithGoogle(accessToken);
-            if (response == null) {
-                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
-                        "Google Login thất bại: IdToken không hợp lệ");
-            }
-
-            if (response.containsKey("data") &&
-                    ((Map<String, Object>) response.get("data")).containsKey("accessToken")) {
-                String email = (String) ((Map<String, Object>) response.get("data")).get("user.email");
-                if (email != null) {
-                    User user = userRepository.findByEmail(email)
-                            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                                    "Không tìm thấy người dùng sau khi đăng nhập bằng Google"));
-                    cartService.getOrCreateCart(user);
-                }
-            }
-
-            return ResponseEntity.ok(response);
-        } catch (Exception ex) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("error", "Google Login thất bại: " + ex.getMessage()));
-        }
+public ResponseEntity<?> loginWithGoogle(@RequestBody Map<String, String> body) {
+    String accessToken = body.get("accessToken"); // Match frontend key
+    if (accessToken == null || accessToken.isBlank()) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Google Access Token không được để trống");
     }
+
+    try {
+        Map<String, Object> response = userService.loginWithGoogle(accessToken);
+        if (response == null || !"OK".equals(response.get("status"))) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+                    "Google Login thất bại: " + response.getOrDefault("message", "IdToken không hợp lệ"));
+        }
+
+        Map<String, Object> data = (Map<String, Object>) response.get("data");
+        if (data != null && data.containsKey("user")) {
+            Map<String, Object> userMap = (Map<String, Object>) data.get("user");
+            String email = (String) userMap.get("email");
+            if (email != null && !email.isBlank()) {
+                User user = userRepository.findByEmail(email)
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                                "Không tìm thấy người dùng sau khi đăng nhập bằng Google"));
+                cartService.getOrCreateCart(user);
+            }
+        }
+
+        return ResponseEntity.ok(response);
+    } catch (Exception ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of("error", "Google Login thất bại: " + ex.getMessage()));
+    }
+}
+
+
 
     @PostMapping("/auth/facebook")
     public ResponseEntity<?> loginWithFacebook(@RequestBody Map<String, String> body) {
