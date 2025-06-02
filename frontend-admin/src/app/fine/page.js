@@ -8,37 +8,32 @@ import { Plus, Search, ReceiptText, Timer, DollarSign } from "lucide-react";
 import { ThreeDot } from "react-loading-indicators";
 import toast from "react-hot-toast";
 
-
 const page = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  
   const [allFines, setAllFines] = useState([]);
-  const [filterFines, setFilterFines] = useState([]); // khi tìm kiếm
+  const [filterFines, setFilterFines] = useState([]);
   const [mode, setMode] = useState(0); // 0 là chưa thanh toán, 1 là đã thanh toán
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const itemsPerPage = 10;
 
-
-
-
   const handleSearch = () => {
     if (searchQuery) {
       setLoading(true);
       const filterFine = filteredCards.filter((card) =>
         card.id.toString() === searchQuery || // tìm theo id
-        card?.userId.toLowerCase().includes(searchQuery.toLowerCase()) // tìm theo userId
-          ? card
-          : null
+        card?.userId.toString().includes(searchQuery) // tìm theo userId
       );
       setFilterFines(filterFine);
-      setTotalPages(Math.ceil(filterFine.length / itemsPerPage));
+      setTotalPages(Math.ceil(filterFine.length / itemsPerPage) || 1);
+      setCurrentPage(1); // Reset to first page
       setLoading(false);
       if (filterFine.length < 1) toast.error("Không tìm thấy kết quả");
     } else {
       setFilterFines([]);
-      setTotalPages(Math.ceil(filteredCards.length / itemsPerPage));
+      setTotalPages(Math.ceil(filteredCards.length / itemsPerPage) || 1);
+      setCurrentPage(1); // Reset to first page
     }
   };
 
@@ -67,23 +62,30 @@ const page = () => {
       );
       if (!response.ok) {
         console.log("Không tìm thấy phiếu phạt nào");
+        toast.error("Không tìm thấy phiếu phạt nào.");
+        setAllFines([]);
+        setTotalPages(1);
+        setCurrentPage(1);
         setLoading(false);
         return;
       }
       const res = await response.json();
       setAllFines(res);
-      setTotalPages(Math.ceil(res.length / itemsPerPage));
+      setTotalPages(Math.ceil(res.length / itemsPerPage) || 1);
+      setCurrentPage(1); // Reset to first page
     } catch (error) {
-      console.log(error);
+      console.error("Lỗi khi fetch phiếu phạt:", error);
+      toast.error("Lỗi khi tải dữ liệu phiếu phạt.");
+      setAllFines([]);
+      setTotalPages(1);
+      setCurrentPage(1);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => {
     fetchFine();
-    setMode(0);
-    setSearchQuery("");
-    handleSearch();
   }, []);
 
   const FineCard = ({ fine }) => {
@@ -114,6 +116,12 @@ const page = () => {
   // Phân trang
   const paginatedFines = (filterFines?.length > 0 ? filterFines : filteredCards)
     ?.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  // Generate page numbers for pagination
+  const pageNumbers = [];
+  for (let i = 1; i <= totalPages; i++) {
+    pageNumbers.push(i);
+  }
 
   const handlePageChange = (page) => {
     if (page >= 1 && page <= totalPages) {
@@ -193,27 +201,37 @@ const page = () => {
         ) : (
           <p className="text-center text-gray-600">Không có phiếu phạt nào.</p>
         )}
-        {/* Pagination */}
-        <div className="mt-4 flex justify-center gap-2">
-          <Button
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1 || loading}
-            className="px-4 py-2 bg-[#062D76] text-white rounded cursor-pointer disabled:bg-gray-400 disabled:cursor-not-allowed"
-          >
-            Trang trước
-          </Button>
-          <span className="px-4 py-2 text-gray-700">
-            Trang {currentPage} / {totalPages}
-          </span>
-          <Button
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages || loading}
-            className="px-4 py-2 bg-[#062D76] text-white rounded cursor-pointer disabled:bg-gray-400 disabled:cursor-not-allowed"
-          >
-            Trang sau
-          </Button>
-        </div>
-        {/* Nút Thêm - Floating Button */}
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center gap-2 mt-6">
+            <Button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1 || loading}
+              className="bg-[#062D76] hover:bg-gray-700 text-white"
+            >
+              Trước
+            </Button>
+            {pageNumbers.map((number) => (
+              <Button
+                key={number}
+                onClick={() => handlePageChange(number)}
+                className={`${
+                  currentPage === number
+                    ? "bg-[#062D76] text-white"
+                    : "bg-white text-[#062D76] border border-[#062D76] hover:bg-gray-100"
+                }`}
+              >
+                {number}
+              </Button>
+            ))}
+            <Button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages || loading}
+              className="bg-[#062D76] hover:bg-gray-700 text-white"
+            >
+              Sau
+            </Button>
+          </div>
+        )}
         <div className={`fixed bottom-10 right-10 ${mode === 0 ? "" : "hidden"}`}>
           <Button
             title={"Thêm Phiếu Phạt"}

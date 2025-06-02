@@ -128,11 +128,7 @@ public class UserController {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ngày sinh phải có định dạng yyyy-MM-dd");
             }
         }
-        if (updates.containsKey("password")) {
-            String newPassword = updates.get("password");
-            user.setPassword(passwordEncoder.encode(newPassword));
-        }
-
+       
         if (updates.containsKey("avatar_url")) {
             user.setAvatar_url(updates.get("avatar_url"));
         }

@@ -330,8 +330,39 @@ public class UserService {
                 "data", Map.of("username", user.getUsername()));
     }
 
+
+    public Map <String, Object> changePassword(Long id, String oldPassword, String newPassword) {
+        Optional<User> userOpt = userRepository.findById(id);
+        if (userOpt.isEmpty()) {
+            return null; // User not found
+        }
+
+        User user = userOpt.get();
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+            return null; // Old password does not match
+        }
+       
+        // if (newPassword.equals(oldPassword)) {
+        //     return Map.of("message", "Mật khẩu mới không được trùng với mật khẩu cũ");
+        // }
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+
+        return Map.of(
+                "message", "Đổi mật khẩu thành công",
+                "data", Map.of("id", user.getId()));
+    }
+
+//     public Map<String, Object> loginWithGoogle(String idToken) {
+//         String email = getEmailFromGoogleIdToken(idToken);
+//         if (email == null) {
+//             return null;
+//         }
+
     public Map<String, Object> loginWithGoogle(String accessToken) {
     Map<String, Object> googleResponse = googleAuthService.signInWithGoogle(accessToken);
+
 
     if (!"OK".equals(googleResponse.get("status"))) {
         return Map.of(
