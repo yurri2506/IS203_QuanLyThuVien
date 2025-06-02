@@ -6,6 +6,7 @@ import { BookCheck, List, Loader, MailWarning, Plus, Search, TicketX, TimerOff }
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import toast from "react-hot-toast";
+import { ThreeDot } from "react-loading-indicators";
 
 const page = () => {
   const [allBorrowCards, setAllBorrowCards] = useState([]);
@@ -16,6 +17,7 @@ const page = () => {
   const itemsPerPage = 10;
 
   const fetchBorrowCards = async () => {
+    setLoading(true);
     try {
       const response = await fetch(
         `http://localhost:8080/api/borrow-cards`,
@@ -26,9 +28,13 @@ const page = () => {
       const data = await response.json();
       console.log(data);
       setAllBorrowCards(data);
-      setTotalPages(Math.ceil(data.length / itemsPerPage));
+      setTotalPages(Math.ceil(data.length / itemsPerPage) || 1);
+      setCurrentPage(1); // Reset to first page
     } catch (error) {
       console.error("Lỗi khi fetch phiếu mượn:", error);
+      toast.error("Không thể tải dữ liệu phiếu mượn.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -55,12 +61,14 @@ const page = () => {
           : null
       );
       setSearchFilter(filter);
-      setTotalPages(Math.ceil(filter.length / itemsPerPage));
+      setTotalPages(Math.ceil(filter.length / itemsPerPage) || 1);
+      setCurrentPage(1); // Reset to first page
       setLoading(false);
       if (filter.length < 1) toast.error("Không tìm thấy kết quả");
     } else {
       setSearchFilter([]);
-      setTotalPages(Math.ceil(filteredCards.length / itemsPerPage));
+      setTotalPages(Math.ceil(filteredCards.length / itemsPerPage) || 1);
+      setCurrentPage(1); // Reset to first page
     }
   };
 
@@ -97,6 +105,7 @@ const page = () => {
       fetchBorrowCards();
     } catch (error) {
       console.error("Lỗi khi xem xét phiếu hết hạn:", error);
+      toast.error("Lỗi khi xem xét phiếu hết hạn.");
     }
   };
 
@@ -113,7 +122,7 @@ const page = () => {
       fetchBorrowCards();
     } catch (error) {
       toast.error("Lỗi khi gửi mail hối trả sách");
-      console.error("Lỗi khi gửi mail hối trả sách :", error);
+      console.error("Lỗi khi gửi mail hối trả sách:", error);
     }
   };
 
@@ -137,6 +146,12 @@ const page = () => {
   // Phân trang
   const paginatedCards = (searchFilter.length > 0 ? searchFilter : filteredCards)
     ?.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  // Generate page numbers for pagination
+  const pageNumbers = [];
+  for (let i = 1; i <= totalPages; i++) {
+    pageNumbers.push(i);
+  }
 
   const handlePageChange = (page) => {
     if (page >= 1 && page <= totalPages) {
@@ -185,7 +200,6 @@ const page = () => {
                   Đang mượn
                 </Button>
 
-                {/* Returned Status */}
                 <Button
                   className={`flex flex-1 gap-3 justify-center text-white hover:bg-gray-500 items-center text-[1.125rem] max-md:text-[1rem] font-medium rounded-md py-5 max-md:py-2 cursor-pointer ${
                     selectedButton === "Đã trả" ? "bg-[#062D76]" : "bg-[#b6cefa]"
@@ -203,7 +217,6 @@ const page = () => {
                 </Button>
               </div>
               <div className="flex gap-5">
-                {/* Bên Phải */}
                 <Input
                   type="text"
                   placeholder="Tìm kiếm"
@@ -223,7 +236,6 @@ const page = () => {
                 </Button>
               </div>
             </header>
-            {/* Borrowing Cards Section */}
             <section className="gap-y-2.5 mt-5">
               {loading ? (
                 <div className="flex justify-center">
@@ -308,27 +320,37 @@ const page = () => {
                 <p className="text-center text-gray-600">Không có phiếu mượn nào.</p>
               )}
             </section>
-            {/* Pagination */}
-            <div className="mt-4 flex justify-center gap-2">
-              <Button
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1 || loading}
-                className="px-4 py-2 bg-[#062D76] text-white rounded cursor-pointer disabled:bg-gray-400 disabled:cursor-not-allowed"
-              >
-                Trang trước
-              </Button>
-              <span className="px-4 py-2 text-gray-700">
-                Trang {currentPage} / {totalPages}
-              </span>
-              <Button
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages || loading}
-                className="px-4 py-2 bg-[#062D76] text-white rounded cursor-pointer disabled:bg-gray-400 disabled:cursor-not-allowed"
-              >
-                Trang sau
-              </Button>
-            </div>
-            {/* Nút Thêm - Floating Button */}
+            {totalPages > 1 && (
+              <div className="flex justify-center items-center gap-2 mt-6">
+                <Button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1 || loading}
+                  className="bg-[#062D76] hover:bg-gray-700 text-white"
+                >
+                  Trước
+                </Button>
+                {pageNumbers.map((number) => (
+                  <Button
+                    key={number}
+                    onClick={() => handlePageChange(number)}
+                    className={`${
+                      currentPage === number
+                        ? "bg-[#062D76] text-white"
+                        : "bg-white text-[#062D76] border border-[#062D76] hover:bg-gray-100"
+                    }`}
+                  >
+                    {number}
+                  </Button>
+                ))}
+                <Button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages || loading}
+                  className="bg-[#062D76] hover:bg-gray-700 text-white"
+                >
+                  Sau
+                </Button>
+              </div>
+            )}
             <div className={`fixed bottom-6 right-10 ${selectedButton === "Đã yêu cầu" ? "" : "hidden"}`}>
               <Button
                 title={"Xét phiếu đã trả"}

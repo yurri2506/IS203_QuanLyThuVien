@@ -65,17 +65,6 @@ public class AuthController {
         return response;
     }
 
-    @PostMapping("/forgot-password")
-    public Map<String, Object> forgotPassword(@RequestBody Map<String, String> request) {
-        String emailOrPhone = request.get("emailOrPhone");
-        Map<String, Object> response = userService.forgotPassword(emailOrPhone);
-        if (response == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-                    "Không tìm thấy người dùng với email hoặc số điện thoại này");
-        }
-        return response;
-    }
-
     @PostMapping("/login")
     public Map<String, Object> login(@RequestBody Map<String, String> request) {
         String emailOrPhone = request.get("email");
@@ -104,6 +93,17 @@ public class AuthController {
             cartService.getOrCreateCart(user);
         }
 
+        return response;
+    }
+
+    @PostMapping("/forgot-password")
+    public Map<String, Object> forgotPassword(@RequestBody Map<String, String> request) {
+        String emailOrPhone = request.get("emailOrPhone");
+        Map<String, Object> response = userService.forgotPassword(emailOrPhone);
+        if (response == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "Không tìm thấy người dùng với email hoặc số điện thoại này");
+        }
         return response;
     }
 
@@ -184,19 +184,21 @@ public ResponseEntity<?> loginWithGoogle(@RequestBody Map<String, String> body) 
         }
     }
 
-    @PostMapping("/password/reset")
-    public ResponseEntity<?> resetPasswordDuplicate(@RequestBody Map<String, String> request) {
-        String emailOrPhone = request.get("emailOrPhone");
-        String otp = request.get("otp");
-        String newPassword = request.get("newPassword");
+    // @PostMapping("/password/reset")
+    // public ResponseEntity<?> resetPasswordDuplicate(@RequestBody Map<String,
+    // String> request) {
+    // String emailOrPhone = request.get("emailOrPhone");
+    // String otp = request.get("otp");
+    // String newPassword = request.get("newPassword");
 
-        Map<String, Object> response = userService.resetPassword(emailOrPhone, otp, newPassword);
-        if (response == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "OTP không chính xác, đã hết hạn hoặc không tìm thấy người dùng");
-        }
-        return ResponseEntity.ok(response);
-    }
+    // Map<String, Object> response = userService.resetPassword(emailOrPhone, otp,
+    // newPassword);
+    // if (response == null) {
+    // throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+    // "OTP không chính xác, đã hết hạn hoặc không tìm thấy người dùng");
+    // }
+    // return ResponseEntity.ok(response);
+    // }
 
     @GetMapping("/refresh-token")
     public Map<String, Object> refreshToken(HttpServletRequest request) {
@@ -213,6 +215,18 @@ public ResponseEntity<?> loginWithGoogle(@RequestBody Map<String, String> body) 
         Map<String, Object> response = userService.refreshAccessToken(refreshToken);
         if (response == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Refresh Token không hợp lệ hoặc đã hết hạn");
+        }
+        return response;
+    }
+    @PutMapping("/change-password")
+    public Map<String, Object> changePassword(@RequestBody Map<String, String> request) {
+        Long id = request.get("id").isBlank() ? null : Long.parseLong(request.get("id"));
+        String oldPassword = request.get("oldPassword");
+        String newPassword = request.get("newPassword");
+
+        Map<String, Object> response = userService.changePassword(id, oldPassword, newPassword);
+        if (response == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mật khẩu cũ không đúng hoặc không tìm thấy người dùng");
         }
         return response;
     }
