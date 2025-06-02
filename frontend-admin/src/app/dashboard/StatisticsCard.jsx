@@ -1,28 +1,26 @@
 import React from "react";
 
-const StatisticsCard = ({ icon, title, value, percentage }) => {
+const StatisticsCard = ({ icon, title, value }) => {
   return (
-    <article className="self-stretch px-3 pt-1 my-auto rounded-3xl bg-blue-950 h-full max-md:max-w-full">
-      <header className="flex gap-3 items-center px-3 py-[1.25rem] w-full text-[1.25rem] text-white">
+    <article className="bg-[#162457] rounded-2xl p-4 flex flex-col justify-between h-[130px]">
+      <header className="flex items-start gap-2">
         {icon && (
           <img
             src={icon}
             alt=""
-            className="object-contain shrink-0 self-stretch my-auto aspect-square w-[30px]"
+            className="w-5 h-5 mt-1 shrink-0" // canh giữa icon với tiêu đề
           />
         )}
-        <h2 className="flex-1 shrink gap-2.5 self-stretch my-auto basis-0 min-w-60">
+        <h2 className="text-[1.25rem] font-medium leading-snug text-white line-clamp-2 break-words">
           {title}
         </h2>
       </header>
-      <section className="flex gap-3 items-center px-3 py-3.5 w-full text-[1.5rem] font-semibold text-white whitespace-nowrap">
-        <p className="flex-1 shrink gap-2.5 self-stretch my-auto w-full basis-0 min-w-60">
-          {value}
-        </p>
+
+      <section className="text-xl font-bold text-white mt-2">
+        {value}
       </section>
-      
     </article>
   );
 };
 
-export default StatisticsCard; 
+export default StatisticsCard;

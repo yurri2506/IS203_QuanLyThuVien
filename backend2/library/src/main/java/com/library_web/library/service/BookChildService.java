@@ -2,6 +2,7 @@ package com.library_web.library.service;
 
 import com.library_web.library.model.BookChild;
 import java.util.List;
+import java.util.Map;
 
 
 public interface BookChildService {
@@ -12,4 +13,5 @@ public interface BookChildService {
     void deleteChild(String childId);
     BookChild borrowChild(String childId);
     BookChild returnChild(String childId);
+    Map<String, Object> getChildAndParent(String childId);
 }

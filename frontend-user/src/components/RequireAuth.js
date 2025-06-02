@@ -1,21 +1,22 @@
-"use client"; // Thêm dòng này ở đầu file
+"use client";
 
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Header from "@/app/components/Header";
-
+import HeaderNoLogin from "@/app/components/HeaderNoLogin";
 
 const RequireAuth = ({ children }) => {
   const router = useRouter();
   const pathname = usePathname();
   const [isLoading, setIsLoading] = useState(true);
+  const [hasToken, setHasToken] = useState(false);
 
-  const publicRoutes = ["/user-login"]; // thêm các route không cần login
+  const publicRoutes = ["/user-login", "/", "/Categories", "/About", "/Help", "/book-detail"];
 
-  // Kiểm tra token khi có sự thay đổi pathname
   useEffect(() => {
-    const token = localStorage.getItem("accessToken"); // Lấy token từ localStorage
+    const token = localStorage.getItem("accessToken");
     console.log("TOKEN:", token);
+    setHasToken(!!token);
 
     if (!token && !publicRoutes.includes(pathname)) {
       router.push("/user-login");
@@ -24,20 +25,28 @@ const RequireAuth = ({ children }) => {
     }
   }, [pathname, router]);
 
-  if (isLoading) return null; // Hoặc loading spinner
+  if (isLoading) return null;
 
-  // Hàm hiển thị layout với hoặc không có Header
   const LayoutWithHeader = () => {
-    // Nếu đang ở trên trang /user-login, không hiển thị Header
+    // Không cần header trên trang login
     if (pathname === "/user-login") {
       return <>{children}</>;
     }
 
-    // Nếu không phải trang đăng nhập, hiển thị Header
+    const isPublicPage = publicRoutes.includes(pathname);
+
     return (
       <>
-        <Header />
-        {children}
+        {hasToken || !isPublicPage ? <Header /> : <HeaderNoLogin />}
+        <main
+          style={{
+            padding: "0 180px 0 0px",
+            maxWidth: "100%",
+            boxSizing: "border-box",
+          }}
+        >
+          {children}
+        </main>
       </>
     );
   };

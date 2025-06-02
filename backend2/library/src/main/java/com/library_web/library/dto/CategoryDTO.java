@@ -8,7 +8,8 @@ public class CategoryDTO {
     private Integer soLuongDanhMuc;
     private List<CategoryChildDTO> children;
 
-    public CategoryDTO() {}
+    public CategoryDTO() {
+    }
 
     public CategoryDTO(Long id, String name, Integer soLuongDanhMuc, List<CategoryChildDTO> children) {
         this.id = id;
@@ -17,15 +18,35 @@ public class CategoryDTO {
         this.children = children;
     }
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Long getId() {
+        return id;
+    }
 
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public Integer getSoLuongDanhMuc() { return soLuongDanhMuc; }
-    public void setSoLuongDanhMuc(Integer soLuongDanhMuc) { this.soLuongDanhMuc = soLuongDanhMuc; }
+    public String getName() {
+        return name;
+    }
 
-    public List<CategoryChildDTO> getChildren() { return children; }
-    public void setChildren(List<CategoryChildDTO> children) { this.children = children; }
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Integer getSoLuongDanhMuc() {
+        return soLuongDanhMuc;
+    }
+
+    public void setSoLuongDanhMuc(Integer soLuongDanhMuc) {
+        this.soLuongDanhMuc = soLuongDanhMuc;
+    }
+
+    public List<CategoryChildDTO> getChildren() {
+        return children;
+    }
+
+    public void setChildren(List<CategoryChildDTO> children) {
+        this.children = children;
+    }
 }

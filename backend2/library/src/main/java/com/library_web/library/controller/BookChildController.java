@@ -3,6 +3,8 @@ package com.library_web.library.controller;
 import com.library_web.library.dto.BookChildDTO;
 import com.library_web.library.model.BookChild;
 import com.library_web.library.service.BookChildService;
+import com.library_web.library.repository.BookChildRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
@@ -15,9 +17,14 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/bookchild")
 public class BookChildController {
     private final BookChildService service;
+
+    @Autowired
+    private BookChildRepository bookChildRepository;
+
     public BookChildController(BookChildService service) {
         this.service = service;
     }
+
     @PostMapping("/book/{bookId}/add")
     public BookChildDTO addOne(@PathVariable Long bookId) {
         BookChild c = service.addChild(bookId);
@@ -27,8 +34,8 @@ public class BookChildController {
     @GetMapping("/book/{bookId}")
     public List<BookChildDTO> getByBook(@PathVariable Long bookId) {
         return service.getChildrenByBook(bookId).stream()
-            .map(c -> new BookChildDTO(c.getId(), c.getStatus().name(), c.getBook().getMaSach()))
-            .collect(Collectors.toList());
+                .map(c -> new BookChildDTO(c.getId(), c.getStatus().name(), c.getBook().getMaSach()))
+                .collect(Collectors.toList());
     }
 
     @PatchMapping("/borrow/{id}")
@@ -46,14 +53,21 @@ public class BookChildController {
     @GetMapping("/borrowed")
     public List<BookChildDTO> getBorrowed() {
         return service.findByStatus(BookChild.Status.BORROWED).stream()
-            .map(c -> new BookChildDTO(c.getId(), c.getStatus().name(), c.getBook().getMaSach()))
-            .collect(Collectors.toList());
+                .map(c -> new BookChildDTO(c.getId(), c.getStatus().name(), c.getBook().getMaSach()))
+                .collect(Collectors.toList());
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteChild(@PathVariable String id) {
         service.deleteChild(id);
+    }
+
+    @GetMapping("/{id}")
+    public BookChildDTO laySachConTheoId(@PathVariable String id) {
+        return bookChildRepository.findById(id)
+                .map(c -> new BookChildDTO(c.getId(), c.getStatus().name(), c.getBook().getMaSach()))
+                .orElse(null);
     }
 
 }
