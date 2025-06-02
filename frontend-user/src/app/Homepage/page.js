@@ -8,6 +8,9 @@ import ServiceHoursCard from "./ServiceHoursCard";
 import ChatBotButton from "../components/ChatBoxButton";
 import axios from "axios";
 import { ThreeDot } from "react-loading-indicators";
+import Slider from "react-slick";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
 
 const HomePage = () => {
   const [books, setBooks] = useState([]);
@@ -17,6 +20,35 @@ const HomePage = () => {
   const [totalPages, setTotalPages] = useState(1);
   const itemsPerPage = 20;
   const [loading, setLoading] = useState(false);
+
+  // Cấu hình slider
+  const sliderSettings = {
+    dots: true, // Hiển thị chấm điều hướng
+    dotsClass: "slick-dots slick-thumb", // Thêm class để tùy chỉnh chấm
+    infinite: true, // Vòng lặp vô hạn
+    speed: 200, // Tốc độ chuyển slide (ms)
+    slidesToShow: 2, // Hiển thị 2 slide cùng lúc trên màn hình lớn
+    slidesToScroll: 1, // Chuyển 1 slide mỗi lần
+    autoplay: true, // Tự động chuyển slide
+    autoplaySpeed: 3000, // Chuyển slide mỗi 3 giây
+    rtl: true, // Di chuyển từ phải sang trái
+    responsive: [
+      {
+        breakpoint: 400,
+        settings: {
+          slidesToShow: 1,
+          slidesToScroll: 1,
+        },
+      },
+      {
+        breakpoint: 400,
+        settings: {
+          slidesToShow: 1,
+          slidesToScroll: 1,
+        },
+      },
+    ],
+  };
 
   useEffect(() => {
     if (mode === "all") {
@@ -76,7 +108,10 @@ const HomePage = () => {
 
     setLoading(true);
     try {
-      const { data } = await axios.get("http://localhost:8080/api/book/search", { params });
+      const { data } = await axios.get(
+        "http://localhost:8080/api/book/search",
+        { params }
+      );
       const normalizedData = normalize(data);
       setBooks(normalizedData);
       setTotalPages(Math.ceil(normalizedData.length / itemsPerPage) || 1);
@@ -115,10 +150,13 @@ const HomePage = () => {
           </div>
         ) : (
           <>
-            <section className="flex-1 pr-5 md:pl-64 ml-5 mt-2">
-              <div className="flex lg:flex-row flex-col gap-3 mt-0">
-                <ServiceHoursCard />
-                <div className="grid md:grid-cols-2 gap-3 lg:w-2/3">
+            <section className="flex-1 pr-5 md:pl-64 mt-2 items-center">
+              <div className="px-4">
+                <Slider
+                  {...sliderSettings}
+                  className="mb-5 max-w-5xl h-auto gap-12"
+                >
+                  <ServiceHoursCard />
                   <CollectionCard
                     title="Tài liệu số"
                     category="Bộ sưu tập"
@@ -133,7 +171,7 @@ const HomePage = () => {
                     bgColor="bg-sky-600"
                     buttonTextColor="text-sky-600"
                   />
-                </div>
+                </Slider>
               </div>
 
               <form
