@@ -3,12 +3,20 @@ package com.library_web.library.service;
 import com.library_web.library.dto.UserDTO;
 import com.library_web.library.model.User;
 import com.library_web.library.repository.UserRepository;
+<<<<<<< Updated upstream
 import com.library_web.library.security.JwtUtil;
 import com.library_web.library.service.TempStorage.PendingUser;
 
 
 import org.apache.coyote.BadRequestException;
 
+=======
+import com.library_web.library.service.GoogleAuthService;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.gson.GsonFactory;
+>>>>>>> Stashed changes
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.mail.SimpleMailMessage;
@@ -41,6 +49,15 @@ public class UserService {
     @Autowired
     private JavaMailSender mailSender;
 
+<<<<<<< Updated upstream
+=======
+    @Autowired
+    private TokenService tokenService;
+
+    @Autowired
+    private GoogleAuthService googleAuthService;
+
+>>>>>>> Stashed changes
     public void sendOtpEmail(String toEmail, String otp) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(toEmail);
@@ -356,6 +373,7 @@ public class UserService {
         );
     }
 
+<<<<<<< Updated upstream
     public Map<String, Object> loginWithGoogle(String idToken) {
         String email = getEmailFromGoogleIdToken(idToken);
         if (email == null) {
@@ -377,8 +395,14 @@ public class UserService {
 
         String accessToken = JwtUtil.generateAccessToken(user.getUsername());
         String refreshToken = JwtUtil.generateRefreshToken(user.getUsername());
+=======
+    public Map<String, Object> loginWithGoogle(String accessToken) {
+    Map<String, Object> googleResponse = googleAuthService.signInWithGoogle(accessToken);
+>>>>>>> Stashed changes
 
+    if (!"OK".equals(googleResponse.get("status"))) {
         return Map.of(
+<<<<<<< Updated upstream
             "message", "Đăng nhập bằng Google thành công",
             "data", Map.of(
                 "accessToken", accessToken,
@@ -393,6 +417,68 @@ public class UserService {
         );
     }
 
+=======
+                "status", "FAIL",
+                "message", googleResponse.getOrDefault("message", "Đăng nhập thất bại"),
+                "error", googleResponse.getOrDefault("error", "Không rõ lỗi")
+        );
+    }
+
+    Map<String, Object> userInfo = (Map<String, Object>) googleResponse.get("userInfo");
+    if (userInfo == null) {
+        return Map.of(
+                "status", "FAIL",
+                "message", "Không lấy được thông tin người dùng từ Google"
+        );
+    }
+
+    String email = (String) userInfo.get("email");
+    String name = (String) userInfo.get("name");
+
+    if (email == null) {
+        return Map.of(
+                "status", "FAIL",
+                "message", "Không lấy được email từ Google"
+        );
+    }
+
+    Optional<User> userOpt = userRepository.findByEmail(email);
+    User user;
+    if (userOpt.isEmpty()) {
+        user = new User();
+        user.setUsername(email.split("@")[0]);
+        user.setEmail(email);
+        user.setPassword(passwordEncoder.encode("google_" + email));
+        user.setRole("USER");
+        user.setFullname(name != null ? name : "");
+        user.setJoined_date(LocalDate.now());
+        userRepository.save(user);
+    } else {
+        user = userOpt.get();
+    }
+
+    String accessTokenJwt = tokenService.createAccessToken(user.getId(), user.getRole());
+    String refreshTokenJwt = tokenService.createRefreshToken(user.getId());
+
+    return Map.of(
+            "status", "OK",
+            "message", "Đăng nhập bằng Google thành công",
+            "data", Map.of(
+                    "accessToken", accessTokenJwt,
+                    "refreshToken", refreshTokenJwt,
+                    "user", Map.of(
+                            "id", user.getId(),
+                            "username", user.getUsername(),
+                            "email", user.getEmail() != null ? user.getEmail() : "",
+                            "phone", user.getPhone() != null ? user.getPhone() : "",
+                            "fullname", user.getFullname() != null ? user.getFullname() : "",
+                            "birthdate", user.getBirthdate() != null ? user.getBirthdate().toString() : "",
+                            "role", user.getRole()
+                    )
+            )
+    );
+}
+>>>>>>> Stashed changes
 
     public String getEmailFromGoogleIdToken(String idToken) {
         try {
