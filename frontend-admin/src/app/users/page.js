@@ -15,12 +15,14 @@ const Page = () => {
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [popUpOpen, setPopUpOpen] = useState(false);
   const [deleteOne, setDeleteOne] = useState(null);
-  const [loading, setLoading] = useState(true); // Add loading state
+  const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1); // Current page state
+  const [itemsPerPage] = useState(10); // Number of users per page
   const router = useRouter();
 
   // Fetch users from the backend using axios
   const fetchUsers = async () => {
-    setLoading(true); // Set loading to true
+    setLoading(true);
     try {
       const response = await axios.get("http://localhost:8080/api/admin/users", {
         headers: {
@@ -31,6 +33,7 @@ const Page = () => {
       });
       setUserList(response.data.data || []);
       setFilteredUsers(response.data.data || []);
+      setCurrentPage(1); // Reset to first page
       toast.success("Lấy danh sách người dùng thành công", {
         style: { background: "#d1fae5", color: "#065f46" },
       });
@@ -52,7 +55,7 @@ const Page = () => {
         router.push("/admin-login");
       }, 1500);
     } finally {
-      setLoading(false); // Set loading to false
+      setLoading(false);
     }
   };
 
@@ -79,14 +82,16 @@ const Page = () => {
         });
       }
       setFilteredUsers(filtered);
+      setCurrentPage(1); // Reset to first page
     } else {
       setFilteredUsers(userList);
+      setCurrentPage(1); // Reset to first page
     }
   };
 
   // Handle delete user using axios
   const handleDelete = async (user) => {
-    setLoading(true); // Set loading to true
+    setLoading(true);
     try {
       const token = localStorage.getItem("accessToken");
       if (!token) {
@@ -97,7 +102,7 @@ const Page = () => {
         setTimeout(() => {
           router.push("/admin-login");
         }, 1500);
-        setLoading(false); // Set loading to false
+        setLoading(false);
         return;
       }
 
@@ -139,7 +144,7 @@ const Page = () => {
       }, 1500);
       setPopUpOpen(false);
     } finally {
-      setLoading(false); // Set loading to false
+      setLoading(false);
     }
   };
 
@@ -151,6 +156,21 @@ const Page = () => {
   // Navigate to edit user page
   const handleEdit = (userId) => {
     router.push(`/users/${userId}`);
+  };
+
+  // Calculate displayed users based on pagination
+  const indexOfLastUser = currentPage * itemsPerPage;
+  const indexOfFirstUser = indexOfLastUser - itemsPerPage;
+  const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
+
+  // Calculate total pages
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+
+  // Handle page change
+  const handlePageChange = (pageNumber) => {
+    if (pageNumber >= 1 && pageNumber <= totalPages) {
+      setCurrentPage(pageNumber);
+    }
   };
 
   // UserCard component
@@ -192,6 +212,12 @@ const Page = () => {
     );
   };
 
+  // Generate page numbers for pagination
+  const pageNumbers = [];
+  for (let i = 1; i <= totalPages; i++) {
+    pageNumbers.push(i);
+  }
+
   return (
     <div className="flex flex-row w-full min-h-screen bg-[#EFF3FB]">
       <Toaster position="top-center" reverseOrder={false} />
@@ -232,10 +258,42 @@ const Page = () => {
               Thêm người dùng
             </Button>
           </div>
-          {filteredUsers.length > 0 ? (
-            filteredUsers.map((user) => <UserCard key={user.id} user={user} />)
+          {currentUsers.length > 0 ? (
+            currentUsers.map((user) => <UserCard key={user.id} user={user} />)
           ) : (
             <p className="text-gray-500">Không có người dùng nào để hiển thị</p>
+          )}
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex justify-center items-center gap-2 mt-6">
+              <Button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="bg-[#062D76] hover:bg-gray-700 text-white"
+              >
+                Trước
+              </Button>
+              {pageNumbers.map((number) => (
+                <Button
+                  key={number}
+                  onClick={() => handlePageChange(number)}
+                  className={`${
+                    currentPage === number
+                      ? "bg-[#062D76] text-white"
+                      : "bg-white text-[#062D76] border border-[#062D76] hover:bg-gray-100"
+                  }`}
+                >
+                  {number}
+                </Button>
+              ))}
+              <Button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="bg-[#062D76] hover:bg-gray-700 text-white"
+              >
+                Sau
+              </Button>
+            </div>
           )}
           {popUpOpen && deleteOne && (
             <div className="fixed inset-0 flex items-center justify-center z-50">

@@ -69,6 +69,7 @@ const Dashboard = () => {
         setAllBooks(booksResponse.data || []);
         setFilteredBooks(booksResponse.data || []);
         setTotalPages(Math.ceil(booksResponse.data.length / booksPerPage) || 1);
+        setCurrentPage(1); // Reset to first page
       } catch (error) {
         console.error("Error fetching data:", error);
         toast.error("Không thể tải dữ liệu.");
@@ -88,7 +89,7 @@ const Dashboard = () => {
     try {
       const queryParams = new URLSearchParams();
       if (params.mode === "all" && params.title) {
-        queryParams.append("all", params.title.trim()); // Send 'all' parameter for global search
+        queryParams.append("all", params.title.trim());
       } else if (params.mode === "author" && params.author) {
         queryParams.append("author", params.author.trim());
       } else if (params.mode === "category" && params.category) {
@@ -106,7 +107,7 @@ const Dashboard = () => {
       } else if (params.mode === "title" && params.title) {
         queryParams.append("title", params.title.trim());
       } else {
-        setFilteredBooks(allBooks); // Default to all books if no valid search term
+        setFilteredBooks(allBooks);
         setTotalPages(Math.ceil(allBooks.length / booksPerPage) || 1);
         setCurrentPage(1);
         setLoading(false);
@@ -182,6 +183,12 @@ const Dashboard = () => {
       router.push(`/borrow/${id}`);
     }
   };
+
+  // Generate page numbers for pagination
+  const pageNumbers = [];
+  for (let i = 1; i <= totalPages; i++) {
+    pageNumbers.push(i);
+  }
 
   const BookCard = ({ book }) => {
     const isAvailable = book.trangThai === "CON_SAN";
@@ -388,10 +395,10 @@ const Dashboard = () => {
                   ? searchParams.publisher
                   : searchParams.mode === "year"
                   ? searchParams.year
-                  : searchParams.title // Use title as the input value for "all" mode
+                  : searchParams.title
               }
               name={
-                searchParams.mode !== "all" ? searchParams.mode : "title" // Use title as the name for "all" mode input
+                searchParams.mode !== "all" ? searchParams.mode : "title"
               }
               onChange={handleSearchChange}
               onKeyDown={handleKeyDown}
@@ -427,25 +434,37 @@ const Dashboard = () => {
               Không tìm thấy sách phù hợp.
             </p>
           )}
-          <div className="mt-4 flex justify-center gap-2">
-            <Button
-              onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1 || totalPages === 1}
-              className="px-4 py-2 bg-[#062D76] text-white rounded cursor-pointer disabled:bg-gray-400 disabled:cursor-not-allowed"
-            >
-              Trang trước
-            </Button>
-            <span className="px-4 py-2 text-gray-700">
-              Trang {currentPage} / {totalPages}
-            </span>
-            <Button
-              onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages || totalPages === 1}
-              className="px-4 py-2 bg-[#062D76] text-white rounded cursor-pointer disabled:bg-gray-400 disabled:cursor-not-allowed"
-            >
-              Trang sau
-            </Button>
-          </div>
+          {totalPages > 1 && (
+            <div className="flex justify-center items-center gap-2 mt-6">
+              <Button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="bg-[#062D76] hover:bg-gray-700 text-white"
+              >
+                Trước
+              </Button>
+              {pageNumbers.map((number) => (
+                <Button
+                  key={number}
+                  onClick={() => handlePageChange(number)}
+                  className={`${
+                    currentPage === number
+                      ? "bg-[#062D76] text-white"
+                      : "bg-white text-[#062D76] border border-[#062D76] hover:bg-gray-100"
+                  }`}
+                >
+                  {number}
+                </Button>
+              ))}
+              <Button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="bg-[#062D76] hover:bg-gray-700 text-white"
+              >
+                Sau
+              </Button>
+            </div>
+          )}
         </main>
       )}
     </div>
