@@ -6,6 +6,7 @@ import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
 import { useRouter } from "next/navigation";
 
+// Import các UI component
 import {
   Card,
   CardHeader,
@@ -50,9 +51,7 @@ export default function ForgotPasswordPage() {
   const handleSendOtp = async (e) => {
     e.preventDefault();
     if (!emailOrPhone) {
-      toast.error("Vui lòng nhập email hoặc số điện thoại", {
-        style: { background: "#fee2e2", color: "#b91c1c" },
-      });
+      toast.error("Vui lòng nhập email hoặc số điện thoại");
       return;
     }
 
@@ -60,24 +59,18 @@ export default function ForgotPasswordPage() {
       await axios.post("http://localhost:8080/api/forgot-password", {
         emailOrPhone,
       });
-      toast.success("OTP đã được gửi", {
-        style: { background: "#d1fae5", color: "#065f46" },
-      });
+      toast.success("OTP đã được gửi");
       setStep("reset");
       setResendTimeout(60);
     } catch (error) {
-      toast.error(error.response?.data?.message || "Gửi OTP thất bại", {
-        style: { background: "#fee2e2", color: "#b91c1c" },
-      });
+      toast.error(error.response?.data?.message || "Gửi OTP thất bại");
     }
   };
 
   const handleResetPassword = async (e) => {
     e.preventDefault();
     if (!otp || !newPassword) {
-      toast.error("Vui lòng nhập OTP và mật khẩu mới", {
-        style: { background: "#fee2e2", color: "#b91c1c" },
-      });
+      toast.error("Vui lòng nhập OTP và mật khẩu mới");
       return;
     }
 
@@ -87,14 +80,10 @@ export default function ForgotPasswordPage() {
         otp,
         newPassword,
       });
-      toast.success("Đặt lại mật khẩu thành công", {
-        style: { background: "#d1fae5", color: "#065f46" },
-      });
+      toast.success("Đặt lại mật khẩu thành công");
       router.push("/user-login");
     } catch (error) {
-      toast.error(error.response?.data?.message || "Đặt lại mật khẩu thất bại", {
-        style: { background: "#fee2e2", color: "#b91c1c" },
-      });
+      toast.error(error.response?.data?.message || "Đặt lại mật khẩu thất bại");
     }
   };
 
