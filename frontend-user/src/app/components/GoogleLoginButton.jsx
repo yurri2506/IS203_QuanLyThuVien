@@ -15,12 +15,7 @@ const GoogleLoginButton = () => {
   const login = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
       try {
-<<<<<<< Updated upstream
-        const googleAccessToken = tokenResponse.access_token;
-=======
         const accessToken = tokenResponse.access_token;
->>>>>>> Stashed changes
-
         const res = await fetch("http://localhost:8080/api/auth/google", {
           method: "POST",
           headers: {
@@ -30,7 +25,7 @@ const GoogleLoginButton = () => {
         });
 
         const data = await res.json();
-        console.log("Response from server:", data.error); // Log the response for debugging
+        console.log("Response from server:", data); // Log the response for debugging
 
         if (res.ok && data.status === "OK") {
           localStorage.setItem("accessToken", data.data.accessToken);

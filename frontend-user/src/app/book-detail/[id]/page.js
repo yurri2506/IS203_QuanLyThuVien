@@ -8,10 +8,13 @@ import { CheckCircle, XCircle } from "lucide-react";
 import { Button } from "../../../components/ui/button";
 import BookReview from "../../../components/ui/bookreview";
 import axios from "axios";
+import { BsCartPlus } from "react-icons/bs";
 
 const BookDetailsPage = () => {
   const { id } = useParams();
   const [details, setDetails] = useState(null);
+  const user = JSON.parse(localStorage.getItem("persist:root")); // lấy thông tin người dùng từ localStorage
+  const [isAddedToCart, setIsAddedToCart] = useState(false);
 
   // map enum sang label
   const statusMap = {
@@ -44,6 +47,21 @@ const BookDetailsPage = () => {
     fetchBook();
   }, [id]);
 
+  useEffect(() => {
+    const checkBookInCart = async () => {
+      try {
+        const res = await axios.get(`http://localhost:8080/api/cart/${user.id}`);
+        const cartBooks = res.data.data; // giả sử trả về mảng books [{ id: ..., ... }]
+        const found = cartBooks?.some(book => book.bookId == id); // id là id của sách hiện tại
+        setIsAddedToCart(found);
+      } catch (error) {
+        console.error("Lỗi khi kiểm tra giỏ hàng:", error);
+      }
+    };
+  
+    checkBookInCart();
+  }, [user.id, id]);
+
   if (!details) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -51,6 +69,25 @@ const BookDetailsPage = () => {
       </div>
     );
   }
+
+  const handleAddToCart = async () => {
+    try {
+      const res = await axios.post(
+        `http://localhost:8080/api/cart/${user.id}/add/books`,
+          [id] // đưa vào mảng 1 phần tử
+      );
+
+      alert("Đã thêm sách vào giỏ!");
+      console.log(res.data);
+      setIsAddedToCart(true); // Đánh dấu là đã thêm vào giỏ hàng
+
+      // Reload lại trang để làm mới giỏ hàng
+      window.location.reload();
+    } catch (error) {
+      console.error("Lỗi khi thêm sách vào giỏ:", error);
+      alert("Có lỗi xảy ra khi thêm sách vào giỏ.");
+    }
+  };
 
   const handleBorrowBook = async () => {
     try {
@@ -129,17 +166,30 @@ const BookDetailsPage = () => {
                 <span className="font-semibold">Lượt mượn:</span>{" "}
                 {details.soLuongMuon} lượt
               </p>
-              <Button
-                disabled={!available}
-                onClick={handleBorrowBook}
-                className={`mt-4 font-semibold py-2 px-4 rounded-lg ${
-                  available
-                    ? "bg-[#062D76] hover:bg-[#E6EAF1] hover:text-[#062D76] text-white"
-                    : "bg-gray-300 text-gray-600 cursor-not-allowed"
-                }`}
-              >
-                Mượn sách
-              </Button>
+              <div className="flex items-center gap-2 mt-4">
+                <Button
+                  onClick={handleBorrowBook}
+                  className="mt-4 bg-[#062D76] hover:bg-[#E6EAF1] hover:text-[#062D76] text-white font-semibold py-2 px-4 rounded-lg cursor-pointer"
+                >
+                  Mượn ngay
+                </Button>
+                <Button
+                  onClick={handleAddToCart}
+                  disabled={isAddedToCart}
+                  className={`mt-4 font-semibold py-2 px-4 rounded-lg border-2 flex items-center gap-2
+    ${
+      isAddedToCart
+        ? "bg-gray-300 text-gray-500 cursor-not-allowed border-gray-400"
+        : "bg-white hover:bg-[#E6EAF1] hover:text-[#062D76] text-[#062D76] cursor-pointer border-[#062D76]"
+    }`}
+                >
+                  <BsCartPlus
+                    style={{ width: "1.5rem", height: "1.5rem" }}
+                    className="size-6"
+                  />
+                  {isAddedToCart ? "Đã thêm" : "Thêm vào giỏ sách"}
+                </Button>
+              </div>
             </div>
           </div>
 

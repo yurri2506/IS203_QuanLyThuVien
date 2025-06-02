@@ -1,203 +1,253 @@
 "use client";
-import React from "react";
-import Sidebar from "../../components/sidebar/Sidebar";
-import { Undo2, Trash2, Pencil, BookOpenCheck } from "lucide-react";
-import { useRouter, useParams } from "next/navigation";
+import React, { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/app/components/ui/button";
-import useSidebarStore from "@/store/sideBarStore";
-const page = () => {
-  const { id } = useParams();
-  const { isSidebarOpen } = useSidebarStore();
-  const route = useRouter();
-  const handleBack = () => {
-    route.push(`../borrow`);
-  };
+import toast from "react-hot-toast";
+import { ThreeDot } from "react-loading-indicators";
+import Sidebar from "@/app/components/sidebar/Sidebar";
+import { Undo2 } from "lucide-react";
 
-  // 🔹 Giả lập dữ liệu chi tiết từ backend
-  const mockData = {
-    10: {
-      MaPhieuMuon: 10,
-      MaNguoiDung: 20,
-      TenNguyoiDung: "Nguyen Thanh Tri",
-      NgayMuon: "09/03/2025",
-      NgayTra: "23/03/2025",
-      Sach: [
-        {
-          MaSach: "id sach1",
-          TenSach: "Tên sách 1",
-          MoTa: "Mo ta mau",
-          MaTheLoai: "ma the loai",
-          MaTacGia: "ma tac gia",
-          HinhAnh: ["/test.webp", "3133331", "313213131", "31313123"],
-          SoLuongTon: 70,
-          SoLuongMuon: 1,
-        },
-        {
-          MaSach: "id sach2",
-          TenSach: "Tên sách 2",
-          MoTa: "Mo ta mau",
-          MaTheLoai: "ma the loai",
-          MaTacGia: "ma tac gia",
-          HinhAnh: ["/test.webp", "3133331", "313213131", "31313123"],
-          SoLuongTon: 70,
-          SoLuongMuon: 2,
-        },
-        {
-          MaSach: "id sach3",
-          TenSach: "Tên sách 3",
-          MoTa: "Mo ta mau",
-          MaTheLoai: "ma the loai",
-          MaTacGia: "ma tac gia",
-          HinhAnh: ["/test.webp", "3133331", "313213131", "31313123"],
-          SoLuongTon: 70,
-          SoLuongMuon: 3,
-        },
-      ],
-    },
-    11: {
-      MaPhieuMuon: 11,
-      MaNguoiDung: 18,
-      TenNguyoiDung: "Le Thi Thuy Trang",
-      NgayMuon: "09/03/2025",
-      NgayTra: "16/03/2025",
-      Sach: [
-        {
-          MaSach: "id sach1",
-          TenSach: "Tên sách 1",
-          MoTa: "Mo ta mau",
-          MaTheLoai: "ma the loai",
-          MaTacGia: "ma tac gia",
-          HinhAnh: ["/test.webp", "3133331", "313213131", "31313123"],
-          SoLuongTon: 70,
-          SoLuongMuon: 1,
-        },
-        {
-          MaSach: "id sach2",
-          TenSach: "Tên sách 2",
-          MoTa: "Mo ta mau",
-          MaTheLoai: "ma the loai",
-          MaTacGia: "ma tac gia",
-          HinhAnh: ["/test.webp", "3133331", "313213131", "31313123"],
-          SoLuongTon: 70,
-          SoLuongMuon: 2,
-        },
-      ],
-    },
-    12: {
-      MaPhieuMuon: 12,
-      MaNguoiDung: 71,
-      TenNguyoiDung: "Nguyen Le Thanh Huyen",
-      NgayMuon: "10/03/2025",
-      NgayTra: "17/03/2025",
-      Sach: [
-        {
-          MaSach: "id sach1",
-          TenSach: "Tên sách 1",
-          MoTa: "Mo ta mau",
-          MaTheLoai: "ma the loai",
-          MaTacGia: "ma tac gia",
-          HinhAnh: ["/test.webp", "3133331", "313213131", "31313123"],
-          SoLuongTon: 70,
-          SoLuongMuon: 1,
-        },
-      ],
-    },
-  };
-
-  const data = mockData[id];
-  const totalBooks = data.Sach.reduce((sum, Sach) => sum + Sach.SoLuongMuon, 0);
-
-  if (!data) return <p>Không tìm thấy thông tin!</p>;
-
+const BookCard = ({
+  imageSrc,
+  title,
+  category,
+  author,
+  publisher,
+  location,
+}) => {
   return (
-    <div className="flex flex-row w-full min-h-screen bg-[#F4F7FE]">
-      <Sidebar />
-
-      {/* content */}
-      <div
-        className={`flex-1 py-6 px-10 transition-all duration-300 ${
-          isSidebarOpen ? "md:ml-64" : "md:ml-0"
-        }`}
-      >
-        <Button
-          className="px-4 py-2  bg-[#6CB1DA] rounded-full"
-          onClick={() => {
-            handleBack();
-          }}
-        >
-          <Undo2 className="w-10 h-10 text-white" />
-        </Button>
-
-        {/* Header */}
-        <div className="flex justify-center items-center w-full  bg-white p-8 mt-6 rounded-[10px] border-[2px] border-gray-300">
-          <div className="flex flex-col w-1/2 ">
-            <p className="font-bold">Chi tiết phiếu mượn {data.MaPhieuMuon}</p>
-            <p className="font-bold">Ngày mượn: {data.NgayMuon}</p>
-            <p className="font-bold">Ngày trả dự kiến: {data.NgayTra}</p>
-          </div>
-          <div className="flex flex-col w-1/2 ">
-            <p className="font-bold">ID người dùng: {data.MaNguoiDung}</p>
-            <p className="font-bold">Tên người dùng: {data.TenNguyoiDung}</p>
-            <p className="font-bold">Số lượng mượn: {totalBooks} </p>
-          </div>
-        </div>
-        {/* Thông tin các sách đã mượn */}
-        {data.Sach.map((sach) => (
-          <div
-            key={sach.MaSach}
-            className="flex w-full p-6 bg-white shadow-md mt-6  rounded-[10px] border-[2px] border-gray-300"
-          >
-            <div className="flex mr-3">
-              <img
-                src={sach.HinhAnh[0]}
-                className="w-[80px] h-[120px]"
-                alt={sach.TenSach}
-              />
-            </div>
-
-            <div className="flex justify-between w-full">
-              <div className="flex flex-col justify-between">
-                <p className="font-bold text-2xl">{sach.TenSach}</p>
-                <p className="text-2xl">{sach.MaTacGia}</p>
-                <p className="font-bold text-2xl">{sach.MaSach}</p>
-              </div>
-              <div className="flex items-end">
-                <p className="font-bold text-2xl mr-2">Số Lượng: </p>
-                <p className="p-2 rounded-[10px] border-[2px] border-gray-300 font-bold text-xl">
-                  {" "}
-                  {sach.SoLuongMuon}
-                </p>
-              </div>
-            </div>
-          </div>
-        ))}
-
-        {/* Footer */}
-        <div className="flex justify-between items-center w-full  bg-white p-8 mt-6 rounded-[10px] border-[2px] border-gray-300">
-          <div className="flex w-1/2">
-            <Button className="mr-4  bg-[#6CB1DA]">
-              <Trash2 className="mr-1" />
-              Xóa
-            </Button>
-            <Button className="mr-4  bg-[#6CB1DA]">
-              <Pencil className="mr-1" />
-              Sửa
-            </Button>
-          </div>
-          <div className="flex ">
-            <Button className="mr-4  bg-[#6CB1DA]">
-              <BookOpenCheck className="mr-1" />
-              Đã giao
-            </Button>
-            <Button className="mr-4  bg-[#6CB1DA]">
-              <Undo2 className="mr-1" />
-              Trả sách
-            </Button>
-          </div>
-        </div>
+    <article className="flex grow shrink gap-3 min-w-60 cursor-pointer bg-white rounded-xl shadow-[0px_2px_2px_rgba(0,0,0,0.25)] p-5">
+      <img
+        src={imageSrc}
+        alt={title}
+        className="object-cover shrink rounded-sm aspect-[0.67] w-[100px]"
+      />
+      <div className="flex flex-col flex-1 shrink self-end basis-0">
+        <h3 className="flex-1 shrink gap-2.5 self-stretch mt-2 w-full text-[1.125rem] font-medium text-black basis-0">
+          {title}
+        </h3>
+        <p className="flex-1 shrink gap-2.5 self-stretch mt-2 w-full text-base text-black basis-0">
+          Tác giả: {author}
+        </p>
+        <p className="flex-1 shrink gap-2.5 self-stretch mt-2 w-full text-base text-black basis-0">
+          Thể loại: {category}
+        </p>
+        <p className="flex-1 shrink gap-2.5 self-stretch mt-2 w-full text-base text-black basis-0">
+          NXB: {publisher}
+        </p>
+        <p className="flex-1 shrink gap-2.5 self-stretch mt-2 w-full text-base text-black basis-0">
+          Vị trí tủ: {location}
+        </p>
       </div>
-    </div>
+    </article>
   );
 };
 
-export default page;
+const BorrowingInfo = ({ info }) => {
+  return (
+    <section className=" flex flex-col p-5 bg-white rounded-xl shadow-[0px_4px_4px_rgba(0,0,0,0.25)] max-md:px-5 max-md:max-w-full">
+      <div className="grid grid-cols-2 gap-5 max-md:grid-cols-1">
+        {/* Cột 1 */}
+
+        <div className="flex flex-col gap-5 items-start text-[1.125rem] font-medium text-black">
+          <p className="text-[1rem] font-semibold text-[#131313]/50">
+            ID Phiếu:{" "}
+            <span className="text-[#131313] font-medium ">
+              {info.id}
+            </span>
+          </p>
+          <p className="text-[1rem] font-semibold text-[#131313]/50">
+            Ngày mượn:{" "}
+            <span className="text-[#131313] font-medium ">
+              {new Date(info.borrowDate).toLocaleDateString("vi-VN")}
+            </span>
+          </p>
+          {info.dueDate ? (
+            <p className="text-[1rem] font-semibold text-[#131313]/50">
+              Ngày trả sách:{" "}
+              <span className="text-[#131313] font-medium ">
+                {new Date(info.dueDate).toLocaleDateString("vi-VN")}
+              </span>
+            </p>
+          ) : (
+            <p className="text-[1rem] font-semibold text-[#131313]/50">
+              Hạn lấy sách:{" "}
+              <span className="text-[#131313] font-medium ">
+                {new Date(info.getBookDate).toLocaleDateString("vi-VN")}
+              </span>
+            </p>
+          )}
+        </div>
+
+        {/* Cột 2 */}
+        <div className="flex flex-col gap-5 items-start text-[1.125rem] font-medium text-black">
+          <p className="text-[1rem] font-semibold text-[#131313]/50">
+            ID Người Dùng:{" "}
+            <span className="text-[#131313] font-medium ">{info.userId}</span>
+          </p>
+          <p className="text-[1rem] font-semibold text-[#131313]/50">
+            Tên Người Dùng:{" "}
+            <span className="text-[#131313] font-medium ">{info.userName}</span>
+          </p>
+          <p className="text-[1rem] font-semibold text-[#131313]/50">
+            Số lượng mượn:{" "}
+            <span className="text-[#131313] font-medium ">
+              {info.totalBooks}
+            </span>
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+const ChiTietPhieuMuon = () => {
+  const { id } = useParams();
+  const [borrowDetail, setBorrowDetail] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [popUpOpen, setPopUpOpen] = useState(false);
+  const [deleteOne, setDeleteOne] = useState(null);
+  const router = useRouter();
+  useEffect(() => {
+    const fetchBorrowCardDetail = async () => {
+      try {
+        const response = await fetch(
+          `http://localhost:8080/api/borrow-cards/${id}`,{
+            method:'GET'
+          }
+        );
+        const res = await response.json();
+        // console.log(res);
+        setBorrowDetail(res);
+      } catch (error) {
+        console.error("Lỗi khi fetch chi tiết phiếu mượn:", error);
+        toast.error("Không thể tải dữ liệu phiếu mượn");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchBorrowCardDetail();
+  }, [id]);
+
+  const handleDelete = async (info) => {
+    try {
+      await fetch(`http://localhost:8080/api/borrow-cards/${info.borrowCardId}`,{method:'DELETE'});
+      toast.success("Xóa phiếu thành công");
+      setPopUpOpen(false);
+
+      router.push("/borrowed-card");
+    } catch (err) {
+      toast.error("Xóa phiếu thất bại");
+    }
+  };
+  const handleGoBack = () =>{
+    router.back();
+  }
+
+  if (loading) {
+    return (
+      <main className="flex flex-col min-h-screen text-foreground">
+        <div className="flex">
+          <Sidebar/>
+          <section className="flex justify-center items-center self-center pr-[1.25rem] md:pl-60 ml-[1.25rem] w-full h-screen">
+            <ThreeDot
+              color="#062D76"
+              size="large"
+              text="Vui lòng chờ"
+              variant="bounce"
+              textColor="#062D76"
+              className="self-center flex justify-center items-center"
+            />
+          </section>
+        </div>
+      </main>
+    );
+  }
+
+  return (
+    <main className="flex flex-col min-h-screen text-foreground bg-[#EFF3FB]">
+      <div className="flex">
+        <Sidebar/>
+        <section className="self-stretch pr-[1.25rem] md:pl-60 ml-[1.25rem] my-auto w-full max-md:max-w-full mt-2 mb-2">
+          {/*Nút Back*/}
+          <div className="absolute top-5 left-5 md:left-57 fixed">
+            <Button
+              title={"Quay Lại"}
+              className="bg-[#062D76] rounded-3xl w-10 h-10"
+              onClick={() => {
+                handleGoBack();
+              }}
+            >
+              <Undo2 className="w-12 h-12" color="white" />
+            </Button>
+            </div>
+          {borrowDetail ?  
+          <div className="flex flex-col w-full max-md:max-w-full">
+            <Button
+              className={`flex self-end text-[1rem] cursor-pointer bg-red-500 hover:bg-red-700 text-white w-fit mb-2`}
+              onClick={() => setPopUpOpen(true)}
+            >
+              <img src="/icon/trash.svg" alt="Delete" className="mr-2" />
+              Xóa
+            </Button>
+            <BorrowingInfo info={borrowDetail} />
+
+            <h2 className="text-lg font-medium text-[#062D76] text-center mt-5 ">
+              Danh sách sách mượn
+            </h2>
+            <section className="grid grid-cols-1 max-sm:grid-cols-1 gap-5 items-start mt-2 w-full max-md:max-w-full">
+              {borrowDetail?.bookIds?.map((book, index) => (
+                <BookCard
+                  key={index}
+                  imageSrc={book.image}
+                  title={book.name}
+                  author={book.author}
+                  category={book.category}
+                  publisher={book.publisher}
+                  location={book.viTri}
+                />
+              ))}
+            </section>
+          </div>
+        :
+        <div className="flex flex-col w-full max-md:max-w-full">
+          Không tìm thấy phiếu mượn!
+        </div>
+        }
+        </section>
+        {popUpOpen && (
+          <div className="fixed inset-0 items-center justify-center z-100 flex">
+            <div className="w-full h-full bg-black opacity-[80%] absolute top-0 left-0"></div>
+            <div className="flex flex-col justify-center self-center bg-white p-6 rounded-lg shadow-lg w-auto fixed">
+              <img
+                src="/icon/canh_bao.svg"
+                alt="Delete"
+                className="mb-2 w-8 h-8 self-center"
+              />
+              <p className="flex justify-center">
+                Bạn có chắc chắn muốn xóa phiếu này không?
+              </p>
+
+              <div className="flex justify-center mt-4 gap-4">
+                <Button
+                  className="bg-gray-500 hover:bg-gray-700  text-white cursor-pointer"
+                  onClick={() => setPopUpOpen(false)}
+                >
+                  Hủy
+                </Button>
+                <Button
+                  className="bg-red-500 hover:bg-red-700 justify-center  text-white cursor-pointer"
+                  onClick={() => handleDelete(borrowDetail)}
+                >
+                  Xóa
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </main>
+  );
+};
+
+export default ChiTietPhieuMuon;

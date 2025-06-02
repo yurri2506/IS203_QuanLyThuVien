@@ -15,7 +15,7 @@ import Link from "next/link";
 
 const page = () => {
   return (
-    <div className="flex flex-col min-h-screen text-foreground">
+    <div className="flex flex-col min-h-screen text-foreground -mr-[180px]">
       <main className="pt-16 bg-[#F9FDFF] flex flex-1">
         <section className="bg-gray-50 py-16 px-4 rounded-2xl md:px-12 w-full">
           <motion.div
