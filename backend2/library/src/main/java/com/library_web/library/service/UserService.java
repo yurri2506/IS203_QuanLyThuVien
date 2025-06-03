@@ -12,14 +12,23 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.server.ResponseStatusException;
+
 import jakarta.transaction.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
@@ -74,7 +83,7 @@ public class UserService {
         return Map.of("message", "Đã gửi OTP tới email, vui lòng xác thực");
     }
 
-   public Map<String, Object> createUser(UserDTO userDTO) {
+    public Map<String, Object> createUser(UserDTO userDTO) {
         // Check if user already exists
         if (userDTO.getEmail() != null && !userDTO.getEmail().isBlank()) {
             if (userRepository.findByEmail(userDTO.getEmail()).isPresent()) {
@@ -101,7 +110,7 @@ public class UserService {
         user.setUsername(userDTO.getUsername());
         user.setEmail(userDTO.getEmail() != null && !userDTO.getEmail().isBlank() ? userDTO.getEmail() : "unknown");
         user.setPhone(userDTO.getPhone());
-        user.setGender(userDTO.getGender() != null ? userDTO.getGender() : "Nam"); 
+        user.setGender(userDTO.getGender() != null ? userDTO.getGender() : "Nam");
         user.setBirthdate(userDTO.getBirthdate());
         user.setPassword(passwordEncoder.encode("123456")); // Default password
         user.setRole(userDTO.getRole() != null ? userDTO.getRole() : "USER");
@@ -222,52 +231,120 @@ public class UserService {
                                 "role", user.getRole())));
     }
 
-    public Map<String, Object> updateUser(Long id, UserDTO userDTO) {
+   public Map<String, Object> updateUser(Long id, UserDTO userDTO) {
         Optional<User> userOpt = userRepository.findById(id);
-        if (userOpt.isEmpty()) {
-            return null;
-        }
+      
 
         User user = userOpt.get();
-        if (userDTO.getUsername() != null) {
-            user.setUsername(userDTO.getUsername());
-        }
-        if (userDTO.getEmail() != null && !userDTO.getEmail().isBlank()) {
-            if (!userDTO.getEmail().equals(user.getEmail())
-                    && userRepository.findByEmail(userDTO.getEmail()).isPresent()) {
-                return null; // Email already exists
+        
+    
+
+        boolean isEmailChanged = false;
+        String newEmail = null;
+
+        if (userDTO.getEmail() != null && !userDTO.getEmail().isBlank() && !userDTO.getEmail().equals(user.getEmail())) {
+            if (userRepository.findByEmail(userDTO.getEmail()).isPresent()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email đã tồn tại: " + userDTO.getEmail());
             }
-            user.setEmail(userDTO.getEmail());
+           
+            newEmail = userDTO.getEmail();
+            isEmailChanged = true; 
         }
-        if (userDTO.getPhone() != null && !userDTO.getPhone().isBlank()) {
-            if (!userDTO.getPhone().equals(user.getPhone())
-                    && userRepository.findByPhone(userDTO.getPhone()).isPresent()) {
-                return null; // Phone already exists
+
+        if (userDTO.getPhone() != null && !userDTO.getPhone().isBlank() && !userDTO.getPhone().equals(user.getPhone())) {
+            if (userRepository.findByPhone(userDTO.getPhone()).isPresent()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Số điện thoại đã tồn tại: " + userDTO.getPhone());
             }
             user.setPhone(userDTO.getPhone());
         }
+
+        if (userDTO.getUsername() != null) {
+            user.setUsername(userDTO.getUsername());
+        }
+
+        if (userDTO.getFullname() != null) {
+            user.setFullname(userDTO.getFullname());
+        }
+
         if (userDTO.getBirthdate() != null) {
-            user.setBirthdate(userDTO.getBirthdate());
+            try {
+                user.setBirthdate(userDTO.getBirthdate());
+            } catch (Exception e) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ngày sinh phải có định dạng yyyy-MM-dd");
+            }
         }
-        if (userDTO.getRole() != null) {
-            user.setRole(userDTO.getRole());
+
+        if (userDTO.getGender() != null) {
+            user.setGender(userDTO.getGender());
         }
+
         if (userDTO.getAvatar_url() != null) {
             user.setAvatar_url(userDTO.getAvatar_url());
         }
+
+        if (userDTO.getRole() != null) {
+            user.setRole(userDTO.getRole());
+        }
+
+        if (isEmailChanged) {
+            String otp = String.valueOf((int) (Math.random() * 900000) + 100000);
+            LocalDateTime expiredAt = LocalDateTime.now().plusMinutes(5);
+
+            UserDTO dto = new UserDTO();
+            dto.setUsername(user.getUsername());
+            dto.setEmail(newEmail);
+
+            TempStorage.savePendingUser(dto, otp, expiredAt);
+            sendOtpEmail(newEmail, otp);
+
+            userRepository.save(user);
+
+            return Map.of("message", "Đã gửi OTP tới email mới, vui lòng xác thực để hoàn tất cập nhật", "email", newEmail);
+        }
+
         userRepository.save(user);
 
         return Map.of(
-                "message", "Cập nhật người dùng thành công",
+                "message", "Cập nhật thông tin thành công",
                 "data", Map.of(
                         "id", user.getId(),
                         "username", user.getUsername(),
-                        "email", user.getEmail(),
+                        "fullname", user.getFullname() != null ? user.getFullname() : "",
                         "phone", user.getPhone() != null ? user.getPhone() : "",
+                        "email", user.getEmail() != null ? user.getEmail() : "",
                         "birthdate", user.getBirthdate() != null ? user.getBirthdate().toString() : "",
+                        "gender", user.getGender() != null ? user.getGender() : "Nam",
                         "role", user.getRole(),
                         "avatar_url", user.getAvatar_url() != null ? user.getAvatar_url() : ""));
     }
+
+    public Map<String, Object> verifyEmailUpdate(Long id, String email, String otp) {
+        var pending = TempStorage.getPendingUser(email);
+        System.out.println("Pending user: " + pending);
+        if (pending == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Không có yêu cầu xác thực nào với email này");
+        }
+        if (!pending.getOtp().equals(otp)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "OTP không chính xác");
+        }
+        if (LocalDateTime.now().isAfter(pending.getExpiredAt())) {
+            TempStorage.removePendingUser(email);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "OTP đã hết hạn");
+        }
+        User user = userRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy người dùng với ID: " + id));
+
+        user.setEmail(email);
+        userRepository.save(user);
+        TempStorage.removePendingUser(email);
+
+        return Map.of(
+                "message", "Xác thực email thành công, thông tin đã được cập nhật",
+                "data", Map.of(
+                        "id", user.getId(),
+                        "email", user.getEmail()));
+    }
+
+
 
     public Map<String, Object> refreshAccessToken(String refreshToken) {
         Long id = tokenService.getIdFromToken(refreshToken);
@@ -330,8 +407,7 @@ public class UserService {
                 "data", Map.of("username", user.getUsername()));
     }
 
-
-    public Map <String, Object> changePassword(Long id, String oldPassword, String newPassword) {
+    public Map<String, Object> changePassword(Long id, String oldPassword, String newPassword) {
         Optional<User> userOpt = userRepository.findById(id);
         if (userOpt.isEmpty()) {
             return null; // User not found
@@ -341,9 +417,9 @@ public class UserService {
         if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
             return null; // Old password does not match
         }
-       
+
         // if (newPassword.equals(oldPassword)) {
-        //     return Map.of("message", "Mật khẩu mới không được trùng với mật khẩu cũ");
+        // return Map.of("message", "Mật khẩu mới không được trùng với mật khẩu cũ");
         // }
 
         user.setPassword(passwordEncoder.encode(newPassword));
@@ -354,78 +430,72 @@ public class UserService {
                 "data", Map.of("id", user.getId()));
     }
 
-//     public Map<String, Object> loginWithGoogle(String idToken) {
-//         String email = getEmailFromGoogleIdToken(idToken);
-//         if (email == null) {
-//             return null;
-//         }
+    // public Map<String, Object> loginWithGoogle(String idToken) {
+    // String email = getEmailFromGoogleIdToken(idToken);
+    // if (email == null) {
+    // return null;
+    // }
 
     public Map<String, Object> loginWithGoogle(String accessToken) {
-    Map<String, Object> googleResponse = googleAuthService.signInWithGoogle(accessToken);
+        Map<String, Object> googleResponse = googleAuthService.signInWithGoogle(accessToken);
 
+        if (!"OK".equals(googleResponse.get("status"))) {
+            return Map.of(
+                    "status", "FAIL",
+                    "message", googleResponse.getOrDefault("message", "Đăng nhập thất bại"),
+                    "error", googleResponse.getOrDefault("error", "Không rõ lỗi"));
+        }
 
-    if (!"OK".equals(googleResponse.get("status"))) {
+        Map<String, Object> userInfo = (Map<String, Object>) googleResponse.get("userInfo");
+        if (userInfo == null) {
+            return Map.of(
+                    "status", "FAIL",
+                    "message", "Không lấy được thông tin người dùng từ Google");
+        }
+
+        String email = (String) userInfo.get("email");
+        String name = (String) userInfo.get("name");
+
+        if (email == null) {
+            return Map.of(
+                    "status", "FAIL",
+                    "message", "Không lấy được email từ Google");
+        }
+
+        Optional<User> userOpt = userRepository.findByEmail(email);
+        User user;
+        if (userOpt.isEmpty()) {
+            user = new User();
+            user.setUsername(email.split("@")[0]);
+            user.setEmail(email);
+            user.setPassword(passwordEncoder.encode("google_" + email));
+            user.setRole("USER");
+            user.setFullname(name != null ? name : "");
+            user.setJoined_date(LocalDate.now());
+            userRepository.save(user);
+        } else {
+            user = userOpt.get();
+        }
+
+        String accessTokenJwt = tokenService.createAccessToken(user.getId(), user.getRole());
+        String refreshTokenJwt = tokenService.createRefreshToken(user.getId());
+
         return Map.of(
-                "status", "FAIL",
-                "message", googleResponse.getOrDefault("message", "Đăng nhập thất bại"),
-                "error", googleResponse.getOrDefault("error", "Không rõ lỗi")
-        );
+                "status", "OK",
+                "message", "Đăng nhập bằng Google thành công",
+                "data", Map.of(
+                        "accessToken", accessTokenJwt,
+                        "refreshToken", refreshTokenJwt,
+                        "user", Map.of(
+                                "id", user.getId(),
+                                "username", user.getUsername(),
+                                "email", user.getEmail() != null ? user.getEmail() : "",
+                                "phone", user.getPhone() != null ? user.getPhone() : "",
+                                "fullname", user.getFullname() != null ? user.getFullname() : "",
+                                "birthdate", user.getBirthdate() != null ? user.getBirthdate().toString() : "",
+                                "role", user.getRole())));
     }
 
-    Map<String, Object> userInfo = (Map<String, Object>) googleResponse.get("userInfo");
-    if (userInfo == null) {
-        return Map.of(
-                "status", "FAIL",
-                "message", "Không lấy được thông tin người dùng từ Google"
-        );
-    }
-
-    String email = (String) userInfo.get("email");
-    String name = (String) userInfo.get("name");
-
-    if (email == null) {
-        return Map.of(
-                "status", "FAIL",
-                "message", "Không lấy được email từ Google"
-        );
-    }
-
-    Optional<User> userOpt = userRepository.findByEmail(email);
-    User user;
-    if (userOpt.isEmpty()) {
-        user = new User();
-        user.setUsername(email.split("@")[0]);
-        user.setEmail(email);
-        user.setPassword(passwordEncoder.encode("google_" + email));
-        user.setRole("USER");
-        user.setFullname(name != null ? name : "");
-        user.setJoined_date(LocalDate.now());
-        userRepository.save(user);
-    } else {
-        user = userOpt.get();
-    }
-
-    String accessTokenJwt = tokenService.createAccessToken(user.getId(), user.getRole());
-    String refreshTokenJwt = tokenService.createRefreshToken(user.getId());
-
-    return Map.of(
-            "status", "OK",
-            "message", "Đăng nhập bằng Google thành công",
-            "data", Map.of(
-                    "accessToken", accessTokenJwt,
-                    "refreshToken", refreshTokenJwt,
-                    "user", Map.of(
-                            "id", user.getId(),
-                            "username", user.getUsername(),
-                            "email", user.getEmail() != null ? user.getEmail() : "",
-                            "phone", user.getPhone() != null ? user.getPhone() : "",
-                            "fullname", user.getFullname() != null ? user.getFullname() : "",
-                            "birthdate", user.getBirthdate() != null ? user.getBirthdate().toString() : "",
-                            "role", user.getRole()
-                    )
-            )
-    );
-}
     public String getEmailFromGoogleIdToken(String idToken) {
         try {
             GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(),
