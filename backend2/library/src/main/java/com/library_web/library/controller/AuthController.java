@@ -156,33 +156,48 @@ public ResponseEntity<?> loginWithGoogle(@RequestBody Map<String, String> body) 
     }
 }
 
-
-
     @PostMapping("/auth/facebook")
     public ResponseEntity<?> loginWithFacebook(@RequestBody Map<String, String> body) {
         String accessToken = body.get("accessToken");
         if (accessToken == null || accessToken.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Facebook Access Token không được để trống");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of(
+                    "status", "FAIL",
+                    "message", "Facebook Access Token không được để trống"
+                ));
         }
 
         try {
             Map<String, Object> response = facebookAuthService.signInWithFacebook(accessToken);
-            if (response.containsKey("data") &&
-                    ((Map<String, Object>) response.get("data")).containsKey("accessToken")) {
-                String username = (String) ((Map<String, Object>) response.get("data")).get("user.username");
-                if (username != null) {
-                    User user = userRepository.findByUsername(username)
-                            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                                    "Không tìm thấy người dùng sau khi đăng nhập bằng Facebook"));
-                    cartService.getOrCreateCart(user);
-                }
+            if (!"OK".equals(response.get("status"))) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(response);
             }
+
+            // Lấy thông tin người dùng từ response
+            Map<String, Object> data = (Map<String, Object>) response.get("data");
+            Map<String, Object> userInfo = (Map<String, Object>) data.get("user");
+            String username = (String) userInfo.get("username");
+
+            // Tạo hoặc lấy giỏ hàng cho người dùng
+            User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Không tìm thấy người dùng sau khi đăng nhập bằng Facebook"
+                ));
+            cartService.getOrCreateCart(user);
+
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("status", "FAIL", "message", e.getMessage()));
+                .body(Map.of(
+                    "status", "FAIL",
+                    "message", "Lỗi khi đăng nhập bằng Facebook: " + e.getMessage(),
+                    "error", e.getClass().getSimpleName()
+                ));
         }
     }
+
 
     // @PostMapping("/password/reset")
     // public ResponseEntity<?> resetPasswordDuplicate(@RequestBody Map<String,
