@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -15,7 +15,10 @@ const schema = yup.object().shape({
     .string()
     .required("Vui lòng nhập mật khẩu mới")
     .min(6, "Mật khẩu mới phải có ít nhất 6 ký tự")
-    .notOneOf([yup.ref("currentPassword")], "Mật khẩu mới không được trùng mật khẩu cũ"),
+    .notOneOf(
+      [yup.ref("currentPassword")],
+      "Mật khẩu mới không được trùng mật khẩu cũ"
+    ),
   confirmPassword: yup
     .string()
     .required("Vui lòng xác nhận mật khẩu mới")
@@ -49,14 +52,19 @@ const ChangePassword = () => {
         const accessToken = localStorage.getItem("accessToken");
 
         if (!userId || !accessToken) {
-          toast.error("Không tìm thấy thông tin đăng nhập. Vui lòng đăng nhập lại.");
+          toast.error(
+            "Không tìm thấy thông tin đăng nhập. Vui lòng đăng nhập lại."
+          );
           setTimeout(() => handleLogin(), 1000);
           return;
         }
 
-        const response = await axios.get(`http://localhost:8080/api/user/${userId}`, {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        });
+        const response = await axios.get(
+          `http://localhost:8080/api/user/${userId}`,
+          {
+            headers: { Authorization: `Bearer ${accessToken}` },
+          }
+        );
 
         const userData = response.data;
         setUser({
@@ -66,7 +74,8 @@ const ChangePassword = () => {
         });
       } catch (err) {
         toast.error(
-          err.response?.data?.message || "Không thể lấy thông tin người dùng. Vui lòng thử lại."
+          err.response?.data?.message ||
+            "Không thể lấy thông tin người dùng. Vui lòng thử lại."
         );
         if (err.response?.status === 401 || err.response?.status === 403) {
           toast.error("Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.");
@@ -84,7 +93,9 @@ const ChangePassword = () => {
       const accessToken = localStorage.getItem("accessToken");
 
       if (!userId || !accessToken) {
-        toast.error("Không tìm thấy thông tin đăng nhập. Vui lòng đăng nhập lại.");
+        toast.error(
+          "Không tìm thấy thông tin đăng nhập. Vui lòng đăng nhập lại."
+        );
         setTimeout(() => handleLogin(), 1000);
         return;
       }
@@ -105,22 +116,23 @@ const ChangePassword = () => {
 
       toast.success(response.data.message || "Đổi mật khẩu thành công");
       reset();
-      setTimeout (router.push("/Honepage"),1000); //
+      setTimeout(router.push("/Honepage"), 1000); //
     } catch (err) {
       toast.error(
-        err.response?.data?.message || "Đổi mật khẩu thất bại. Vui lòng kiểm tra lại."
+        err.response?.data?.message ||
+          "Đổi mật khẩu thất bại. Vui lòng kiểm tra lại."
       );
     }
   };
 
   return (
-    <div className="flex min-h-screen bg-[#EFF3FB]">
+    <div className="flex min-h-screen justify-center items-center pt-16 ml-16">
       <Toaster position="top-center" toastOptions={{ duration: 5000 }} />
       <LeftSideBar />
       <div className="flex-1 flex justify-end items-end">
         <form
           onSubmit={handleSubmit(onSubmit)}
-          className="bg-white w-full max-w-[1330px] h-[623px] p-18 mr-0 mb-0 rounded-lg shadow-md"
+          className="bg-white w-full max-w-[1100px] h-[500px] p-10 mr-0 mb-0 rounded-lg shadow-md"
         >
           <div className="flex items-center gap-4 mb-6">
             {user.avatar ? (
@@ -146,7 +158,7 @@ const ChangePassword = () => {
             <div className="relative">
               <input
                 type={showCurrentPassword ? "text" : "password"}
-                className="w-full p-2 border rounded mt-1 pr-10"
+                className="w-full p-2 border rounded-xl mt-1 pr-10"
                 {...register("currentPassword")}
               />
               <button
@@ -170,7 +182,7 @@ const ChangePassword = () => {
             <div className="relative">
               <input
                 type={showNewPassword ? "text" : "password"}
-                className="w-full p-2 border rounded mt-1 pr-10"
+                className="w-full p-2 border rounded-xl mt-1 pr-10"
                 {...register("newPassword")}
               />
               <button
@@ -182,7 +194,9 @@ const ChangePassword = () => {
               </button>
             </div>
             {errors.newPassword && (
-              <p className="text-red-500 text-sm mt-1">{errors.newPassword.message}</p>
+              <p className="text-red-500 text-sm mt-1">
+                {errors.newPassword.message}
+              </p>
             )}
           </div>
 
@@ -192,7 +206,7 @@ const ChangePassword = () => {
             <div className="relative">
               <input
                 type={showConfirmPassword ? "text" : "password"}
-                className="w-full p-2 border rounded mt-1 pr-10"
+                className="w-full p-2 border rounded-xl mt-1 pr-10"
                 {...register("confirmPassword")}
               />
               <button

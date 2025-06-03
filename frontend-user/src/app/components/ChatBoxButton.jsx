@@ -220,7 +220,7 @@ const ChatBotButton = () => {
     <div className="fixed bottom-[1.5rem] right-[2rem] h-[4rem] w-[4rem]">
       <button
         onClick={toggleChat}
-        className="flex absolute top-1.5 left-1.5 justify-center items-center p-[0.75rem] bg-sky-900 rounded-[999px] cursor-pointer"
+        className="flex absolute top-1.5 left-1.5 justify-center items-center p-[0.75rem] bg-blue-800 rounded-[999px] cursor-pointer"
         aria-label="Chat messages"
       >
         <ChatIcon />
