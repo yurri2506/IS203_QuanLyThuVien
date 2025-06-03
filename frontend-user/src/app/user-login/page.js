@@ -274,6 +274,7 @@ const Page = () => {
   return (
     <div className="min-h-screen bg-[#F9FDFF] flex items-center justify-center p-4">
       <Toaster position="top-right" toastOptions={{ duration: 5000 }} />
+
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -336,6 +337,7 @@ const Page = () => {
                           ) : (
                             <Eye className="w-5 h-5 ml-1" />
                           )}
+
                           {showPassword ? "Ẩn" : "Hiện"}
                         </button>
                       </div>
@@ -354,12 +356,14 @@ const Page = () => {
                     </div>
                     <div className="text-right text-blue-500 text-sm mb-4">
                       <a href="/change-password" className="underline">
+
                         Quên mật khẩu?
                       </a>
                     </div>
                     <Button
                       onClick={handleSubmitLogin(onSubmitLogin)}
-                      className="w-full bg-[#062D76] text-white"
+
+                      className="w-full bg-[#062D76] text-white cursor-pointer"
                     >
                       <LogIn className="mr-2 w-4 h-4" /> Đăng nhập
                     </Button>
@@ -367,6 +371,7 @@ const Page = () => {
                   <div className="mt-4">
                     <GoogleLoginButton />
                     <FacebookLoginButton className="mt-2 w-full" />
+
                   </div>
                 </TabsContent>
 
@@ -502,6 +507,7 @@ const Page = () => {
                   {errorsOTP.otp && (
                     <p className="text-red-500">{errorsOTP.otp.message}</p>
                   )}
+
                 </div>
                 <Button
                   onClick={handleSubmitOTP(onSubmitOTP)}
@@ -526,3 +532,4 @@ const Page = () => {
 };
 
 export default Page;
+
