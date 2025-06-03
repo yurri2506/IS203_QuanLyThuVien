@@ -7,7 +7,7 @@
 // //import Sidebar from "./components/LeftSidebar";
 // import { Provider } from "react-redux";
 // import { PersistGate } from "redux-persist/integration/react";
-// import { store, persistor } from "../store/store.js"; 
+// import { store, persistor } from "../store/store.js";
 
 // const geistSans = Geist({
 //   variable: "--font-geist-sans",
@@ -94,15 +94,18 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased flex`}>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased flex`}
+      >
         <Providers>
-          <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}>
-            <FacebookSDK />
-            <div className="flex-1 bg-[#EFF3FB]">
-              <RequireAuth>
-                {children}
-              </RequireAuth>
-            </div>
+          <GoogleOAuthProvider
+            clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}
+          >
+            <FacebookSDK>
+              <div className="flex-1 bg-[#EFF3FB]">
+                <RequireAuth>{children}</RequireAuth>
+              </div>
+            </FacebookSDK>
           </GoogleOAuthProvider>
         </Providers>
       </body>
