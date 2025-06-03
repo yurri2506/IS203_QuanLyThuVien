@@ -25,32 +25,7 @@ import java.util.*;
 @Service
 public class UploadService {
 
-  @Autowired
-  private Cloudinary cloudinary;
-
-  public ResponseEntity<?> uploadImages(MultipartFile[] files) {
-    try {
-      List<String> urls = new ArrayList<>();
-
-      for (MultipartFile file : files) {
-        System.out.println("==> Received:");
-        System.out.println("Name: " + file.getOriginalFilename());
-        System.out.println("Size: " + file.getSize() + " bytes");
-
-        @SuppressWarnings("unchecked")
-        Map<String, Object> uploadResult = (Map<String, Object>) cloudinary.uploader()
-            .upload(file.getBytes(), ObjectUtils.emptyMap());
-
-        urls.add((String) uploadResult.get("secure_url"));
-      }
-
-      return ResponseEntity.ok(urls);
-    } catch (IOException e) {
-      return ResponseEntity.badRequest().body(Map.of("error", "Lỗi upload ảnh: " + e.getMessage()));
-    }
-  }
-
-  public ResponseEntity<?> uploadBarcode(MultipartFile file, String type) {
+    public ResponseEntity<?> uploadBarcode(MultipartFile file, String type) {
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of("error", "Không có tệp được chọn"));
         }
@@ -60,8 +35,8 @@ public class UploadService {
             BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(
                     new BufferedImageLuminanceSource(bufferedImage)));
             Map<DecodeHintType, Object> hints = Map.of(
-                    DecodeHintType.POSSIBLE_FORMATS, List.of(BarcodeFormat.CODE_128, BarcodeFormat.CODE_39, BarcodeFormat.QR_CODE)
-            );
+                    DecodeHintType.POSSIBLE_FORMATS,
+                    List.of(BarcodeFormat.CODE_128, BarcodeFormat.CODE_39, BarcodeFormat.QR_CODE));
 
             try {
                 Result result = new MultiFormatReader().decode(bitmap, hints);
@@ -92,8 +67,8 @@ public class UploadService {
             Imgproc.cvtColor(original, gray, Imgproc.COLOR_BGR2GRAY);
 
             int[][] thresholds = {
-                {10, 50}, {30, 70}, {50, 100}, {100, 200}, {200, 400},
-                {300, 700}, {500, 1000}, {700, 1500}, {1000, 2000}
+                    { 10, 50 }, { 30, 70 }, { 50, 100 }, { 100, 200 }, { 200, 400 },
+                    { 300, 700 }, { 500, 1000 }, { 700, 1500 }, { 1000, 2000 }
             };
 
             for (int[] threshold : thresholds) {
@@ -107,7 +82,8 @@ public class UploadService {
 
                     List<MatOfPoint> contours = new ArrayList<>();
                     Mat hierarchy = new Mat();
-                    Imgproc.findContours(edged, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
+                    Imgproc.findContours(edged, contours, hierarchy, Imgproc.RETR_EXTERNAL,
+                            Imgproc.CHAIN_APPROX_SIMPLE);
 
                     Rect bestRect = null;
                     double maxArea = 0;
@@ -119,7 +95,8 @@ public class UploadService {
                         }
                     }
 
-                    if (bestRect == null) continue;
+                    if (bestRect == null)
+                        continue;
 
                     Mat cropped = new Mat(original, bestRect);
                     MatOfByte buffer = new MatOfByte();
@@ -129,13 +106,14 @@ public class UploadService {
                     BinaryBitmap bitmap = new BinaryBitmap(new HybridBinarizer(
                             new BufferedImageLuminanceSource(bufferedImage)));
                     Map<DecodeHintType, Object> hints = Map.of(
-                            DecodeHintType.POSSIBLE_FORMATS, List.of(BarcodeFormat.CODE_128, BarcodeFormat.CODE_39, BarcodeFormat.QR_CODE)
-                    );
+                            DecodeHintType.POSSIBLE_FORMATS,
+                            List.of(BarcodeFormat.CODE_128, BarcodeFormat.CODE_39, BarcodeFormat.QR_CODE));
 
                     Result result = new MultiFormatReader().decode(bitmap, hints);
                     return handleDecodedResult(result.getText(), type);
 
-                } catch (NotFoundException ignored) {}
+                } catch (NotFoundException ignored) {
+                }
             }
 
             return ResponseEntity.badRequest().body(Map.of("error", "Không tìm thấy mã barcode."));
@@ -169,7 +147,8 @@ public class UploadService {
                             parentUrl,
                             HttpMethod.GET,
                             null,
-                            new ParameterizedTypeReference<>() {});
+                            new ParameterizedTypeReference<>() {
+                            });
                     parentBook = parentResponse.getBody();
                 }
 
