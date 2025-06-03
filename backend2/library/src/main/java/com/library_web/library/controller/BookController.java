@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.stream.Collectors;
 
@@ -132,6 +134,45 @@ public class BookController {
                                 .collect(Collectors.toList());
         }
 
+        // @GetMapping("/dashboard")
+        // public ResponseEntity<Map<String, Object>> getDashboardStats() {
+        // Map<String, Object> stats = new HashMap<>();
+
+        // // Total books
+        // long totalBooks = service.getTotalBooks();
+        // stats.put("totalBooks", totalBooks);
+
+        // // Total book quantity
+        // long totalBookQuantity = service.getTotalBookQuantity();
+        // stats.put("totalBookQuantity", totalBookQuantity);
+
+        // // New books this week
+        // long newBooksThisWeek = service.getNewBooksThisWeek();
+        // stats.put("newBooksThisWeek", newBooksThisWeek);
+
+        // // Borrow stats last week
+        // // Placeholder since borrowCardService is not injected yet
+        // Map<String, Object> borrowStartLastWeek = new HashMap<>();
+        // borrowStartLastWeek.put("totalBorrows", 0L);
+        // borrowStartLastWeek.put("bookDetails", List.of());
+        // stats.put("borrowStartLastWeek", borrowStartLastWeek);
+
+        // // Books needing restock
+        // List<BookDTO> booksToRestock = service.findBooksNeedingRestock(5).stream()
+        // .map(b -> new BookDTO(
+        // b.getMaSach(), b.getTenSach(), b.getMoTa(),
+        // b.getTenTacGia(), b.getNxb(), b.getNam(),
+        // b.getTrongLuong(), b.getDonGia(),
+        // b.getTongSoLuong(), b.getSoLuongMuon(), b.getSoLuongXoa(),
+        // b.getTrangThai().name(), b.getHinhAnh(),
+        // b.getCategoryChild().getId(), b.getCategoryChild().getName(),
+        // b.getCategoryChild().getCategoryName()))
+        // .collect(Collectors.toList());
+        // stats.put("booksToRestock", booksToRestock);
+
+        // return ResponseEntity.ok(stats);
+        // }
+
         @GetMapping("/dashboard")
         public ResponseEntity<Map<String, Object>> getDashboardStats() {
                 Map<String, Object> stats = new HashMap<>();
@@ -144,16 +185,32 @@ public class BookController {
                 long totalBookQuantity = service.getTotalBookQuantity();
                 stats.put("totalBookQuantity", totalBookQuantity);
 
-                // New books this week
-                long newBooksThisWeek = service.getNewBooksThisWeek();
-                stats.put("newBooksThisWeek", newBooksThisWeek);
+                // New books this month
+                LocalDate today = LocalDate.now(); // June 03, 2025
+                LocalDate monthStart = today.withDayOfMonth(1); // June 01, 2025
+                long newBooksThisMonth = service.getNewBooksInRange(monthStart, today);
+                stats.put("newBooksThisMonth", newBooksThisMonth);
 
-                // Borrow stats last week
-                // Placeholder since borrowCardService is not injected yet
-                Map<String, Object> borrowStartLastWeek = new HashMap<>();
-                borrowStartLastWeek.put("totalBorrows", 0L);
-                borrowStartLastWeek.put("bookDetails", List.of());
-                stats.put("borrowStartLastWeek", borrowStartLastWeek);
+                // Borrowed books this month
+                long borrowedBooksThisMonth = service.getBorrowCountInRange(monthStart, today);
+                stats.put("borrowedBooksThisMonth", borrowedBooksThisMonth);
+
+                // Monthly stats (current and previous month)
+                List<Map<String, Object>> monthlyStats = new ArrayList<>();
+                for (int i = 1; i >= 0; i--) {
+                        LocalDate monthStartDate = today.minusMonths(i).withDayOfMonth(1);
+                        LocalDate monthEndDate = monthStartDate.plusMonths(1).minusDays(1);
+                        Map<String, Object> monthData = new HashMap<>();
+                        monthData.put("monthLabel", i == 0 ? "Tháng này" : "Tháng trước");
+                        monthData.put("totalBooks", totalBooks); // Placeholder, could vary by month if implemented
+                        monthData.put("totalBookQuantity", totalBookQuantity); // Placeholder
+                        monthData.put("newBooks", i == 0 ? newBooksThisMonth
+                                        : service.getNewBooksInRange(monthStartDate, monthEndDate));
+                        monthData.put("borrowedBooks", i == 0 ? borrowedBooksThisMonth
+                                        : service.getBorrowCountInRange(monthStartDate, monthEndDate));
+                        monthlyStats.add(monthData);
+                }
+                stats.put("monthlyStats", monthlyStats);
 
                 // Books needing restock
                 List<BookDTO> booksToRestock = service.findBooksNeedingRestock(5).stream()
