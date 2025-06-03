@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import didYouMean from "didyoumean";
 import { useEffect, useState } from "react";
+import Image from "next/image";
 
 const navigation = [
   { name: "Trang chủ", href: "/" },
@@ -160,17 +161,20 @@ const HeaderNoLogin = () => {
   }, [pathname]);
 
   return (
-    <header className="bg-[#062D76] text-white shadow-lg fixed top-0 left-0 w-full z-50">
+    <header className="bg-white text-blue-300 shadow-lg fixed top-0 left-0 w-full z-50 h-[64px] border-b-2 border-blue-300">
       <Disclosure as="nav" className="mx-auto">
         {({ open }) => (
           <>
             <div className="flex justify-between items-center h-14 px-2 md:px-5">
               {/* Logo */}
               <div className="flex items-center">
-                <Link href="/">
-                  <h1 className="text-3xl font-bold text-white font-[Moul]">
-                    OurLogo
-                  </h1>
+                <Link href="/" className="flex items-center">
+                  <Image
+                    src="/images/logoN.png"
+                    alt="Logo"
+                    width={100}
+                    height={55}
+                  />
                 </Link>
               </div>
 
@@ -182,8 +186,8 @@ const HeaderNoLogin = () => {
                     href={item.href}
                     className={`px-3 py-2 rounded-md text-lg font-medium transition duration-200 ${
                       pathname === item.href
-                        ? "bg-white text-[#052259]"
-                        : "hover:bg-white hover:text-[#052259]"
+                        ? "bg-blue-200 text-white"
+                        : "hover:bg-blue-200 hover:text-white"
                     }`}
                   >
                     {item.name}
@@ -193,9 +197,9 @@ const HeaderNoLogin = () => {
 
               {/* Right Icons */}
               <div className="flex items-center space-x-4">
-                <div className="hidden lg:flex mx-4 items-center justify-center ml-8 w-[350px]">
-                  <div className="relative w-full w-[350px]">
-                    <div className="flex items-center px-4 py-2 bg-white border border-gray-300 rounded-full shadow-md">
+                <div className="hidden lg:flex mx-4 items-center justify-center ml-8 mr-8 w-fit">
+                  <div className="relative w-[300px]">
+                    <div className="flex items-center px-4 py-2 bg-white border border-blue-300 rounded-full shadow-md">
                       <img
                         src="https://cdn.builder.io/api/v1/image/assets/TEMP/669888cc237b300e928dbfd847b76e4236ef4b5a?placeholderIfAbsent=true&apiKey=d911d70ad43c41e78d81b9650623c816"
                         alt="Search icon"
@@ -237,7 +241,7 @@ const HeaderNoLogin = () => {
                 <Menu as="div" className="relative">
                   <Menu.Button
                     onClick={handleLogin}
-                    className="text-white font-medium px-4 py-2 rounded-md hover:bg-gray-700 transition"
+                    className="text-blue-300 font-medium px-4 py-2 rounded-md hover:bg-blue-100 transition"
                   >
                     Đăng nhập / Đăng ký
                   </Menu.Button>

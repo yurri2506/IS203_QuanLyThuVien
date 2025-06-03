@@ -8,9 +8,9 @@ import { Button } from "@/components/ui/button";
 
 const page = () => {
   return (
-    <div className="min-h-screen bg-[#EFF3FB] flex flex-col -mr-[180px]">
-      <main className="pt-12 bg-[#EFF3FB] flex flex-1">
-        <section className="bg-gray-50 py-6 px-4 rounded-2xl md:px-12 w-full">
+    <div className="min-h-screen flex flex-col -mr-[190px]">
+      <main className="pt-16 flex flex-1">
+        <section className="py-6 px-4 rounded-2xl md:px-12 w-full">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -18,7 +18,7 @@ const page = () => {
             viewport={{ once: true }}
             className="max-w-6xl mx-auto text-center"
           >
-            <h1 className="text-2xl font-bold mb-4 text-blue-950 text-start w-fit bg-white p-4 rounded-lg shadow-md">
+            <h1 className="text-l font-bold mb-4 text-blue-300 text-start w-fit bg-white p-2 rounded-lg shadow-md">
               <Newspaper className="inline-block w-6 h-6 mr-3" />
               Tin Tức Mới Nhất
             </h1>
