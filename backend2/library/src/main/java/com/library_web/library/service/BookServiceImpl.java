@@ -7,6 +7,7 @@ import com.library_web.library.repository.BookChildRepository;
 import com.library_web.library.repository.BookRepository;
 import com.library_web.library.repository.CategoryRepository;
 import com.library_web.library.repository.CategoryChildRepository;
+import com.library_web.library.repository.BorrowCardRepository;
 
 import jakarta.transaction.Transactional;
 import org.springframework.http.HttpStatus;
@@ -21,6 +22,7 @@ import java.util.stream.Collectors;
 public class BookServiceImpl implements BookService {
     private final BookRepository repo;
     private final BookChildRepository bookChildRepository;
+    private final BorrowCardRepository borrowCardRepository;
 
     // private final CategoryRepository categoryRepo;
     private final CategoryChildRepository childRepo;
@@ -31,11 +33,13 @@ public class BookServiceImpl implements BookService {
             BookRepository repo,
             CategoryRepository categoryRepo,
             CategoryChildRepository childRepo,
-            BookChildRepository bookChildRepository) {
+            BookChildRepository bookChildRepository
+            , BorrowCardRepository borrowCardRepository) {
         this.repo = repo;
         // this.categoryRepo = categoryRepo;
         this.childRepo = childRepo;
         this.bookChildRepository = bookChildRepository;
+        this.borrowCardRepository = borrowCardRepository;
     }
 
     @Override
@@ -256,120 +260,128 @@ public class BookServiceImpl implements BookService {
     }
 
     // @Override
-    // public List<Book> searchBooks(String author, String category, String publisher, Integer year, String title,
-    //         boolean sortByBorrowCount) {
-    //     List<Book> books = repo.findAll();
+    // public List<Book> searchBooks(String author, String category, String
+    // publisher, Integer year, String title,
+    // boolean sortByBorrowCount) {
+    // List<Book> books = repo.findAll();
 
-    //     if (author != null && !author.isBlank()) {
-    //         String a = author.toLowerCase();
-    //         books = books.stream()
-    //                 .filter(b -> b.getTenTacGia() != null && b.getTenTacGia().toLowerCase().contains(a))
-    //                 .toList();
-    //     }
-    //     if (category != null && !category.isBlank()) {
-    //         String c = category.toLowerCase();
-    //         books = books.stream()
-    //                 .filter(b -> b.getCategoryChild() != null
-    //                         && b.getCategoryChild().getName().toLowerCase().contains(c))
-    //                 .toList();
-    //     }
-    //     if (publisher != null && !publisher.isBlank()) {
-    //         String p = publisher.toLowerCase();
-    //         books = books.stream()
-    //                 .filter(b -> b.getNxb() != null && b.getNxb().toLowerCase().contains(p))
-    //                 .toList();
-    //     }
-    //     if (year != null) {
-    //         books = books.stream()
-    //                 .filter(b -> b.getNam() != null && b.getNam().equals(year))
-    //                 .toList();
-    //     }
-    //     if (title != null && !title.isBlank()) {
-    //         String t = title.toLowerCase();
-    //         books = books.stream()
-    //                 .filter(b -> b.getTenSach() != null
-    //                         && b.getTenSach().toLowerCase().contains(t))
-    //                 .toList();
-    //     }
+    // if (author != null && !author.isBlank()) {
+    // String a = author.toLowerCase();
+    // books = books.stream()
+    // .filter(b -> b.getTenTacGia() != null &&
+    // b.getTenTacGia().toLowerCase().contains(a))
+    // .toList();
+    // }
+    // if (category != null && !category.isBlank()) {
+    // String c = category.toLowerCase();
+    // books = books.stream()
+    // .filter(b -> b.getCategoryChild() != null
+    // && b.getCategoryChild().getName().toLowerCase().contains(c))
+    // .toList();
+    // }
+    // if (publisher != null && !publisher.isBlank()) {
+    // String p = publisher.toLowerCase();
+    // books = books.stream()
+    // .filter(b -> b.getNxb() != null && b.getNxb().toLowerCase().contains(p))
+    // .toList();
+    // }
+    // if (year != null) {
+    // books = books.stream()
+    // .filter(b -> b.getNam() != null && b.getNam().equals(year))
+    // .toList();
+    // }
+    // if (title != null && !title.isBlank()) {
+    // String t = title.toLowerCase();
+    // books = books.stream()
+    // .filter(b -> b.getTenSach() != null
+    // && b.getTenSach().toLowerCase().contains(t))
+    // .toList();
+    // }
 
-    //     if (sortByBorrowCount) {
-    //         books = books.stream()
-    //                 .sorted(Comparator.comparing(Book::getSoLuongMuon).reversed())
-    //                 .toList();
-    //     }
-    //     for (Book book : books) {
-    //         book.updateTrangThai();
-    //     }
-    //     return books;
+    // if (sortByBorrowCount) {
+    // books = books.stream()
+    // .sorted(Comparator.comparing(Book::getSoLuongMuon).reversed())
+    // .toList();
+    // }
+    // for (Book book : books) {
+    // book.updateTrangThai();
+    // }
+    // return books;
     // }
     @Override
-public List<Book> searchBooks(String all, String title, String author, String category, String publisher, Integer year, boolean sortByBorrowCount) {
-    List<Book> books = repo.findAll();
+    public List<Book> searchBooks(String all, String title, String author, String category, String publisher,
+            Integer year, boolean sortByBorrowCount) {
+        List<Book> books = repo.findAll();
 
+        // Apply global search if 'all' is provided
+        if (all != null && !all.trim().isEmpty()) {
+            String lowerCaseAll = all.trim().toLowerCase();
+            books = books.stream()
+                    .filter(book -> {
+                        return (book.getTenSach() != null && book.getTenSach().toLowerCase().contains(lowerCaseAll)) ||
+                                (book.getTenTacGia() != null
+                                        && book.getTenTacGia().toLowerCase().contains(lowerCaseAll))
+                                ||
+                                (book.getCategoryChild() != null && book.getCategoryChild().getName() != null &&
+                                        book.getCategoryChild().getName().toLowerCase().contains(lowerCaseAll))
+                                ||
+                                (book.getNxb() != null && book.getNxb().toLowerCase().contains(lowerCaseAll)) ||
+                                (book.getNam() != null && book.getNam().toString().contains(all.trim()));
+                    })
+                    .collect(Collectors.toList());
+        } else {
+            // Apply specific filters
+            if (title != null && !title.trim().isEmpty()) {
+                String lowerCaseTitle = title.trim().toLowerCase();
+                books = books.stream()
+                        .filter(book -> book.getTenSach() != null
+                                && book.getTenSach().toLowerCase().contains(lowerCaseTitle))
+                        .collect(Collectors.toList());
+            }
+            if (author != null && !author.trim().isEmpty()) {
+                String lowerCaseAuthor = author.trim().toLowerCase();
+                books = books.stream()
+                        .filter(book -> book.getTenTacGia() != null
+                                && book.getTenTacGia().toLowerCase().contains(lowerCaseAuthor))
+                        .collect(Collectors.toList());
+            }
+            if (category != null && !category.trim().isEmpty()) {
+                String lowerCaseCategory = category.trim().toLowerCase();
+                books = books.stream()
+                        .filter(book -> book.getCategoryChild() != null && book.getCategoryChild().getName() != null &&
+                                book.getCategoryChild().getName().toLowerCase().contains(lowerCaseCategory))
+                        .collect(Collectors.toList());
+            }
+            if (publisher != null && !publisher.trim().isEmpty()) {
+                String lowerCasePublisher = publisher.trim().toLowerCase();
+                books = books.stream()
+                        .filter(book -> book.getNxb() != null
+                                && book.getNxb().toLowerCase().contains(lowerCasePublisher))
+                        .collect(Collectors.toList());
+            }
+            if (year != null) {
+                books = books.stream()
+                        .filter(book -> book.getNam() != null && book.getNam().equals(year))
+                        .collect(Collectors.toList());
+            }
+        }
 
-    // Apply global search if 'all' is provided
-    if (all != null && !all.trim().isEmpty()) {
-        String lowerCaseAll = all.trim().toLowerCase();
-        books = books.stream()
-                .filter(book -> {
-                    return (book.getTenSach() != null && book.getTenSach().toLowerCase().contains(lowerCaseAll)) ||
-                           (book.getTenTacGia() != null && book.getTenTacGia().toLowerCase().contains(lowerCaseAll)) ||
-                           (book.getCategoryChild() != null && book.getCategoryChild().getName() != null &&
-                            book.getCategoryChild().getName().toLowerCase().contains(lowerCaseAll)) ||
-                           (book.getNxb() != null && book.getNxb().toLowerCase().contains(lowerCaseAll)) ||
-                           (book.getNam() != null && book.getNam().toString().contains(all.trim()));
-                })
-                .collect(Collectors.toList());
-    } else {
-        // Apply specific filters
-        if (title != null && !title.trim().isEmpty()) {
-            String lowerCaseTitle = title.trim().toLowerCase();
+        // Apply sorting if requested
+        if (sortByBorrowCount) {
             books = books.stream()
-                    .filter(book -> book.getTenSach() != null && book.getTenSach().toLowerCase().contains(lowerCaseTitle))
+                    .sorted(Comparator.comparing(Book::getSoLuongMuon, Comparator.nullsLast(Comparator.reverseOrder())))
                     .collect(Collectors.toList());
         }
-        if (author != null && !author.trim().isEmpty()) {
-            String lowerCaseAuthor = author.trim().toLowerCase();
-            books = books.stream()
-                    .filter(book -> book.getTenTacGia() != null && book.getTenTacGia().toLowerCase().contains(lowerCaseAuthor))
-                    .collect(Collectors.toList());
+
+        // Update trangThai for all filtered books
+        for (Book book : books) {
+            if (book != null) {
+                book.updateTrangThai(); // Assuming updateTrangThai() is a method in the Book entity
+            }
         }
-        if (category != null && !category.trim().isEmpty()) {
-            String lowerCaseCategory = category.trim().toLowerCase();
-            books = books.stream()
-                    .filter(book -> book.getCategoryChild() != null && book.getCategoryChild().getName() != null &&
-                            book.getCategoryChild().getName().toLowerCase().contains(lowerCaseCategory))
-                    .collect(Collectors.toList());
-        }
-        if (publisher != null && !publisher.trim().isEmpty()) {
-            String lowerCasePublisher = publisher.trim().toLowerCase();
-            books = books.stream()
-                    .filter(book -> book.getNxb() != null && book.getNxb().toLowerCase().contains(lowerCasePublisher))
-                    .collect(Collectors.toList());
-        }
-        if (year != null) {
-            books = books.stream()
-                    .filter(book -> book.getNam() != null && book.getNam().equals(year))
-                    .collect(Collectors.toList());
-        }
+
+        return books;
     }
-
-    // Apply sorting if requested
-    if (sortByBorrowCount) {
-        books = books.stream()
-                .sorted(Comparator.comparing(Book::getSoLuongMuon, Comparator.nullsLast(Comparator.reverseOrder())))
-                .collect(Collectors.toList());
-    }
-
-    // Update trangThai for all filtered books
-    for (Book book : books) {
-        if (book != null) {
-            book.updateTrangThai(); // Assuming updateTrangThai() is a method in the Book entity
-        }
-    }
-
-    return books;
-}
 
     @Override
     public long getTotalBooks() {
@@ -383,10 +395,31 @@ public List<Book> searchBooks(String all, String title, String author, String ca
                 .sum();
     }
 
+    // @Override
+    // public long getNewBooksThisWeek() {
+    // LocalDate startOfWeek = LocalDate.now().minusDays(7);
+    // return repo.findByCreatedAtAfterAndTrangThaiNot(startOfWeek,
+    // Book.TrangThai.DA_XOA).size();
+    // }
     @Override
-    public long getNewBooksThisWeek() {
-        LocalDate startOfWeek = LocalDate.now().minusDays(7);
+    public long getNewBooksThisMonth() {
+        LocalDate startOfWeek = LocalDate.now().minusDays(30);
         return repo.findByCreatedAtAfterAndTrangThaiNot(startOfWeek, Book.TrangThai.DA_XOA).size();
+    }
+
+    @Override
+    public long getNewBooksInRange(LocalDate startDate, LocalDate endDate) {
+        return repo.findByCreatedAtBetweenAndTrangThaiNot(startDate, endDate, Book.TrangThai.DA_XOA)
+                .size();
+    }
+
+    @Override
+    public long getBorrowCountInRange(LocalDate startDate, LocalDate endDate) {
+        return borrowCardRepository.findByBorrowDateBetween(startDate.withDayOfMonth(1).atStartOfDay(),
+                endDate.withDayOfMonth(endDate.lengthOfMonth()).atTime(23, 59, 59))
+                .stream()
+                .mapToLong(borrowCard -> borrowCard.getBorrowedBooks().size())
+                .sum();
     }
 
     @Override
@@ -408,7 +441,7 @@ public List<Book> searchBooks(String all, String title, String author, String ca
             books = repo.findByTenTacGiaContainingIgnoreCase(query);
         }
         // if (books.isEmpty()) {
-        //     books = repo.findByTheLoaiContainingIgnoreCase(query);
+        // books = repo.findByTheLoaiContainingIgnoreCase(query);
         // }
 
         return books;
