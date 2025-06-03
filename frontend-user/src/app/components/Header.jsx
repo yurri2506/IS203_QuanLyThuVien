@@ -21,7 +21,7 @@ const navigation = [
   { name: "Trang chủ", href: "/" },
   { name: "Thể loại", href: "/Categories" },
   { name: "Giới thiệu", href: "/About" },
-  { name: "Hỗ trợ", href: "/Help" },
+  { name: "Tin sách", href: "/News" },
 ];
 
 const CartBadge = ({ count }) => {
