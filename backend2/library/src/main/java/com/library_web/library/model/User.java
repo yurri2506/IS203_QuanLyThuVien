@@ -51,7 +51,7 @@ public class User {
     @Column(name = "provider_id")
     private String providerId; // ID do Google/Facebook cấp
 
-     @Column(name = "avatar_url")
+     @Column(name = "avatar_url" , columnDefinition = "TEXT")
     private String avatar_url;
 
     @JsonFormat(pattern = "yyyy-MM-dd")

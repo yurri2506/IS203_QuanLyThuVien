@@ -19,13 +19,5 @@ public class UploadController {
     return uploadService.uploadBarcode(file, type);
   }
 
-  @PostMapping(
-      path = "/image",
-      consumes = MediaType.MULTIPART_FORM_DATA_VALUE
-    )
-    public ResponseEntity<?> uploadImages(
-        @RequestParam("files") MultipartFile[] files
-    ) {
-        return uploadService.uploadImages(files);
-    }
+
 }
