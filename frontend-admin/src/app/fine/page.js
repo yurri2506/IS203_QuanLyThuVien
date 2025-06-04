@@ -21,9 +21,10 @@ const page = () => {
   const handleSearch = () => {
     if (searchQuery) {
       setLoading(true);
-      const filterFine = filteredCards.filter((card) =>
-        card.id.toString() === searchQuery || // tìm theo id
-        card?.userId.toString().includes(searchQuery) // tìm theo userId
+      const filterFine = filteredCards.filter(
+        (card) =>
+          card.id.toString() === searchQuery || // tìm theo id
+          card?.userId.toString().includes(searchQuery) // tìm theo userId
       );
       setFilterFines(filterFine);
       setTotalPages(Math.ceil(filterFine.length / itemsPerPage) || 1);
@@ -55,7 +56,7 @@ const page = () => {
     setLoading(true);
     try {
       const response = await fetch(
-        `http://localhost:8080/api/fines`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/fines`,
         {
           method: "GET",
         }
@@ -114,8 +115,9 @@ const page = () => {
   };
 
   // Phân trang
-  const paginatedFines = (filterFines?.length > 0 ? filterFines : filteredCards)
-    ?.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const paginatedFines = (
+    filterFines?.length > 0 ? filterFines : filteredCards
+  )?.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   // Generate page numbers for pagination
   const pageNumbers = [];
@@ -232,7 +234,9 @@ const page = () => {
             </Button>
           </div>
         )}
-        <div className={`fixed bottom-10 right-10 ${mode === 0 ? "" : "hidden"}`}>
+        <div
+          className={`fixed bottom-10 right-10 ${mode === 0 ? "" : "hidden"}`}
+        >
           <Button
             title={"Thêm Phiếu Phạt"}
             className="bg-[#062D76] rounded-3xl w-12 h-12"

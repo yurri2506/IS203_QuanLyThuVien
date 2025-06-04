@@ -29,7 +29,7 @@ const HomePage = () => {
     arrowsClass: "slick-arrow slick-arrow-recommend bg-blue-300",
     infinite: true, // Vòng lặp vô hạn
     speed: 200, // Tốc độ chuyển slide (ms)
-    slidesToShow: 3, // Hiển thị 3 slide cùng lúc
+    slidesToShow: 4, // Hiển thị 3 slide cùng lúc
     slidesToScroll: 1, // Chuyển 1 slide mỗi lần
     autoplay: true, // Tự động chuyển slide
     autoplaySpeed: 3000, // Chuyển slide mỗi 3 giây
@@ -68,7 +68,9 @@ const HomePage = () => {
   const fetchAll = async () => {
     setLoading(true);
     try {
-      const { data } = await axios.get("http://localhost:8080/api/book");
+      const { data } = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/book`
+      );
       const normalizedData = normalize(data);
       setBooks(normalizedData);
       setTotalPages(Math.ceil(normalizedData.length / itemsPerPage) || 1);
@@ -118,7 +120,7 @@ const HomePage = () => {
     setLoading(true);
     try {
       const { data } = await axios.get(
-        "http://localhost:8080/api/book/search",
+        `${process.env.NEXT_PUBLIC_API_URL}/api/book/search`,
         { params }
       );
       const normalizedData = normalize(data);

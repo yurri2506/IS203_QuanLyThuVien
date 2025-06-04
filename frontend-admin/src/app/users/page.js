@@ -24,13 +24,16 @@ const Page = () => {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const response = await axios.get("http://localhost:8080/api/admin/users", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-          "Content-Type": "application/json",
-          Accept: "*/*",
-        },
-      });
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/admin/users`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+            "Content-Type": "application/json",
+            Accept: "*/*",
+          },
+        }
+      );
       setUserList(response.data.data || []);
       setFilteredUsers(response.data.data || []);
       setCurrentPage(1); // Reset to first page
@@ -107,7 +110,7 @@ const Page = () => {
       }
 
       const response = await axios.delete(
-        `http://localhost:8080/api/admin/users/${user.id}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/admin/users/${user.id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

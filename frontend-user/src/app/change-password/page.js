@@ -60,7 +60,7 @@ const ChangePassword = () => {
         }
 
         const response = await axios.get(
-          `http://localhost:8080/api/user/${userId}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/api/user/${userId}`,
           {
             headers: { Authorization: `Bearer ${accessToken}` },
           }
@@ -101,7 +101,7 @@ const ChangePassword = () => {
       }
 
       const response = await axios.put(
-        "http://localhost:8080/api/change-password",
+        `${process.env.NEXT_PUBLIC_API_URL}/api/change-password`,
         {
           id: userId,
           oldPassword: data.currentPassword,

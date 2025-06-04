@@ -19,7 +19,7 @@ function page() {
     setLoading(true);
     try {
       const response = await axios.get(
-        `http://localhost:8080/api/fine/${MaPhieuPhat}`
+        `${process.env.NEXT_PUBLIC_API_URL}/api/fine/${MaPhieuPhat}`
       );
       if (response.status === 200) {
         const fineData = response.data;
@@ -52,7 +52,7 @@ function page() {
   const getBookInfo = async (bookId) => {
     // console.log("Lấy thông tin sách cho cardId2:", bookId);
     const response = await axios.get(
-      `http://localhost:8080/api/book/${bookId}` // Lấy thông tin sách từ cardId
+      `${process.env.NEXT_PUBLIC_API_URL}/api/book/${bookId}` // Lấy thông tin sách từ cardId
     );
     if (response.status === 200) {
       return response.data; // Trả về thông tin sách
@@ -104,7 +104,7 @@ function page() {
   // Hàm xử lý thanh toán
   const handleThanhToan = async () => {
     const response = await axios.post(
-      `http://localhost:8080/api/fine/pay-momo/${fine.id}`
+      `${process.env.NEXT_PUBLIC_API_URL}/api/fine/pay-momo/${fine.id}`
     );
     const payUrl = response.data;
     window.location.href = payUrl;

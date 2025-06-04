@@ -35,7 +35,7 @@ const UploadImage = () => {
     formData.append("type", "user");
     try {
       const response = await fetch(
-        "http://localhost:8080/upload/barcodeImage",
+        `${process.env.NEXT_PUBLIC_API_URL}/upload/barcodeImage`,
         {
           method: "POST",
           body: formData,
@@ -65,9 +65,12 @@ const UploadImage = () => {
     }
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:8080/api/user/${text}`, {
-        method: "GET",
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/user/${text}`,
+        {
+          method: "GET",
+        }
+      );
       if (!response.ok) {
         toast.error("Không tìm thấy người dùng");
         setLoading(false);
@@ -88,7 +91,7 @@ const UploadImage = () => {
     try {
       const userId = result?.id;
       var response = await fetch(
-        `http://localhost:8080/api/borrow-cards/user/${userId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/borrow-cards/user/${userId}`,
         {
           method: "POST",
         }
@@ -117,7 +120,9 @@ const UploadImage = () => {
   }, [result]);
 
   const fetchBookInfo = async (bookId) => {
-    const res = await fetch(`http://localhost:8080/api/book/${bookId}`);
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/book/${bookId}`
+    );
     const data = await res.json();
     console.log(data);
     return data;
@@ -297,7 +302,7 @@ const UploadImage = () => {
     try {
       if (currentChoose.status === "Đã yêu cầu") {
         const response = await fetch(
-          `http://localhost:8080/api/borrow-cards/borrow/${currentChoose?.id}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/api/borrow-cards/borrow/${currentChoose?.id}`,
           {
             method: "PUT",
             headers: {
@@ -313,7 +318,7 @@ const UploadImage = () => {
         }
       } else {
         const response = await fetch(
-          `http://localhost:8080/api/borrow-cards/return/${currentChoose?.id}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/api/borrow-cards/return/${currentChoose?.id}`,
           {
             method: "PUT",
           }
