@@ -37,17 +37,18 @@ const BookRecommend = ({
   };
   return (
     <article
-      className="grid grid-cols-[1fr_2fr] gap-2 bg-blue-50 items-center w-[325px] h-[170px] cursor-pointer rounded-xl"
+      className="gap-2 items-center w-[230px] cursor-pointer rounded-xl"
       onClick={handleCardClick}
     >
       <img
         src={imageSrc}
         alt={title}
-        className="object-cover shrink rounded-sm aspect-[0.67] w-[300px]"
+        className="object-cover shrink rounded-sm aspect-[0.67] w-[250px]"
       />
       <div className="flex flex-col flex-1 basis-0">
-        <h3 className="gap-1 w-full text-l font-bold text-black">{title}</h3>
-        <p className="gap-1 w-full text-base text-black">Tác giả: {author}</p>
+        <h3 className="gap-1 w-full text-l h[50px] text-center font-bold text-black">
+          {title}
+        </h3>
       </div>
     </article>
   );

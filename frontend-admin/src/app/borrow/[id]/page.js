@@ -52,9 +52,7 @@ const BorrowingInfo = ({ info }) => {
         <div className="flex flex-col gap-5 items-start text-[1.125rem] font-medium text-black">
           <p className="text-[1rem] font-semibold text-[#131313]/50">
             ID Phiếu:{" "}
-            <span className="text-[#131313] font-medium ">
-              {info.id}
-            </span>
+            <span className="text-[#131313] font-medium ">{info.id}</span>
           </p>
           <p className="text-[1rem] font-semibold text-[#131313]/50">
             Ngày mượn:{" "}
@@ -112,8 +110,9 @@ const ChiTietPhieuMuon = () => {
     const fetchBorrowCardDetail = async () => {
       try {
         const response = await fetch(
-          `http://localhost:8080/api/borrow-cards/${id}`,{
-            method:'GET'
+          `${process.env.NEXT_PUBLIC_API_URL}/api/borrow-cards/${id}`,
+          {
+            method: "GET",
           }
         );
         const res = await response.json();
@@ -131,7 +130,10 @@ const ChiTietPhieuMuon = () => {
 
   const handleDelete = async (info) => {
     try {
-      await fetch(`http://localhost:8080/api/borrow-cards/${info.borrowCardId}`,{method:'DELETE'});
+      await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/borrow-cards/${info.borrowCardId}`,
+        { method: "DELETE" }
+      );
       toast.success("Xóa phiếu thành công");
       setPopUpOpen(false);
 
@@ -140,15 +142,15 @@ const ChiTietPhieuMuon = () => {
       toast.error("Xóa phiếu thất bại");
     }
   };
-  const handleGoBack = () =>{
+  const handleGoBack = () => {
     router.back();
-  }
+  };
 
   if (loading) {
     return (
       <main className="flex flex-col min-h-screen text-foreground">
         <div className="flex">
-          <Sidebar/>
+          <Sidebar />
           <section className="flex justify-center items-center self-center pr-[1.25rem] md:pl-60 ml-[1.25rem] w-full h-screen">
             <ThreeDot
               color="#062D76"
@@ -167,7 +169,7 @@ const ChiTietPhieuMuon = () => {
   return (
     <main className="flex flex-col min-h-screen text-foreground bg-[#EFF3FB]">
       <div className="flex">
-        <Sidebar/>
+        <Sidebar />
         <section className="self-stretch pr-[1.25rem] md:pl-60 ml-[1.25rem] my-auto w-full max-md:max-w-full mt-2 mb-2">
           {/*Nút Back*/}
           <div className="absolute top-5 left-5 md:left-57 fixed">
@@ -180,40 +182,40 @@ const ChiTietPhieuMuon = () => {
             >
               <Undo2 className="w-12 h-12" color="white" />
             </Button>
-            </div>
-          {borrowDetail ?  
-          <div className="flex flex-col w-full max-md:max-w-full">
-            <Button
-              className={`flex self-end text-[1rem] cursor-pointer bg-red-500 hover:bg-red-700 text-white w-fit mb-2`}
-              onClick={() => setPopUpOpen(true)}
-            >
-              <img src="/icon/trash.svg" alt="Delete" className="mr-2" />
-              Xóa
-            </Button>
-            <BorrowingInfo info={borrowDetail} />
-
-            <h2 className="text-lg font-medium text-[#062D76] text-center mt-5 ">
-              Danh sách sách mượn
-            </h2>
-            <section className="grid grid-cols-1 max-sm:grid-cols-1 gap-5 items-start mt-2 w-full max-md:max-w-full">
-              {borrowDetail?.bookIds?.map((book, index) => (
-                <BookCard
-                  key={index}
-                  imageSrc={book.image}
-                  title={book.name}
-                  author={book.author}
-                  category={book.category}
-                  publisher={book.publisher}
-                  location={book.viTri}
-                />
-              ))}
-            </section>
           </div>
-        :
-        <div className="flex flex-col w-full max-md:max-w-full">
-          Không tìm thấy phiếu mượn!
-        </div>
-        }
+          {borrowDetail ? (
+            <div className="flex flex-col w-full max-md:max-w-full">
+              <Button
+                className={`flex self-end text-[1rem] cursor-pointer bg-red-500 hover:bg-red-700 text-white w-fit mb-2`}
+                onClick={() => setPopUpOpen(true)}
+              >
+                <img src="/icon/trash.svg" alt="Delete" className="mr-2" />
+                Xóa
+              </Button>
+              <BorrowingInfo info={borrowDetail} />
+
+              <h2 className="text-lg font-medium text-[#062D76] text-center mt-5 ">
+                Danh sách sách mượn
+              </h2>
+              <section className="grid grid-cols-1 max-sm:grid-cols-1 gap-5 items-start mt-2 w-full max-md:max-w-full">
+                {borrowDetail?.bookIds?.map((book, index) => (
+                  <BookCard
+                    key={index}
+                    imageSrc={book.image}
+                    title={book.name}
+                    author={book.author}
+                    category={book.category}
+                    publisher={book.publisher}
+                    location={book.viTri}
+                  />
+                ))}
+              </section>
+            </div>
+          ) : (
+            <div className="flex flex-col w-full max-md:max-w-full">
+              Không tìm thấy phiếu mượn!
+            </div>
+          )}
         </section>
         {popUpOpen && (
           <div className="fixed inset-0 items-center justify-center z-100 flex">

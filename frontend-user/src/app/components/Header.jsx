@@ -157,11 +157,14 @@ const Header = () => {
       let res;
 
       if (!searchTerm.trim()) {
-        res = await axios.get("http://localhost:8080/api/book");
+        res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/book`);
       } else {
-        res = await axios.get("http://localhost:8080/api/book/search2", {
-          params: { query: searchTerm },
-        });
+        res = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/book/search2`,
+          {
+            params: { query: searchTerm },
+          }
+        );
       }
       saveSearchTermToCache(searchTerm.trim());
       const data = res?.data || [];
@@ -202,7 +205,9 @@ const Header = () => {
   // Fetch cart
   const fetchCart = async () => {
     try {
-      const response = await fetch(`http://localhost:8080/api/cart/${user.id}`);
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/cart/${user.id}`
+      );
       if (response.ok) {
         const data = await response.json();
         const booksInCart = data.data || [];
@@ -220,7 +225,7 @@ const Header = () => {
     const notificationList = [];
     try {
       const dashboardResponse = await axios.get(
-        "http://localhost:8080/api/book/dashboard"
+        `${process.env.NEXT_PUBLIC_API_URL}/api/book/dashboard`
       );
       if (dashboardResponse.status === 200) {
         const newBooksCount = dashboardResponse.data.newBooksThisWeek || 0;
@@ -237,7 +242,7 @@ const Header = () => {
 
       const userId = user.id;
       const borrowCardsResponse = await axios.post(
-        `http://localhost:8080/api/borrow-cards/user/${userId}`
+        `${process.env.NEXT_PUBLIC_API_URL}/api/borrow-cards/user/${userId}`
       );
       if (borrowCardsResponse.status === 200) {
         const borrowCards = borrowCardsResponse.data;
@@ -247,7 +252,7 @@ const Header = () => {
           if (card.borrowedBooks && Array.isArray(card.borrowedBooks)) {
             for (const borrowedBook of card.borrowedBooks) {
               const bookResponse = await axios.get(
-                `http://localhost:8080/api/book/${borrowedBook.bookId}`
+                `${process.env.NEXT_PUBLIC_API_URL}/api/book/${borrowedBook.bookId}`
               );
               const bookName =
                 bookResponse.status === 200
@@ -339,7 +344,7 @@ const Header = () => {
   const handleLogout = () => {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("persist:root");
-    router.push("/user-login");
+    router.push("/");
   };
 
   const handleNotificationClick = (notificationId, link) => {
@@ -363,7 +368,7 @@ const Header = () => {
           <>
             <div className="flex justify-between items-center h-14 px-2 md:px-5">
               {/* Logo */}
-              <div className="flex items-center ml-6">
+              <div className="flex items-center ml-16">
                 <Link href="/" className="flex items-center">
                   <Image
                     src="/images/logoN.png"
@@ -375,7 +380,7 @@ const Header = () => {
               </div>
 
               {/* Navigation Links */}
-              <div className="hidden sm:flex space-x-20 ml-30">
+              <div className="hidden sm:flex space-x-15 ml-20">
                 {navigation.map((item) => (
                   <Link
                     key={item.name}
@@ -393,7 +398,7 @@ const Header = () => {
 
               {/* Right Icons */}
               <div className="flex items-center space-x-4">
-                <div className="hidden lg:flex mx-4 items-center justify-center ml-8 mr-8 w-fit">
+                <div className="hidden lg:flex mx-4 items-center justify-center ml-8 mr-8 w-[300px]">
                   <div className="relative w-[350px]">
                     <div className="flex items-center px-4 py-2 bg-white border border-blue-300 rounded-full shadow-md">
                       <img
@@ -405,7 +410,7 @@ const Header = () => {
                         type="search"
                         id="search-input"
                         placeholder="Tìm kiếm sách"
-                        className="flex-1 text-sm bg-transparent border-none outline-none px-2 text-black placeholder-black"
+                        className="flex-1 text-sm bg-transparent border-none outline-none px-2 text-gray-400 placeholder-gray-400"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         onKeyDown={(e) => {
@@ -537,12 +542,12 @@ const Header = () => {
                 <Menu as="div" className="relative">
                   <MenuButton className="flex rounded-full">
                     <User2
-                      width={25}
-                      height={25}
-                      className="text-blue-300 cursor-pointer"
+                      width={24}
+                      height={24}
+                      className="text-blue-300 cursor-pointer mr-16"
                     />
                   </MenuButton>
-                  <MenuItems className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg ring-1 ring-black/5">
+                  <MenuItems className="absolute mr-16 right-0 mt-2 w-48 bg-white rounded-md shadow-lg ring-1 ring-black/5">
                     <MenuItem>
                       {({ active }) => (
                         <Link

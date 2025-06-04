@@ -15,16 +15,16 @@ function Page() {
   const handleGoBack = () => {
     route.back();
   };
-  const [bookname, setBookname] = useState(""); 
-  const [author, setAuthor] = useState(""); 
-  const [publisher, setPublisher] = useState(""); 
-  const [year, setYear] = useState(""); 
-  const [quantity, setQuantity] = useState(""); 
+  const [bookname, setBookname] = useState("");
+  const [author, setAuthor] = useState("");
+  const [publisher, setPublisher] = useState("");
+  const [year, setYear] = useState("");
+  const [quantity, setQuantity] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
   const [category2, setCategory2] = useState("");
   const [weight, setWeight] = useState("");
-  const [price, setPrice]     = useState("");
+  const [price, setPrice] = useState("");
 
   const fileInputRef = useRef(null);
   const fileInputRef1 = useRef(null);
@@ -43,10 +43,12 @@ function Page() {
   useEffect(() => {
     const fetchCategory = async () => {
       try {
-        const response = await axios.get("http://localhost:8080/api/category");
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/category`
+        );
         const data = response.data;
         setTotalCate(data);
-        setCateList(data.map(item => item.name));
+        setCateList(data.map((item) => item.name));
       } catch (error) {
         console.error("Error fetching categories:", error);
         toast.error("Không thể tải danh mục");
@@ -57,9 +59,9 @@ function Page() {
 
   useEffect(() => {
     if (category !== "") {
-      const selectedCate = totalCate.find(cate => cate.name === category);
+      const selectedCate = totalCate.find((cate) => cate.name === category);
       if (selectedCate) {
-        setCate2List(selectedCate.children.map(child => child.name));
+        setCate2List(selectedCate.children.map((child) => child.name));
       } else {
         setCate2List([]);
       }
@@ -97,36 +99,36 @@ function Page() {
       }
     });
     try {
-    const res = await axios.post(
-      "http://localhost:8080/api/upload/image",
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data"
+      const res = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/upload/image`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
         }
-      }
-    );
-    return res.data;
+      );
+      return res.data;
     } catch (error) {
       console.error("Error uploading images:", error);
       toast.error("Upload hình ảnh thất bại");
       throw error;
     }
   };
-const handleValidation = () => {
-  const newErrors = { ...errors };
-  newErrors.bookname = !bookname;
-  newErrors.author = !author;
-  newErrors.publisher = !publisher;
-  newErrors.year = !year;
-  newErrors.quantity = !quantity || parseInt(quantity) < 1;
-  newErrors.description = !description;
-  newErrors.category = !category;
-  newErrors.category2 = !category2;
+  const handleValidation = () => {
+    const newErrors = { ...errors };
+    newErrors.bookname = !bookname;
+    newErrors.author = !author;
+    newErrors.publisher = !publisher;
+    newErrors.year = !year;
+    newErrors.quantity = !quantity || parseInt(quantity) < 1;
+    newErrors.description = !description;
+    newErrors.category = !category;
+    newErrors.category2 = !category2;
 
-  setErrors(newErrors);
-  return !Object.values(newErrors).includes(true);
-};
+    setErrors(newErrors);
+    return !Object.values(newErrors).includes(true);
+  };
 
   const handleSubmit = async () => {
     if (
@@ -158,17 +160,19 @@ const handleValidation = () => {
     setLoading(true);
     try {
       let finalImageURLs = [];
-      if (image.some(img => img.selectedFile)) {
+      if (image.some((img) => img.selectedFile)) {
         const newImages = await uploadImagesToCloudinary();
         finalImageURLs = newImages;
       }
 
-      const selectedParent = totalCate.find(cate => cate.name === category);
+      const selectedParent = totalCate.find((cate) => cate.name === category);
       if (!selectedParent) {
         toast.error("Thể loại chính không hợp lệ");
         return;
       }
-      const selectedChild = selectedParent.children.find(child => child.name === category2);
+      const selectedChild = selectedParent.children.find(
+        (child) => child.name === category2
+      );
       if (!selectedChild) {
         toast.error("Thể loại phụ không hợp lệ");
         return;
@@ -183,19 +187,22 @@ const handleValidation = () => {
           nxb: publisher,
           nam: parseInt(year),
           hinhAnh: finalImageURLs,
-          trongLuong: parseInt(weight),   
+          trongLuong: parseInt(weight),
           donGia: parseInt(price),
           categoryChild: { id: childId },
-          trangThai: "CON_SAN"
+          trangThai: "CON_SAN",
         },
         quantity: parseInt(quantity),
       };
 
       console.log("bookData gửi lên:", bookData);
 
-      const res = await axios.post("http://localhost:8080/api/book", bookData);
+      const res = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/book`,
+        bookData
+      );
       toast.success("Thêm sách thành công");
-      const newId = res.data.maSach; 
+      const newId = res.data.maSach;
       route.push(`/books/details/${newId}`);
     } catch (error) {
       console.error("Lỗi:", error.message);
@@ -232,7 +239,9 @@ const handleValidation = () => {
           </div>
           {/*Dòng tên sách*/}
           <div className="flex flex-col w-full gap-[5px] md:gap-[10px]">
-            <p className="font-semibold text-lg mt-3">Tên Sách<span className="text-red-500"> *</span></p>
+            <p className="font-semibold text-lg mt-3">
+              Tên Sách<span className="text-red-500"> *</span>
+            </p>
             <Input
               type="text"
               placeholder="Nhập tên sách"
@@ -243,7 +252,9 @@ const handleValidation = () => {
           </div>
           {/*Dòng tên tg*/}
           <div className="flex flex-col w-full gap-[5px] md:gap-[10px]">
-            <p className="font-semibold text-lg mt-3">Tên Tác Giả<span className="text-red-500"> *</span></p>
+            <p className="font-semibold text-lg mt-3">
+              Tên Tác Giả<span className="text-red-500"> *</span>
+            </p>
             <Input
               type="text"
               placeholder="Nhập tên tác giả"
@@ -255,7 +266,9 @@ const handleValidation = () => {
           {/*Dòng năm xuất bản và nhà xuất bản */}
           <div className="flex w-full justify-between gap-10">
             <div className="flex flex-col w-2/3 gap-[5px] md:gap-[10px]">
-              <p className="font-semibold text-lg mt-3">Năm Xuất Bản<span className="text-red-500"> *</span></p>
+              <p className="font-semibold text-lg mt-3">
+                Năm Xuất Bản<span className="text-red-500"> *</span>
+              </p>
               <Input
                 type="number"
                 placeholder="Nhập năm xuất bản"
@@ -265,7 +278,9 @@ const handleValidation = () => {
               />
             </div>
             <div className="flex flex-col w-full gap-[5px] md:gap-[10px]">
-              <p className="font-semibold text-lg mt-3">Nhà Xuất Bản<span className="text-red-500"> *</span></p>
+              <p className="font-semibold text-lg mt-3">
+                Nhà Xuất Bản<span className="text-red-500"> *</span>
+              </p>
               <Input
                 type="text"
                 placeholder="Nhập tên nhà xuất bản"
@@ -278,7 +293,9 @@ const handleValidation = () => {
           {/*Dòng số lượng và thể loại */}
           <div className="flex w-full justify-between gap-10">
             <div className="flex flex-col w-2/3 gap-[5px] md:gap-[10px]">
-              <p className="font-semibold text-lg mt-3">Số lượng<span className="text-red-500"> *</span></p>
+              <p className="font-semibold text-lg mt-3">
+                Số lượng<span className="text-red-500"> *</span>
+              </p>
               <Input
                 type="number"
                 placeholder="Nhập số lượng"
@@ -288,7 +305,9 @@ const handleValidation = () => {
               />
             </div>
             <div className="flex flex-col w-full gap-[5px] md:gap-[10px] space-y-2 relative inline-block text-left">
-              <p className="font-semibold text-lg mt-3">Thể Loại Chính<span className="text-red-500"> *</span></p>
+              <p className="font-semibold text-lg mt-3">
+                Thể Loại Chính<span className="text-red-500"> *</span>
+              </p>
               <Button
                 title={"Thể Loại Chính"}
                 className="bg-white text-black rounded-lg w-full h-10 hover:bg-gray-300 flex justify-between"
@@ -316,7 +335,9 @@ const handleValidation = () => {
             </div>
             {/*Thể loại 2*/}
             <div className="flex flex-col w-full gap-[5px] md:gap-[10px] space-y-2 relative inline-block text-left">
-              <p className="font-semibold text-lg mt-3">Thể Loại Phụ<span className="text-red-500"> *</span></p>
+              <p className="font-semibold text-lg mt-3">
+                Thể Loại Phụ<span className="text-red-500"> *</span>
+              </p>
               <Button
                 title={"Thể Loại Phụ"}
                 className="bg-white text-black rounded-lg w-full h-10 hover:bg-gray-300 flex justify-between"
@@ -344,33 +365,38 @@ const handleValidation = () => {
             </div>
           </div>
 
-           <div className="flex w-full justify-between gap-10">
-              <div className="flex flex-col w-2/3 gap-[5px] md:gap-[10px]">
-                  <p className="font-semibold text-lg mt-3">Trọng Lượng (gram)<span className="text-red-500"> *</span></p>
-                  <Input
-                      type="number"
-                      placeholder="Nhập trọng lượng"
-                      className="font-semibold rounded-lg w-full h-10 px-5 bg-white"
-                      value={weight}
-                      onChange={(e) => setWeight(e.target.value)}
-                    />
-              </div>
-              <div className="flex flex-col w-full gap-[5px] md:gap-[10px]">
-                    <p className="font-semibold text-lg mt-3">Đơn Giá (VND)<span className="text-red-500"> *</span></p>
-                    <Input
-                      type="number"
-                      placeholder="Nhập đơn giá"
-                      className="font-semibold rounded-lg w-full h-10 px-5 bg-white"
-                      value={price}
-                      onChange={(e) => setPrice(e.target.value)}
-                    />
-              </div>
-            </div> 
-        
+          <div className="flex w-full justify-between gap-10">
+            <div className="flex flex-col w-2/3 gap-[5px] md:gap-[10px]">
+              <p className="font-semibold text-lg mt-3">
+                Trọng Lượng (gram)<span className="text-red-500"> *</span>
+              </p>
+              <Input
+                type="number"
+                placeholder="Nhập trọng lượng"
+                className="font-semibold rounded-lg w-full h-10 px-5 bg-white"
+                value={weight}
+                onChange={(e) => setWeight(e.target.value)}
+              />
+            </div>
+            <div className="flex flex-col w-full gap-[5px] md:gap-[10px]">
+              <p className="font-semibold text-lg mt-3">
+                Đơn Giá (VND)<span className="text-red-500"> *</span>
+              </p>
+              <Input
+                type="number"
+                placeholder="Nhập đơn giá"
+                className="font-semibold rounded-lg w-full h-10 px-5 bg-white"
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+              />
+            </div>
+          </div>
 
           {/*Dòng mô tả*/}
           <div className="flex flex-col w-full gap-[5px] md:gap-[10px]">
-            <p className="font-semibold text-lg mt-3">Mô Tả<span className="text-red-500"> *</span></p>
+            <p className="font-semibold text-lg mt-3">
+              Mô Tả<span className="text-red-500"> *</span>
+            </p>
             <Input
               type="text"
               placeholder="Nhập mô tả sách"
