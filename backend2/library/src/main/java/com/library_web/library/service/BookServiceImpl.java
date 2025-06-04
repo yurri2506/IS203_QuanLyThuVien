@@ -5,33 +5,35 @@ import com.library_web.library.model.BookChild;
 import com.library_web.library.model.CategoryChild;
 import com.library_web.library.repository.BookChildRepository;
 import com.library_web.library.repository.BookRepository;
-import com.library_web.library.repository.CategoryChildRepository;
 import com.library_web.library.repository.CategoryRepository;
+import com.library_web.library.repository.CategoryChildRepository;
 
 import jakarta.transaction.Transactional;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class BookServiceImpl implements BookService {
     private final BookRepository repo;
     private final BookChildRepository bookChildRepository;
+
+    // private final CategoryRepository categoryRepo;
     private final CategoryChildRepository childRepo;
 
+    // private final Long defaultParentId = 1L;
+    // public BookServiceImpl(BookRepository repo) { this.repo = repo; }
     public BookServiceImpl(
             BookRepository repo,
             CategoryRepository categoryRepo,
             CategoryChildRepository childRepo,
-            BookChildRepository bookChildRepository
-    ) {
+            BookChildRepository bookChildRepository) {
         this.repo = repo;
+        // this.categoryRepo = categoryRepo;
         this.childRepo = childRepo;
         this.bookChildRepository = bookChildRepository;
     }
@@ -39,6 +41,7 @@ public class BookServiceImpl implements BookService {
     @Override
     public List<Book> getAllBooks() {
         List<Book> books = repo.findAll();
+
         for (Book book : books) {
             book.updateTrangThai();
         }
@@ -54,12 +57,9 @@ public class BookServiceImpl implements BookService {
     @Transactional
     public void delBook(Long maSach) {
         Book book = repo.findById(maSach)
-                .orElseThrow(() ->
-                        new ResponseStatusException(
-                                HttpStatus.NOT_FOUND,
-                                "Không tìm thấy sách có mã: " + maSach
-                        )
-                );
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Không tìm thấy sách có mã: " + maSach));
         book.setTrangThai(Book.TrangThai.DA_XOA);
         List<BookChild> listChild = bookChildRepository.findByBookMaSachOrderByIdAsc(maSach);
         int countDeleted = 0;
@@ -80,8 +80,7 @@ public class BookServiceImpl implements BookService {
     public Book getBookbyID(Long maSach) {
         Book book = repo.findById(maSach)
                 .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "Không tìm thấy sách có mã: " + maSach
-                ));
+                        HttpStatus.NOT_FOUND, "Không tìm thấy sách có mã: " + maSach));
         book.updateTrangThai();
         return book;
     }
@@ -141,11 +140,13 @@ public class BookServiceImpl implements BookService {
         try {
             Book book = getBookbyID(maSach);
             if (updates == null || updates.isEmpty()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Không có dữ liệu cập nhật nào được cung cấp.");
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Không có dữ liệu cập nhật nào được cung cấp.");
             }
 
             updates.forEach((key, value) -> {
-                if (value == null) return;
+                if (value == null)
+                    return;
 
                 switch (key) {
                     case "tenSach" -> book.setTenSach((String) value);
@@ -160,7 +161,8 @@ public class BookServiceImpl implements BookService {
                                 book.setNam(Integer.parseInt((String) value));
                             }
                         } catch (NumberFormatException e) {
-                            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Năm xuất bản không hợp lệ: " + value);
+                            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                                    "Năm xuất bản không hợp lệ: " + value);
                         }
                     }
                     case "trongLuong" -> {
@@ -171,27 +173,31 @@ public class BookServiceImpl implements BookService {
                                 book.setTrongLuong(Integer.parseInt((String) value));
                             }
                         } catch (NumberFormatException e) {
-                            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Trọng lượng không hợp lệ: " + value);
+                            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                                    "Trọng lượng không hợp lệ: " + value);
                         }
                     }
+
                     case "tongSoLuong" -> {
                         int newQty = ((Number) value).intValue();
                         if (newQty < 0) {
                             throw new ResponseStatusException(
                                     HttpStatus.BAD_REQUEST,
-                                    "Số lượng bản sách mới phải lớn hơn hoặc bằng 0."
-                            );
+                                    "Số lượng bản sách mới phải lớn hơn hoặc bằng 0.");
                         }
+
                         long activeCount = bookChildRepository.countActiveByBookMaSach(maSach);
                         long totalCount = bookChildRepository.countByBookMaSach(maSach);
                         for (int i = 0; i < newQty; i++) {
                             String suffix = generateSuffix((int) totalCount + i);
                             BookChild child = new BookChild(book, suffix);
                             bookChildRepository.save(child);
+                            // book.addChild(child);
                         }
                         book.setTongSoLuong((int) activeCount + newQty);
                         book.updateTrangThai();
                     }
+
                     case "donGia" -> {
                         try {
                             if (value instanceof Number) {
@@ -203,23 +209,22 @@ public class BookServiceImpl implements BookService {
                             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Đơn giá không hợp lệ: " + value);
                         }
                     }
+
                     case "trangThai" -> {
                         try {
                             if (value instanceof String) {
                                 book.setTrangThai(
-                                        Book.TrangThai.fromString((String) value)
-                                );
+                                        Book.TrangThai.fromString((String) value));
                             } else {
                                 book.setTrangThai(
-                                        Book.TrangThai.valueOf(value.toString())
-                                );
+                                        Book.TrangThai.valueOf(value.toString()));
                             }
                         } catch (IllegalArgumentException e) {
                             System.err.println(
-                                    "Giá trị không hợp lệ cho enum TrangThai: " + value
-                            );
+                                    "Giá trị không hợp lệ cho enum TrangThai: " + value);
                         }
                     }
+
                     case "hinhAnh" -> {
                         if (value instanceof List<?>) {
                             List<String> imgs = ((List<?>) value).stream()
@@ -227,7 +232,8 @@ public class BookServiceImpl implements BookService {
                                     .toList();
                             book.setHinhAnh(imgs);
                         } else {
-                            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Danh sách hình ảnh không hợp lệ: " + value);
+                            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                                    "Danh sách hình ảnh không hợp lệ: " + value);
                         }
                     }
                     case "categoryChildId" -> {
@@ -235,8 +241,7 @@ public class BookServiceImpl implements BookService {
                         CategoryChild child = childRepo.findById(childId)
                                 .orElseThrow(() -> new ResponseStatusException(
                                         HttpStatus.BAD_REQUEST,
-                                        "Không tìm thấy thể loại con với ID: " + childId
-                                ));
+                                        "Không tìm thấy thể loại con với ID: " + childId));
                         book.setCategoryChild(child);
                     }
                     default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Trường không hợp lệ: " + key);
@@ -245,29 +250,126 @@ public class BookServiceImpl implements BookService {
 
             return repo.save(book);
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Lỗi khi cập nhật sách: " + e.getMessage(), e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Lỗi khi cập nhật sách: " + e.getMessage(), e);
         }
     }
 
+    // @Override
+    // public List<Book> searchBooks(String author, String category, String publisher, Integer year, String title,
+    //         boolean sortByBorrowCount) {
+    //     List<Book> books = repo.findAll();
+
+    //     if (author != null && !author.isBlank()) {
+    //         String a = author.toLowerCase();
+    //         books = books.stream()
+    //                 .filter(b -> b.getTenTacGia() != null && b.getTenTacGia().toLowerCase().contains(a))
+    //                 .toList();
+    //     }
+    //     if (category != null && !category.isBlank()) {
+    //         String c = category.toLowerCase();
+    //         books = books.stream()
+    //                 .filter(b -> b.getCategoryChild() != null
+    //                         && b.getCategoryChild().getName().toLowerCase().contains(c))
+    //                 .toList();
+    //     }
+    //     if (publisher != null && !publisher.isBlank()) {
+    //         String p = publisher.toLowerCase();
+    //         books = books.stream()
+    //                 .filter(b -> b.getNxb() != null && b.getNxb().toLowerCase().contains(p))
+    //                 .toList();
+    //     }
+    //     if (year != null) {
+    //         books = books.stream()
+    //                 .filter(b -> b.getNam() != null && b.getNam().equals(year))
+    //                 .toList();
+    //     }
+    //     if (title != null && !title.isBlank()) {
+    //         String t = title.toLowerCase();
+    //         books = books.stream()
+    //                 .filter(b -> b.getTenSach() != null
+    //                         && b.getTenSach().toLowerCase().contains(t))
+    //                 .toList();
+    //     }
+
+    //     if (sortByBorrowCount) {
+    //         books = books.stream()
+    //                 .sorted(Comparator.comparing(Book::getSoLuongMuon).reversed())
+    //                 .toList();
+    //     }
+    //     for (Book book : books) {
+    //         book.updateTrangThai();
+    //     }
+    //     return books;
+    // }
     @Override
-    public Page<Book> searchBooks(String author, String category, String publisher, Integer year, String title, boolean sortByBorrowCount, Pageable pageable) {
-        List<Book> books = repo.searchBooks(author, category, publisher, year, title);
-        if (sortByBorrowCount) {
+public List<Book> searchBooks(String all, String title, String author, String category, String publisher, Integer year, boolean sortByBorrowCount) {
+    List<Book> books = repo.findAll();
+
+
+    // Apply global search if 'all' is provided
+    if (all != null && !all.trim().isEmpty()) {
+        String lowerCaseAll = all.trim().toLowerCase();
+        books = books.stream()
+                .filter(book -> {
+                    return (book.getTenSach() != null && book.getTenSach().toLowerCase().contains(lowerCaseAll)) ||
+                           (book.getTenTacGia() != null && book.getTenTacGia().toLowerCase().contains(lowerCaseAll)) ||
+                           (book.getCategoryChild() != null && book.getCategoryChild().getName() != null &&
+                            book.getCategoryChild().getName().toLowerCase().contains(lowerCaseAll)) ||
+                           (book.getNxb() != null && book.getNxb().toLowerCase().contains(lowerCaseAll)) ||
+                           (book.getNam() != null && book.getNam().toString().contains(all.trim()));
+                })
+                .collect(Collectors.toList());
+    } else {
+        // Apply specific filters
+        if (title != null && !title.trim().isEmpty()) {
+            String lowerCaseTitle = title.trim().toLowerCase();
             books = books.stream()
-                    .sorted(Comparator.comparing(Book::getSoLuongMuon).reversed())
-                    .toList();
+                    .filter(book -> book.getTenSach() != null && book.getTenSach().toLowerCase().contains(lowerCaseTitle))
+                    .collect(Collectors.toList());
         }
-        for (Book book : books) {
-            book.updateTrangThai();
+        if (author != null && !author.trim().isEmpty()) {
+            String lowerCaseAuthor = author.trim().toLowerCase();
+            books = books.stream()
+                    .filter(book -> book.getTenTacGia() != null && book.getTenTacGia().toLowerCase().contains(lowerCaseAuthor))
+                    .collect(Collectors.toList());
         }
-
-        // Implement pagination manually
-        int start = (int) pageable.getOffset();
-        int end = Math.min(start + pageable.getPageSize(), books.size());
-        List<Book> pagedBooks = books.subList(start, end);
-
-        return new PageImpl<>(pagedBooks, pageable, books.size());
+        if (category != null && !category.trim().isEmpty()) {
+            String lowerCaseCategory = category.trim().toLowerCase();
+            books = books.stream()
+                    .filter(book -> book.getCategoryChild() != null && book.getCategoryChild().getName() != null &&
+                            book.getCategoryChild().getName().toLowerCase().contains(lowerCaseCategory))
+                    .collect(Collectors.toList());
+        }
+        if (publisher != null && !publisher.trim().isEmpty()) {
+            String lowerCasePublisher = publisher.trim().toLowerCase();
+            books = books.stream()
+                    .filter(book -> book.getNxb() != null && book.getNxb().toLowerCase().contains(lowerCasePublisher))
+                    .collect(Collectors.toList());
+        }
+        if (year != null) {
+            books = books.stream()
+                    .filter(book -> book.getNam() != null && book.getNam().equals(year))
+                    .collect(Collectors.toList());
+        }
     }
+
+    // Apply sorting if requested
+    if (sortByBorrowCount) {
+        books = books.stream()
+                .sorted(Comparator.comparing(Book::getSoLuongMuon, Comparator.nullsLast(Comparator.reverseOrder())))
+                .collect(Collectors.toList());
+    }
+
+    // Update trangThai for all filtered books
+    for (Book book : books) {
+        if (book != null) {
+            book.updateTrangThai(); // Assuming updateTrangThai() is a method in the Book entity
+        }
+    }
+
+    return books;
+}
 
     @Override
     public long getTotalBooks() {
@@ -290,5 +392,25 @@ public class BookServiceImpl implements BookService {
     @Override
     public List<Book> findBooksNeedingRestock(int quantity) {
         return repo.findBooksNeedingRestock(quantity);
+    }
+
+    @Override
+    public List<Book> searchBooks2(String query) {
+        // Kiểm tra nếu query không phải là null hoặc rỗng
+        if (query == null || query.trim().isEmpty()) {
+            return List.of(); // Trả về danh sách rỗng nếu không có input
+        }
+
+        // Tìm kiếm theo tên sách, tên tác giả hoặc thể loại (kiểm tra đầy đủ các trường
+        // hợp)
+        List<Book> books = repo.findByTenSachContainingIgnoreCase(query);
+        if (books.isEmpty()) {
+            books = repo.findByTenTacGiaContainingIgnoreCase(query);
+        }
+        // if (books.isEmpty()) {
+        //     books = repo.findByTheLoaiContainingIgnoreCase(query);
+        // }
+
+        return books;
     }
 }

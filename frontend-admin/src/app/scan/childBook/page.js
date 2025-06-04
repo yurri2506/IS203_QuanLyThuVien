@@ -4,11 +4,11 @@ import { Button } from "../../components/ui/button";
 import { ThreeDot } from "react-loading-indicators";
 import toast from "react-hot-toast";
 
-const UploadChild = ({resultChild, setResultChild}) => {
+const UploadChild = ({ resultChild, setResultChild }) => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
-  const [text, setText] = useState("")
+  const [text, setText] = useState("");
   // Hàm xử lý khi người dùng chọn ảnh
   const onFileChange = (event) => {
     setSelectedFile(event.target.files[0]);
@@ -45,19 +45,19 @@ const UploadChild = ({resultChild, setResultChild}) => {
     setLoading(false);
   };
 
-  useEffect(()=>{
-    if(result){
-      setResultChild(result)
+  useEffect(() => {
+    if (result) {
+      setResultChild(result);
     }
-  },[result])
+  }, [result]);
 
-  const handleEnter = async() =>{
-    if(text==""){
+  const handleEnter = async () => {
+    if (text == "") {
       alert("Vui lòng nhập mã trước khi tìm kiếm");
       return;
     }
     setLoading(true);
-    try{
+    try {
       const response = await fetch(
         `http://localhost:8080/api/bookchild/${text}`,
         {
@@ -66,19 +66,18 @@ const UploadChild = ({resultChild, setResultChild}) => {
       );
 
       if (!response.ok) {
-        toast.error("Không tìm thấy sách") 
-        setLoading(false);       
+        toast.error("Không tìm thấy sách");
+        setLoading(false);
         return;
-      }  
+      }
       const result = await response.json();
       setResult(result);
-      setText("")
-    }
-    catch(e){
-      console.log(e)
+      setText("");
+    } catch (e) {
+      console.log(e);
     }
     setLoading(false);
-  }
+  };
   return (
     <div className="flex w-full flex-col gap-2 items-center">
       {loading ? (
@@ -95,16 +94,21 @@ const UploadChild = ({resultChild, setResultChild}) => {
         <div className="flex flex-col w-full justify-center items-center h-[10px] mb-10 gap-5 px-10 py-6 ">
           <p className="text-xl font-semibold ">Vui lòng nhập mã sách</p>
           <div className="flex flex-col w-full items-center justify-center gap-1">
-            <input type="text" value={text} onChange={(e)=>setText(e.target.value)} 
-            placeholder="Nhập ID sách"
-            className="bg-white rounded w-3/4 border-1"
-            onKeyDown={(e) => e.key === "Enter" && handleEnter()}
+            <input
+              type="text"
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              placeholder="Nhập ID sách"
+className="bg-white rounded w-fit border-1"
+              onKeyDown={(e) => e.key === "Enter" && handleEnter()}
             />
-            <p className="text-sm italic text-[#062D76]">Nhập Enter để tiến hành tìm kiếm</p>
+            <p className="text-sm italic text-[#062D76]">
+              Nhập Enter để tiến hành tìm kiếm
+            </p>
           </div>
-          <p className="text-2xl font-semibold ">Hoặc</p>
+          <p className="text-2xl font-semibold mt-10">Hoặc</p>
           <p className="text-xl font-semibold ">Tải ảnh barcode mã sách</p>
-          <div className="flex gap-5">
+          <div className="flex gap-0">
             <input type="file" onChange={onFileChange} />
             <Button onClick={handleUpload}>Tải ảnh lên</Button>
           </div>

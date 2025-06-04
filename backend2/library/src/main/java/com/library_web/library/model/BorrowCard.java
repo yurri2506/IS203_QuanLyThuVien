@@ -1,4 +1,5 @@
 package com.library_web.library.model;
+
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.*;
@@ -55,12 +56,15 @@ public class BorrowCard {
   }
 
   // Constructor mặc định
-  public BorrowCard() {}
+  public BorrowCard() {
+  }
 
-  public void updateStatus(Status status) {
-    this.status = status.getStatusDescription();
-    if (status == Status.BORROWED && dueDate != null && LocalDateTime.now().isAfter(dueDate)) {
-      this.status = Status.EXPIRED.getStatusDescription();
+  public void updateStatus() {
+    if (this.status.equals(Status.BORROWED.getStatusDescription())) {
+      // Kiểm tra nếu đã quá hạn trả sách
+      if (this.dueDate != null && LocalDateTime.now().isAfter(this.dueDate)) {
+        this.status = Status.EXPIRED.getStatusDescription(); // Đặt trạng thái là "Hết hạn"
+      }
     }
   }
 
@@ -87,20 +91,67 @@ public class BorrowCard {
   }
 
   // Getter và Setter
-  public Long getId() { return id; }
-  public void setId(Long id) { this.id = id; }
-  public Long getUserId() { return userId; }
-  public void setUserId(Long userId) { this.userId = userId; }
-  public List<BorrowedBook> getBorrowedBooks() { return borrowedBooks; }
-  public void setBorrowedBooks(List<BorrowedBook> borrowedBooks) { this.borrowedBooks = borrowedBooks; }
-  public LocalDateTime getBorrowDate() { return borrowDate; }
-  public void setBorrowDate(LocalDateTime borrowDate) { this.borrowDate = borrowDate; }
-  public LocalDateTime getDueDate() { return dueDate; }
-  public void setDueDate(LocalDateTime dueDate) { this.dueDate = dueDate; }
-  public LocalDateTime getGetBookDate() { return getBookDate; }
-  public void setGetBookDate(LocalDateTime getBookDate) { this.getBookDate = getBookDate; }
-  public String getStatus() { return status; }
-  public void setStatus(String status) { this.status = status; }
-  public Integer getSoNgayTre() { return soNgayTre; }
-  public void setSoNgayTre(Integer soNgayTre) { this.soNgayTre = soNgayTre; }
+  public Long getId() {
+    return id;
+  }
+
+  public void setId(Long id) {
+    this.id = id;
+  }
+
+  public Long getUserId() {
+    return userId;
+  }
+
+  public void setUserId(Long userId) {
+    this.userId = userId;
+  }
+
+  public List<BorrowedBook> getBorrowedBooks() {
+    return borrowedBooks;
+  }
+
+  public void setBorrowedBooks(List<BorrowedBook> borrowedBooks) {
+    this.borrowedBooks = borrowedBooks;
+  }
+
+  public LocalDateTime getBorrowDate() {
+    return borrowDate;
+  }
+
+  public void setBorrowDate(LocalDateTime borrowDate) {
+    this.borrowDate = borrowDate;
+  }
+
+  public LocalDateTime getDueDate() {
+    return dueDate;
+  }
+
+  public void setDueDate(LocalDateTime dueDate) {
+    this.dueDate = dueDate;
+  }
+
+  public LocalDateTime getGetBookDate() {
+    return getBookDate;
+  }
+
+  public void setGetBookDate(LocalDateTime getBookDate) {
+    this.getBookDate = getBookDate;
+  }
+
+  public String getStatus() {
+    return status;
+  }
+
+  public void setStatus(String status) {
+    this.status = status;
+  }
+
+  public Integer getSoNgayTre() {
+    return soNgayTre;
+  }
+
+  public void setSoNgayTre(Integer soNgayTre) {
+    this.soNgayTre = soNgayTre;
+  }
 }

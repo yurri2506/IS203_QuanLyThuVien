@@ -21,24 +21,12 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     List<Book> findByTrangThaiNot(TrangThai trangThai);
     List<Book> findByCreatedAtAfterAndTrangThaiNot(LocalDate date, TrangThai trangThai);
 
-    // New method for paginated and filtered search
-    @Query("SELECT b FROM Book b WHERE " +
-           "(:author IS NULL OR LOWER(b.tenTacGia) LIKE LOWER(CONCAT('%', :author, '%'))) AND " +
-           "(:category IS NULL OR LOWER(b.categoryChild.name) LIKE LOWER(CONCAT('%', :category, '%'))) AND " +
-           "(:publisher IS NULL OR LOWER(b.nxb) LIKE LOWER(CONCAT('%', :publisher, '%'))) AND " +
-           "(:year IS NULL OR b.nam = :year) AND " +
-           "(:title IS NULL OR LOWER(b.tenSach) LIKE LOWER(CONCAT('%', :title, '%'))) AND " +
-           "b.trangThai != 'DA_XOA'")
-    List<Book> searchBooks(
-            @Param("author") String author,
-            @Param("category") String category,
-            @Param("publisher") String publisher,
-            @Param("year") Integer year,
-            @Param("title") String title
-    );
-
+ 
     // New method for finding books needing restocking
     @Query("SELECT b FROM Book b WHERE b.tongSoLuong < :quantity OR b.trangThai != 'CON_SAN'")
     List<Book> findBooksNeedingRestock(@Param("quantity") int quantity);
 
+    List<Book> findByTenSachContainingIgnoreCase(String query);
+    List<Book> findByTenTacGiaContainingIgnoreCase(String query);
+    // List<Book> findByTheLoaiContainingIgnoreCase(String query);
 }

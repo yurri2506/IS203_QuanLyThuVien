@@ -11,47 +11,47 @@ import toast from "react-hot-toast";
 const page = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [allFines, setAllFines] = useState([]);
-  const [filterFines, setFilterFines] = useState([]); //khi tìm kiếm
-  const [mode, setMode] = useState(0); //0 là chưa thanh toán, 1 là đã thanh toán
+  const [filterFines, setFilterFines] = useState([]);
+  const [mode, setMode] = useState(0); // 0 là chưa thanh toán, 1 là đã thanh toán
   const [loading, setLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const itemsPerPage = 10;
 
   const handleSearch = () => {
-    //Hàm tìm kiếm
     if (searchQuery) {
       setLoading(true);
       const filterFine = filteredCards.filter((card) =>
-        card.id.toString() === searchQuery || //tìm theo id
-        card?.userId.toLowerCase().includes(searchQuery.toLowerCase()) //tìm theo userId
-          ? card
-          : null
+        card.id.toString() === searchQuery || // tìm theo id
+        card?.userId.toString().includes(searchQuery) // tìm theo userId
       );
       setFilterFines(filterFine);
+      setTotalPages(Math.ceil(filterFine.length / itemsPerPage) || 1);
+      setCurrentPage(1); // Reset to first page
       setLoading(false);
       if (filterFine.length < 1) toast.error("Không tìm thấy kết quả");
     } else {
       setFilterFines([]);
+      setTotalPages(Math.ceil(filteredCards.length / itemsPerPage) || 1);
+      setCurrentPage(1); // Reset to first page
     }
   };
 
   const filteredCards = allFines?.filter((card) => {
-    if (mode === 0)
-      return card.trangThai === "CHUA_THANH_TOAN";
+    if (mode === 0) return card.trangThai === "CHUA_THANH_TOAN";
     if (mode === 1) return card.trangThai === "DA_THANH_TOAN";
     return false;
   });
 
   const route = useRouter();
   const handleAddFine = () => {
-    //Chuyển sang trang thêm phiếu phạt
     route.push(`/fine/addFine`);
   };
   const handleDetail = (MaPhat) => {
-    //Chuyển sang trang chi tiết phiếu phạt
     route.push(`/fine/${MaPhat}`);
   };
 
   const fetchFine = async () => {
-    //Hàm lấy ds phiếu phạt, sau đó chia theo trangThai
     setLoading(true);
     try {
       const response = await fetch(
@@ -60,35 +60,42 @@ const page = () => {
           method: "GET",
         }
       );
-      if(!response.ok){
-        console.log("Không tìm thấy phiếu phạt nào")
-        setLoading(false);       
+      if (!response.ok) {
+        console.log("Không tìm thấy phiếu phạt nào");
+        toast.error("Không tìm thấy phiếu phạt nào.");
+        setAllFines([]);
+        setTotalPages(1);
+        setCurrentPage(1);
+        setLoading(false);
         return;
       }
       const res = await response.json();
-      setAllFines(res)
+      setAllFines(res);
+      setTotalPages(Math.ceil(res.length / itemsPerPage) || 1);
+      setCurrentPage(1); // Reset to first page
     } catch (error) {
-      console.log(error)
-    }    
-    setLoading(false);
+      console.error("Lỗi khi fetch phiếu phạt:", error);
+      toast.error("Lỗi khi tải dữ liệu phiếu phạt.");
+      setAllFines([]);
+      setTotalPages(1);
+      setCurrentPage(1);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
     fetchFine();
-    setMode(0);
-    setSearchQuery("");
-    handleSearch();
   }, []);
 
   const FineCard = ({ fine }) => {
-    //Component phiếu phạt
     return (
       <div className="flex bg-white w-full rounded-lg mt-2 relative drop-shadow-lg p-5 gap-[20px] md:gap-[50px] items-center">
         <div className="flex flex-col gap-[10px] relative w-full">
-          <p className="font-bold">ID:&nbsp;{fine.id}</p>
-          <p className="">User ID:&nbsp;{fine.userId.id}</p>
-          <p className="font-bold">Số Tiền:&nbsp;{fine.soTien}&nbsp;đồng</p>
-          <p className="">Nội Dung:&nbsp;{fine.noiDung}</p>
+          <p className="font-bold">ID: {fine.id}</p>
+          <p className="">User ID: {fine.userId}</p>
+          <p className="font-bold">Số Tiền: {fine.soTien} đồng</p>
+          <p className="">Nội Dung: {fine.noiDung}</p>
         </div>
         <div className="w-full flex justify-end mr-10">
           <Button
@@ -106,18 +113,28 @@ const page = () => {
     );
   };
 
+  // Phân trang
+  const paginatedFines = (filterFines?.length > 0 ? filterFines : filteredCards)
+    ?.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  // Generate page numbers for pagination
+  const pageNumbers = [];
+  for (let i = 1; i <= totalPages; i++) {
+    pageNumbers.push(i);
+  }
+
+  const handlePageChange = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+
   return (
     <div className="flex flex-row w-full min-h-screen h-full bg-[#EFF3FB]">
       <Sidebar />
       <div className="flex w-full flex-col py-6 md:ml-52 relative mt-5 gap-2 items-center px-10">
-        {" "}
-        {/*Main*/}
         <div className="flex w-full items-center h-[10px] justify-between mb-10">
-          {" "}
-          {/*Thanh Trên*/}
           <div className="flex w-1/2 gap-10">
-            {" "}
-            {/*Bên Trái*/}
             <Button
               title={"Chưa Thanh Toán"}
               className={`w-50 h-10 cursor-pointer ${
@@ -126,7 +143,8 @@ const page = () => {
               onClick={() => {
                 setMode(0);
                 setSearchQuery("");
-                filterFines.length = 0;
+                setFilterFines([]);
+                setCurrentPage(1);
               }}
             >
               <Timer className="w-5 h-5" color="white" />
@@ -136,11 +154,12 @@ const page = () => {
               title={"Đã Thanh Toán"}
               className={`w-50 h-10 cursor-pointer ${
                 mode === 1 ? "bg-[#062D76]" : "bg-[#b6cefa]"
-              }  hover:bg-gray-500 font-bold rounded-[10px] overflow-hidden`}
+              } hover:bg-gray-500 font-bold rounded-[10px] overflow-hidden`}
               onClick={() => {
                 setMode(1);
                 setSearchQuery("");
-                filterFines.length = 0;
+                setFilterFines([]);
+                setCurrentPage(1);
               }}
             >
               <DollarSign className="w-5 h-5" color="white" />
@@ -148,8 +167,6 @@ const page = () => {
             </Button>
           </div>
           <div className="flex gap-5">
-            {" "}
-            {/*Bên Phải*/}
             <Input
               type="text"
               placeholder="Tìm kiếm"
@@ -179,13 +196,43 @@ const page = () => {
               textColor="#062D76"
             />
           </div>
+        ) : paginatedFines?.length > 0 ? (
+          paginatedFines.map((fine) => <FineCard key={fine?.id} fine={fine} />)
         ) : (
-          (filterFines?.length>0?filterFines:filteredCards)?.map((fine) => {
-            return <FineCard key={fine?.id} fine={fine} />;
-          })
+          <p className="text-center text-gray-600">Không có phiếu phạt nào.</p>
         )}
-        {/*Nút Thêm - Floating Button*/}
-        <div className={`fixed bottom-10 right-10 ${mode===0?"":"hidden"}`}>
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center gap-2 mt-6">
+            <Button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1 || loading}
+              className="bg-[#062D76] hover:bg-gray-700 text-white"
+            >
+              Trước
+            </Button>
+            {pageNumbers.map((number) => (
+              <Button
+                key={number}
+                onClick={() => handlePageChange(number)}
+                className={`${
+                  currentPage === number
+                    ? "bg-[#062D76] text-white"
+                    : "bg-white text-[#062D76] border border-[#062D76] hover:bg-gray-100"
+                }`}
+              >
+                {number}
+              </Button>
+            ))}
+            <Button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages || loading}
+              className="bg-[#062D76] hover:bg-gray-700 text-white"
+            >
+              Sau
+            </Button>
+          </div>
+        )}
+        <div className={`fixed bottom-10 right-10 ${mode === 0 ? "" : "hidden"}`}>
           <Button
             title={"Thêm Phiếu Phạt"}
             className="bg-[#062D76] rounded-3xl w-12 h-12"

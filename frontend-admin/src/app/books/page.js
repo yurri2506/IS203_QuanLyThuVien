@@ -19,6 +19,8 @@ const Page = () => {
   const [popUpOpen, setPopUpOpen] = useState(false);
   const [deleteOne, setDeleteOne] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1); // Current page state
+  const [itemsPerPage] = useState(10); // Number of books per page
   const router = useRouter();
 
   const fetchBook = async () => {
@@ -38,20 +40,22 @@ const Page = () => {
     fetchBook();
   }, []);
 
-
   useEffect(() => {
     setSearchQuery("");
     setFilterBooks([]);
+    setCurrentPage(1); // Reset to first page when mode changes
   }, [mode]);
 
   const handleSearch = async (e) => {
     e.preventDefault();
     if (mode === "all" && !searchQuery) {
       setFilterBooks([]);
+      setCurrentPage(1); // Reset to first page
       return;
     }
     if (mode === "all") {
       setFilterBooks(bookList);
+      setCurrentPage(1); // Reset to first page
       return;
     }
     const params = {};
@@ -69,6 +73,7 @@ const Page = () => {
         { params }
       );
       setFilterBooks(data);
+      setCurrentPage(1); // Reset to first page
       if (data.length === 0) toast.error("Không tìm thấy kết quả");
     } catch (err) {
       console.error("Lỗi khi tìm kiếm:", err);
@@ -89,6 +94,7 @@ const Page = () => {
       await axios.delete(`http://localhost:8080/api/book/${book.maSach}`);
       toast.success("Xóa sách thành công");
       await fetchBook();
+      setCurrentPage(1); // Reset to first page after deletion
     } catch (error) {
       console.error("Lỗi khi xóa:", error.response || error);
       toast.error("Xóa sách thất bại");
@@ -99,11 +105,27 @@ const Page = () => {
     }
   };
 
-  const displayed = (filterBooks.length > 0 ? filterBooks : bookList)
+  // Calculate displayed books based on pagination
+  const displayedBooks = (filterBooks.length > 0 ? filterBooks : bookList)
     .filter(b => {
       if (statusFilter === "all") return true;
       return b.trangThai === statusFilter;
     });
+
+  // Calculate total pages
+  const totalPages = Math.ceil(displayedBooks.length / itemsPerPage);
+
+  // Get books for the current page
+  const indexOfLastBook = currentPage * itemsPerPage;
+  const indexOfFirstBook = indexOfLastBook - itemsPerPage;
+  const currentBooks = displayedBooks.slice(indexOfFirstBook, indexOfLastBook);
+
+  // Handle page change
+  const handlePageChange = (pageNumber) => {
+    if (pageNumber >= 1 && pageNumber <= totalPages) {
+      setCurrentPage(pageNumber);
+    }
+  };
 
   const BookCard = ({ book }) => {
     const isAvailable = book.trangThai === 'CON_SAN';
@@ -147,6 +169,13 @@ const Page = () => {
       </div>
     );
   };
+
+  // Generate page numbers for pagination
+  const pageNumbers = [];
+  for (let i = 1; i <= totalPages; i++) {
+    pageNumbers.push(i);
+  }
+
   return (
     <div className="flex flex-row w-full min-h-screen bg-[#EFF3FB]">
       <Sidebar />
@@ -201,9 +230,41 @@ const Page = () => {
               </Button>
             </div>
           </div>
-          {displayed.map((book) => (
+          {currentBooks.map((book) => (
             <BookCard key={book.maSach} book={book} />
           ))}
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex justify-center items-center gap-2 mt-6">
+              <Button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="bg-[#062D76] hover:bg-gray-700 text-white"
+              >
+                Trước
+              </Button>
+              {pageNumbers.map((number) => (
+                <Button
+                  key={number}
+                  onClick={() => handlePageChange(number)}
+                  className={`${
+                    currentPage === number
+                      ? "bg-[#062D76] text-white"
+                      : "bg-white text-[#062D76] border border-[#062D76] hover:bg-gray-100"
+                  }`}
+                >
+                  {number}
+                </Button>
+              ))}
+              <Button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="bg-[#062D76] hover:bg-gray-700 text-white"
+              >
+                Sau
+              </Button>
+            </div>
+          )}
         </div>
       )}
       {popUpOpen && deleteOne && (

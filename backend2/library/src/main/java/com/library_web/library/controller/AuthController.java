@@ -65,17 +65,6 @@ public class AuthController {
         return response;
     }
 
-    @PostMapping("/forgot-password")
-    public Map<String, Object> forgotPassword(@RequestBody Map<String, String> request) {
-        String emailOrPhone = request.get("emailOrPhone");
-        Map<String, Object> response = userService.forgotPassword(emailOrPhone);
-        if (response == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-                    "Không tìm thấy người dùng với email hoặc số điện thoại này");
-        }
-        return response;
-    }
-
     @PostMapping("/login")
     public Map<String, Object> login(@RequestBody Map<String, String> request) {
         String emailOrPhone = request.get("email");
@@ -83,8 +72,13 @@ public class AuthController {
             emailOrPhone = request.get("phone");
         }
         String password = request.get("password");
+        String isFEAdmin = request.get("isFEAdmin");
+        if (isFEAdmin == null) {
+            isFEAdmin = "false"; // Mặc định là false nếu không có trường này
+        }
+        Boolean isAdmin = Boolean.parseBoolean(isFEAdmin);
 
-        Map<String, Object> response = userService.login(emailOrPhone, password);
+        Map<String, Object> response = userService.login(emailOrPhone, password, isAdmin);
         if (response == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email/số điện thoại hoặc mật khẩu không đúng");
         }
@@ -102,6 +96,17 @@ public class AuthController {
         return response;
     }
 
+    @PostMapping("/forgot-password")
+    public Map<String, Object> forgotPassword(@RequestBody Map<String, String> request) {
+        String emailOrPhone = request.get("emailOrPhone");
+        Map<String, Object> response = userService.forgotPassword(emailOrPhone);
+        if (response == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "Không tìm thấy người dùng với email hoặc số điện thoại này");
+        }
+        return response;
+    }
+
     @PostMapping("/reset-password")
     public Map<String, Object> resetPassword(@RequestBody Map<String, String> request) {
         String emailOrPhone = request.get("emailOrPhone");
@@ -116,77 +121,99 @@ public class AuthController {
         return response;
     }
 
+
+   
     @PostMapping("/auth/google")
-    public ResponseEntity<?> loginWithGoogle(@RequestBody Map<String, String> body) {
-        String accessToken = body.get("googleAccessToken");
-        if (accessToken == null || accessToken.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Google Access Token không được để trống");
-        }
-
-        try {
-            Map<String, Object> response = userService.loginWithGoogle(accessToken);
-            if (response == null) {
-                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
-                        "Google Login thất bại: IdToken không hợp lệ");
-            }
-
-            if (response.containsKey("data") &&
-                    ((Map<String, Object>) response.get("data")).containsKey("accessToken")) {
-                String email = (String) ((Map<String, Object>) response.get("data")).get("user.email");
-                if (email != null) {
-                    User user = userRepository.findByEmail(email)
-                            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                                    "Không tìm thấy người dùng sau khi đăng nhập bằng Google"));
-                    cartService.getOrCreateCart(user);
-                }
-            }
-
-            return ResponseEntity.ok(response);
-        } catch (Exception ex) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("error", "Google Login thất bại: " + ex.getMessage()));
-        }
+public ResponseEntity<?> loginWithGoogle(@RequestBody Map<String, String> body) {
+    String accessToken = body.get("accessToken"); // Match frontend key
+    if (accessToken == null || accessToken.isBlank()) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Google Access Token không được để trống");
     }
+
+    try {
+        Map<String, Object> response = userService.loginWithGoogle(accessToken);
+        if (response == null || !"OK".equals(response.get("status"))) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
+                    "Google Login thất bại: " + response.getOrDefault("message", "IdToken không hợp lệ"));
+        }
+
+        Map<String, Object> data = (Map<String, Object>) response.get("data");
+        if (data != null && data.containsKey("user")) {
+            Map<String, Object> userMap = (Map<String, Object>) data.get("user");
+            String email = (String) userMap.get("email");
+            if (email != null && !email.isBlank()) {
+                User user = userRepository.findByEmail(email)
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                                "Không tìm thấy người dùng sau khi đăng nhập bằng Google"));
+                cartService.getOrCreateCart(user);
+            }
+        }
+
+        return ResponseEntity.ok(response);
+    } catch (Exception ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of("error", "Google Login thất bại: " + ex.getMessage()));
+    }
+}
 
     @PostMapping("/auth/facebook")
     public ResponseEntity<?> loginWithFacebook(@RequestBody Map<String, String> body) {
         String accessToken = body.get("accessToken");
         if (accessToken == null || accessToken.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Facebook Access Token không được để trống");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of(
+                    "status", "FAIL",
+                    "message", "Facebook Access Token không được để trống"
+                ));
         }
 
         try {
             Map<String, Object> response = facebookAuthService.signInWithFacebook(accessToken);
-            if (response.containsKey("data") &&
-                    ((Map<String, Object>) response.get("data")).containsKey("accessToken")) {
-                String username = (String) ((Map<String, Object>) response.get("data")).get("user.username");
-                if (username != null) {
-                    User user = userRepository.findByUsername(username)
-                            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                                    "Không tìm thấy người dùng sau khi đăng nhập bằng Facebook"));
-                    cartService.getOrCreateCart(user);
-                }
+            if (!"OK".equals(response.get("status"))) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(response);
             }
+
+            // Lấy thông tin người dùng từ response
+            Map<String, Object> data = (Map<String, Object>) response.get("data");
+            Map<String, Object> userInfo = (Map<String, Object>) data.get("user");
+            String username = (String) userInfo.get("username");
+
+            // Tạo hoặc lấy giỏ hàng cho người dùng
+            User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Không tìm thấy người dùng sau khi đăng nhập bằng Facebook"
+                ));
+            cartService.getOrCreateCart(user);
+
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("status", "FAIL", "message", e.getMessage()));
+                .body(Map.of(
+                    "status", "FAIL",
+                    "message", "Lỗi khi đăng nhập bằng Facebook: " + e.getMessage(),
+                    "error", e.getClass().getSimpleName()
+                ));
         }
     }
 
-    @PostMapping("/password/reset")
-    public ResponseEntity<?> resetPasswordDuplicate(@RequestBody Map<String, String> request) {
-        String emailOrPhone = request.get("emailOrPhone");
-        String otp = request.get("otp");
-        String newPassword = request.get("newPassword");
 
-        Map<String, Object> response = userService.resetPassword(emailOrPhone, otp, newPassword);
-        if (response == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "OTP không chính xác, đã hết hạn hoặc không tìm thấy người dùng");
-        }
-        return ResponseEntity.ok(response);
-    }
+    // @PostMapping("/password/reset")
+    // public ResponseEntity<?> resetPasswordDuplicate(@RequestBody Map<String,
+    // String> request) {
+    // String emailOrPhone = request.get("emailOrPhone");
+    // String otp = request.get("otp");
+    // String newPassword = request.get("newPassword");
+
+    // Map<String, Object> response = userService.resetPassword(emailOrPhone, otp,
+    // newPassword);
+    // if (response == null) {
+    // throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+    // "OTP không chính xác, đã hết hạn hoặc không tìm thấy người dùng");
+    // }
+    // return ResponseEntity.ok(response);
+    // }
 
     @GetMapping("/refresh-token")
     public Map<String, Object> refreshToken(HttpServletRequest request) {
@@ -203,6 +230,18 @@ public class AuthController {
         Map<String, Object> response = userService.refreshAccessToken(refreshToken);
         if (response == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Refresh Token không hợp lệ hoặc đã hết hạn");
+        }
+        return response;
+    }
+    @PutMapping("/change-password")
+    public Map<String, Object> changePassword(@RequestBody Map<String, String> request) {
+        Long id = request.get("id").isBlank() ? null : Long.parseLong(request.get("id"));
+        String oldPassword = request.get("oldPassword");
+        String newPassword = request.get("newPassword");
+
+        Map<String, Object> response = userService.changePassword(id, oldPassword, newPassword);
+        if (response == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mật khẩu cũ không đúng hoặc không tìm thấy người dùng");
         }
         return response;
     }
