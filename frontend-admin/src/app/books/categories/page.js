@@ -17,7 +17,9 @@ export default function CategoryPage() {
     const fetchCategories = async () => {
       setLoading(true);
       try {
-        const response = await axios.get("http://localhost:8080/api/category");
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/category`
+        );
         setCategories(response.data);
       } catch (error) {
         console.error("Lỗi khi lấy danh mục:", error);
@@ -72,11 +74,11 @@ export default function CategoryPage() {
                 {parent.name}
               </div>
               <ul className="ml-6 mt-2 list-disc">
-                {parent.children.map(child => (
+                {parent.children.map((child) => (
                   <li
                     key={child.id}
                     className="text-gray-700 hover:underline cursor-pointer"
-                    onClick={e => {
+                    onClick={(e) => {
                       e.stopPropagation();
                       router.push(`/books/categories/child/${child.id}`);
                     }}
@@ -85,7 +87,6 @@ export default function CategoryPage() {
                   </li>
                 ))}
               </ul>
-
             </div>
           ))
         )}

@@ -18,9 +18,9 @@ const page = () => {
     const fetchBorrowCards = async () => {
       try {
         const user = JSON.parse(localStorage.getItem("persist:root")); // lấy thông tin người dùng từ localStorage
-        
+
         const response = await axios.post(
-          `http://localhost:8080/api/borrow-cards/user/${user.id}` // lấy thông tin phiếu mượn của người dùng
+          `${process.env.NEXT_PUBLIC_API_URL}/api/borrow-cards/user/${user.id}` // lấy thông tin phiếu mượn của người dùng
         );
         setAllBorrowCards(response.data);
         console.log(response.data);
@@ -33,8 +33,7 @@ const page = () => {
   }, []);
 
   const filteredCards = allBorrowCards.filter((card) => {
-    if (selectedButton === "Đã yêu cầu")
-      return card.status === "Đã yêu cầu";
+    if (selectedButton === "Đã yêu cầu") return card.status === "Đã yêu cầu";
     if (selectedButton === "Đang mượn") return card.status === "Đang mượn";
     if (selectedButton === "Hết hạn") return card.status === "Hết hạn";
     return false;

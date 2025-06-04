@@ -13,7 +13,9 @@ function page() {
   const [borrowInfo, setBorrowInfo] = useState([]);
   const fetchFine = async () => {
     try {
-      const response = await fetch(`http://localhost:8080/api/fine/${id}`);
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/fine/${id}`
+      );
       const res = await response.json();
       setFine(res);
     } catch (error) {
@@ -25,7 +27,7 @@ function page() {
     console.log(fine);
     try {
       const res = await fetch(
-        `http://localhost:8080/api/book/${fine.cardId.borrowedBooks[0].bookId}`
+        `${process.env.NEXT_PUBLIC_API_URL}/api/book/${fine.cardId.borrowedBooks[0].bookId}`
       );
       const data = await res.json();
       console.log("Thông tin sách:", data);
@@ -64,9 +66,12 @@ function page() {
     return date.toLocaleDateString("vi-VN"); // Kết quả: 22/04/2025
   };
   const handleThanhToan = async () => {
-    const response = await fetch(`http://localhost:8080/api/fine/pay/${id}`, {
-      method: "PUT",
-    });
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/fine/pay/${id}`,
+      {
+        method: "PUT",
+      }
+    );
     toast.success("Thanh toán thành công.");
     fetchFine();
   };

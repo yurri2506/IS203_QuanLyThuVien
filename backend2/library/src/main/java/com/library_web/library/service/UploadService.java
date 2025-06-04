@@ -25,6 +25,31 @@ import java.util.*;
 @Service
 public class UploadService {
 
+@Autowired
+  private Cloudinary cloudinary;
+
+  public ResponseEntity<?> uploadImages(MultipartFile[] files) {
+    try {
+      List<String> urls = new ArrayList<>();
+
+      for (MultipartFile file : files) {
+        System.out.println("==> Received:");
+        System.out.println("Name: " + file.getOriginalFilename());
+        System.out.println("Size: " + file.getSize() + " bytes");
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> uploadResult = (Map<String, Object>) cloudinary.uploader()
+            .upload(file.getBytes(), ObjectUtils.emptyMap());
+
+        urls.add((String) uploadResult.get("secure_url"));
+      }
+
+      return ResponseEntity.ok(urls);
+    } catch (IOException e) {
+      return ResponseEntity.badRequest().body(Map.of("error", "Lỗi upload ảnh: " + e.getMessage()));
+    }
+  }
+
     public ResponseEntity<?> uploadBarcode(MultipartFile file, String type) {
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of("error", "Không có tệp được chọn"));
@@ -163,4 +188,6 @@ public class UploadService {
             return ResponseEntity.status(500).body(Map.of("error", "Lỗi truy vấn API: " + e.getMessage()));
         }
     }
+
+   
 }

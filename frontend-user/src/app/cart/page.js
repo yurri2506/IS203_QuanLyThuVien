@@ -78,7 +78,7 @@ const page = () => {
     try {
       setLoading(true); // Bắt đầu tải dữ liệu
       const response = await fetch(
-        `http://localhost:8080/api/cart/${user.id}` // Endpoint API lấy giỏ hàng theo userId
+        `${process.env.NEXT_PUBLIC_API_URL}/api/cart/${user.id}` // Endpoint API lấy giỏ hàng theo userId
       ); // Endpoint API lấy giỏ hàng theo userId
 
       if (response.ok) {
@@ -115,7 +115,7 @@ const page = () => {
   const handleDeleteBooks = async () => {
     try {
       const response = await axios.delete(
-        `http://localhost:8080/api/cart/${cartId}`, // Endpoint API xóa sách trong giỏ hàng
+        `${process.env.NEXT_PUBLIC_API_URL}/api/cart/${cartId}`, // Endpoint API xóa sách trong giỏ hàng
         {
           data: selected,
         }
@@ -138,7 +138,7 @@ const page = () => {
       // console.log(booksInCart);
       // Gửi yêu cầu đến backend để tạo phiếu mượn
       const response = await axios.post(
-        "http://localhost:8080/api/borrow-cards",
+        `${process.env.NEXT_PUBLIC_API_URL}/api/borrow-cards`,
         {
           userId: user.id,
           borrowedBooks: booksInCart.map((bookId) => ({
@@ -158,7 +158,7 @@ const page = () => {
         console.log(response.data); // Xem chi tiết phiếu mượn
 
         const deleteResponse = await axios.delete(
-          `http://localhost:8080/api/cart/${user.id}/remove/books`,
+          `${process.env.NEXT_PUBLIC_API_URL}/api/cart/${user.id}/remove/books`,
           {
             data: booksInCart,
           }

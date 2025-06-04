@@ -216,11 +216,19 @@ const ChatBotButton = () => {
   };
 
   return (
+//<<<<<<< thanhtri
     <div className="fixed bottom-4 right-4 flex flex-col items-end">
       {/* Nút mở chat */}
       <Button
         onClick={() => setIsOpen(!isOpen)}
         className="w-12 h-12 p-0 bg-blue-500 rounded-full flex items-center justify-center hover:opacity-80 hover:bg-blue-600 relative"
+//=======
+    //<div className="fixed bottom-[1.5rem] right-[2rem] h-[4rem] w-[4rem]">
+     // <button
+       // onClick={toggleChat}
+       // className="flex absolute top-1.5 left-1.5 justify-center items-center p-[0.75rem] bg-blue-800 rounded-[999px] cursor-pointer"
+        //aria-label="Chat messages"
+//>>>>>>> main
       >
         <ChatIcon />
         {notificationVisible && <NotificationBadge count={1} />}
