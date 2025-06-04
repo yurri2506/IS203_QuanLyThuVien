@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useDispatch } from "react-redux";
 import { updateUser } from "@/store/slices/userSlice";
 import Cookies from "js-cookie";
+import { toast } from "react-hot-toast";
 
 const GoogleLoginButton = () => {
   const router = useRouter();
@@ -16,13 +17,16 @@ const GoogleLoginButton = () => {
     onSuccess: async (tokenResponse) => {
       try {
         const accessToken = tokenResponse.access_token;
-        const res = await fetch("http://localhost:8080/api/auth/google", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ accessToken }),
-        });
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/auth/google`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ accessToken }),
+          }
+        );
 
         const data = await res.json();
         console.log("Response from server:", data); // Log the response for debugging

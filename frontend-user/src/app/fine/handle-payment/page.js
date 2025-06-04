@@ -52,7 +52,7 @@ export default function PaymentCallback() {
     if (resultCode === "0") {
       axios
         .post(
-          `http://localhost:8080/api/fine/payment/confirm`,
+          `${process.env.NEXT_PUBLIC_API_URL}/api/fine/payment/confirm`,
           { orderId, amount },
           { withCredentials: true }
         )

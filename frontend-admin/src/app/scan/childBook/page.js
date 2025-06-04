@@ -26,7 +26,7 @@ const UploadChild = ({ resultChild, setResultChild }) => {
     formData.append("type", "book");
     try {
       const response = await fetch(
-        "http://localhost:8080/upload/barcodeImage",
+        `${process.env.NEXT_PUBLIC_API_URL}/upload/barcodeImage`,
         {
           method: "POST",
           body: formData,
@@ -59,7 +59,7 @@ const UploadChild = ({ resultChild, setResultChild }) => {
     setLoading(true);
     try {
       const response = await fetch(
-        `http://localhost:8080/api/bookchild/${text}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/bookchild/${text}`,
         {
           method: "GET",
         }
@@ -99,7 +99,7 @@ const UploadChild = ({ resultChild, setResultChild }) => {
               value={text}
               onChange={(e) => setText(e.target.value)}
               placeholder="Nhập ID sách"
-className="bg-white rounded w-fit border-1"
+              className="bg-white rounded w-fit border-1"
               onKeyDown={(e) => e.key === "Enter" && handleEnter()}
             />
             <p className="text-sm italic text-[#062D76]">

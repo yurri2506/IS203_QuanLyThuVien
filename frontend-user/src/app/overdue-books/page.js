@@ -5,20 +5,21 @@ import ChatBox from "../components/ChatBoxButton";
 import Image from "next/image";
 import useSidebarStore from "@/store/sideBarStore";
 
-
 const Page = () => {
   const [bookList, setBookList] = useState([]);
 
   const fetchBooks = async () => {
     try {
-      const res = await fetch("http://localhost:8080/api/book");
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/book`);
       const data = await res.json();
       const filtered = data.filter((b) => {
         const today = new Date();
         return b.children?.some((c) => {
           if (c.status === "BORROWED" && c.addedDate) {
             const borrowedDate = new Date(c.addedDate);
-            const diffDays = Math.floor((today - borrowedDate) / (1000 * 60 * 60 * 24));
+            const diffDays = Math.floor(
+              (today - borrowedDate) / (1000 * 60 * 60 * 24)
+            );
             return diffDays > 14; // quá 14 ngày
           }
           return false;
@@ -65,19 +66,25 @@ const Page = () => {
                   <div className="px-2 py-1/2 bg-red-500 text-white text-sm w-fit rounded-lg font-semibold">
                     Quá hạn
                   </div>
-
-//                   <h3 className="font-semibold">{book.TenSach}</h3>
-//                   <p className="text-sm text-black">Tác giả: {book.TacGia}</p>
-//                   <p className="text-sm text-black">NXB: {book.NhaXB}</p>
-//                   <p className="text-sm text-black">
-//                     Ngày mượn: {book.NgayMuon}
-//                   </p>
-
+                  // <h3 className="font-semibold">{book.TenSach}</h3>
+                  //{" "}
+                  <p className="text-sm text-black">Tác giả: {book.TacGia}</p>
+                  // <p className="text-sm text-black">NXB: {book.NhaXB}</p>
+                  //{" "}
+                  <p className="text-sm text-black">
+                    // Ngày mượn: {book.NgayMuon}
+                    //{" "}
+                  </p>
                   <h3 className="font-semibold">{book.tenSach}</h3>
-                  <p className="text-sm text-black">Tác giả: {book.tenTacGia}</p>
-                  <p className="text-sm text-black">NXB: {book.nxb} ({book.nam})</p>
-                  <p className="text-sm text-black">Ngày mượn: (ẩn - cần backend hỗ trợ)</p>
-
+                  <p className="text-sm text-black">
+                    Tác giả: {book.tenTacGia}
+                  </p>
+                  <p className="text-sm text-black">
+                    NXB: {book.nxb} ({book.nam})
+                  </p>
+                  <p className="text-sm text-black">
+                    Ngày mượn: (ẩn - cần backend hỗ trợ)
+                  </p>
                 </div>
               </div>
             ))}

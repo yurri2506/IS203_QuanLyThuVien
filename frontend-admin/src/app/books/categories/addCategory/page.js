@@ -55,7 +55,9 @@ export default function AddCategoryPage() {
 
   const handleRemoveChild = (index) => {
     if (categoryData.children.length > 1) {
-      const updatedChildren = categoryData.children.filter((_, i) => i !== index);
+      const updatedChildren = categoryData.children.filter(
+        (_, i) => i !== index
+      );
       setCategoryData((prev) => ({
         ...prev,
         children: updatedChildren,
@@ -70,19 +72,22 @@ export default function AddCategoryPage() {
       toast.error("Vui lòng nhập tên danh mục cha!");
       return;
     }
-    if (categoryData.children.some(child => !child.name.trim())) {
+    if (categoryData.children.some((child) => !child.name.trim())) {
       toast.error("Vui lòng nhập tên cho tất cả danh mục con!");
       return;
     }
 
     const payload = {
       name: categoryData.name,
-      childrenNames: categoryData.children.map(child => child.name),
+      childrenNames: categoryData.children.map((child) => child.name),
     };
 
     setLoading(true);
     try {
-      await axios.post("http://localhost:8080/api/category", payload);
+      await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/category`,
+        payload
+      );
       toast.success("Thêm danh mục thành công");
       router.replace("/books/categories");
     } catch (error) {
@@ -91,7 +96,8 @@ export default function AddCategoryPage() {
         status: error.response?.status,
         data: error.response?.data,
       });
-      const errorMessage = error.response?.data?.message || "Thêm danh mục thất bại";
+      const errorMessage =
+        error.response?.data?.message || "Thêm danh mục thất bại";
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -125,7 +131,9 @@ export default function AddCategoryPage() {
 
         <div className="bg-white rounded-xl shadow p-6 w-full">
           <div className="flex flex-col gap-4">
-            <label className="font-medium text-[#062D76]">Tên danh mục cha</label>
+            <label className="font-medium text-[#062D76]">
+              Tên danh mục cha
+            </label>
             <Input
               name="name"
               value={categoryData.name}

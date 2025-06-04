@@ -123,11 +123,14 @@ const HeaderNoLogin = () => {
       let res;
 
       if (!searchTerm.trim()) {
-        res = await axios.get("http://localhost:8080/api/book");
+        res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/book`);
       } else {
-        res = await axios.get("http://localhost:8080/api/book/search2", {
-          params: { query: searchTerm },
-        });
+        res = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/book/search2`,
+          {
+            params: { query: searchTerm },
+          }
+        );
       }
       saveSearchTermToCache(searchTerm.trim());
       const data = res?.data || [];
@@ -167,7 +170,7 @@ const HeaderNoLogin = () => {
           <>
             <div className="flex justify-between items-center h-14 px-2 md:px-5">
               {/* Logo */}
-              <div className="flex items-center">
+              <div className="flex items-center ml-16">
                 <Link href="/" className="flex items-center">
                   <Image
                     src="/images/logoN.png"
@@ -179,7 +182,7 @@ const HeaderNoLogin = () => {
               </div>
 
               {/* Navigation Links */}
-              <div className="hidden sm:flex space-x-20">
+              <div className="hidden sm:flex space-x-15 ml-20">
                 {navigation.map((item) => (
                   <Link
                     key={item.name}
@@ -197,7 +200,7 @@ const HeaderNoLogin = () => {
 
               {/* Right Icons */}
               <div className="flex items-center space-x-4">
-                <div className="hidden lg:flex mx-4 items-center justify-center ml-8 mr-8 w-fit">
+                <div className="hidden lg:flex mx-4 items-center justify-center ml-8 mr-8 w-[300px]">
                   <div className="relative w-[300px]">
                     <div className="flex items-center px-4 py-2 bg-white border border-blue-300 rounded-full shadow-md">
                       <img
@@ -209,7 +212,7 @@ const HeaderNoLogin = () => {
                         type="search"
                         id="search-input"
                         placeholder="Tìm kiếm sách"
-                        className="flex-1 text-sm bg-transparent border-none outline-none px-2 text-black placeholder-black"
+                        className="flex-1 text-sm bg-transparent border-none outline-none px-2 text-gray-400 placeholder-gray-400"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         onKeyDown={(e) => {
@@ -241,7 +244,7 @@ const HeaderNoLogin = () => {
                 <Menu as="div" className="relative">
                   <Menu.Button
                     onClick={handleLogin}
-                    className="text-blue-300 font-medium px-4 py-2 rounded-md hover:bg-blue-100 transition"
+                    className="text-blue-300 font-medium px-4 py-2 rounded-md hover:bg-blue-100 transition mr-6"
                   >
                     Đăng nhập / Đăng ký
                   </Menu.Button>

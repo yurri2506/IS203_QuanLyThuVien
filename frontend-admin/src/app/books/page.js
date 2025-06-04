@@ -26,7 +26,9 @@ const Page = () => {
   const fetchBook = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("http://localhost:8080/api/book");
+      const res = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/book`
+      );
       setBookList(res.data);
     } catch (error) {
       toast.error("Lỗi khi lấy dữ liệu sách");
@@ -64,12 +66,13 @@ const Page = () => {
     else if (mode === "category") params.category = searchQuery;
     else if (mode === "publisher") params.publisher = searchQuery;
     else if (mode === "year") {
-      if (/^\d{4}$/.test(searchQuery.trim())) params.year = Number(searchQuery.trim());
+      if (/^\d{4}$/.test(searchQuery.trim()))
+        params.year = Number(searchQuery.trim());
       else return alert("Nhập năm theo dạng YYYY");
     }
     try {
       const { data } = await axios.get(
-        "http://localhost:8080/api/book/search",
+        `${process.env.NEXT_PUBLIC_API_URL}/api/book/search`,
         { params }
       );
       setFilterBooks(data);
@@ -84,14 +87,18 @@ const Page = () => {
   const handleDelete = async (book) => {
     setLoading(true);
     try {
-      const { data } = await axios.get(`http://localhost:8080/api/book/${book.maSach}`);
+      const { data } = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/book/${book.maSach}`
+      );
       const children = data.children || [];
-      const hasBorrowed = children.some(c => c.status === 'BORROWED');
+      const hasBorrowed = children.some((c) => c.status === "BORROWED");
       if (hasBorrowed) {
         toast.error("Không thể xoá: vẫn còn sách con đang được mượn!");
         return;
       }
-      await axios.delete(`http://localhost:8080/api/book/${book.maSach}`);
+      await axios.delete(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/book/${book.maSach}`
+      );
       toast.success("Xóa sách thành công");
       await fetchBook();
       setCurrentPage(1); // Reset to first page after deletion
@@ -106,11 +113,12 @@ const Page = () => {
   };
 
   // Calculate displayed books based on pagination
-  const displayedBooks = (filterBooks.length > 0 ? filterBooks : bookList)
-    .filter(b => {
-      if (statusFilter === "all") return true;
-      return b.trangThai === statusFilter;
-    });
+  const displayedBooks = (
+    filterBooks.length > 0 ? filterBooks : bookList
+  ).filter((b) => {
+    if (statusFilter === "all") return true;
+    return b.trangThai === statusFilter;
+  });
 
   // Calculate total pages
   const totalPages = Math.ceil(displayedBooks.length / itemsPerPage);
@@ -128,10 +136,13 @@ const Page = () => {
   };
 
   const BookCard = ({ book }) => {
-    const isAvailable = book.trangThai === 'CON_SAN';
+    const isAvailable = book.trangThai === "CON_SAN";
     return (
       <div className="flex bg-white w-full rounded-lg mt-2 p-5 gap-5 md:gap-10 drop-shadow-lg items-center">
-        <img src={book.hinhAnh?.[0] || "/placeholder.png"} className="w-[145px] h-[205px] object-cover" />
+        <img
+          src={book.hinhAnh?.[0] || "/placeholder.png"}
+          className="w-[145px] h-[205px] object-cover"
+        />
         <div className="flex flex-col gap-2 w-full">
           <p className="font-bold">{book.tenSach}</p>
           <p className="italic">{book.tenTacGia}</p>
@@ -139,27 +150,46 @@ const Page = () => {
           <p>Số lượng mượn: {book.soLuongMuon}</p>
           <p>Số lượng xóa: {book.soLuongXoa}</p>
           <p className="font-semibold">
-            Trạng thái: <span className={
-              book.trangThai === "DA_XOA" ? "text-red-500" :
-              book.trangThai === "DA_HET" ? "text-[#5C4033]" :
-              "text-green-600"
-            }>
-              {book.trangThai === "DA_XOA" ? "Đã xóa" :
-               book.trangThai === "DA_HET" ? "Đã hết" :
-               "Còn sẵn"}
+            Trạng thái:{" "}
+            <span
+              className={
+                book.trangThai === "DA_XOA"
+                  ? "text-red-500"
+                  : book.trangThai === "DA_HET"
+                  ? "text-[#5C4033]"
+                  : "text-green-600"
+              }
+            >
+              {book.trangThai === "DA_XOA"
+                ? "Đã xóa"
+                : book.trangThai === "DA_HET"
+                ? "Đã hết"
+                : "Còn sẵn"}
             </span>
           </p>
           <div className="flex justify-end gap-5 md:gap-10">
-            <Button onClick={() => router.push(`/books/details/${book.maSach}`)} className="bg-[#062D76] hover:bg-gray-700 w-10 md:w-40 h-10">
+            <Button
+              onClick={() => router.push(`/books/details/${book.maSach}`)}
+              className="bg-[#062D76] hover:bg-gray-700 w-10 md:w-40 h-10"
+            >
               <List className="w-5 h-5" color="white" />
               <p className="hidden md:block text-white">Xem chi tiết</p>
             </Button>
-            <Button onClick={() => router.push(`/books/${book.maSach}`)} className="bg-[#062D76] hover:bg-gray-700 w-10 md:w-40 h-10">
+            <Button
+              onClick={() => router.push(`/books/${book.maSach}`)}
+              className="bg-[#062D76] hover:bg-gray-700 w-10 md:w-40 h-10"
+            >
               <Pencil className="w-5 h-5" color="white" />
               <p className="hidden md:block text-white">Sửa sách</p>
             </Button>
             {book.trangThai !== "DA_XOA" && (
-              <Button onClick={() => { setDeleteOne(book); setPopUpOpen(true); }} className="bg-[#D66766] hover:bg-gray-700 w-10 md:w-40 h-10">
+              <Button
+                onClick={() => {
+                  setDeleteOne(book);
+                  setPopUpOpen(true);
+                }}
+                className="bg-[#D66766] hover:bg-gray-700 w-10 md:w-40 h-10"
+              >
                 <Trash2 className="w-5 h-5" color="white" />
                 <p className="hidden md:block text-white">Xóa sách</p>
               </Button>
@@ -181,7 +211,13 @@ const Page = () => {
       <Sidebar />
       {loading ? (
         <div className="flex md:ml-52 w-full h-screen justify-center items-center">
-          <ThreeDot color="#062D76" size="large" text="Vui lòng chờ" variant="bounce" textColor="#062D76" />
+          <ThreeDot
+            color="#062D76"
+            size="large"
+            text="Vui lòng chờ"
+            variant="bounce"
+            textColor="#062D76"
+          />
         </div>
       ) : (
         <div className="flex w-full flex-col py-6 md:ml-52 gap-2 items-center px-10 mt-5">
@@ -216,15 +252,24 @@ const Page = () => {
                 <option value="DA_HET">Đã hết</option>
                 <option value="DA_XOA">Đã xóa</option>
               </select>
-              <Button onClick={handleSearch} className="w-10 h-10 bg-[#062D76] hover:bg-gray-700 shadow rounded-md">
+              <Button
+                onClick={handleSearch}
+                className="w-10 h-10 bg-[#062D76] hover:bg-gray-700 shadow rounded-md"
+              >
                 <Search className="w-5 h-5" color="white" />
               </Button>
             </div>
             <div className="flex gap-4 ml-5">
-              <Button onClick={() => router.push("/books/categories")} className="w-40 h-10 bg-[#062D76] hover:bg-gray-700 font-bold rounded-[10px]">
+              <Button
+                onClick={() => router.push("/books/categories")}
+                className="w-40 h-10 bg-[#062D76] hover:bg-gray-700 font-bold rounded-[10px]"
+              >
                 Quản lý thể loại
               </Button>
-              <Button onClick={() => router.push("/books/addBook")} className="w-40 h-10 bg-[#062D76] hover:bg-gray-700 font-bold rounded-[10px]">
+              <Button
+                onClick={() => router.push("/books/addBook")}
+                className="w-40 h-10 bg-[#062D76] hover:bg-gray-700 font-bold rounded-[10px]"
+              >
                 <Plus className="w-5 h-5" color="white" />
                 Thêm sách mới
               </Button>
@@ -274,7 +319,10 @@ const Page = () => {
             <h2 className="text-lg font-bold mb-4">Xác nhận xóa</h2>
             <p>Bạn có chắc chắn muốn xóa sách này không?</p>
             <div className="flex mt-4 gap-5">
-              <img src={deleteOne.hinhAnh?.[0]} className="w-[145px] h-[205px] object-cover" />
+              <img
+                src={deleteOne.hinhAnh?.[0]}
+                className="w-[145px] h-[205px] object-cover"
+              />
               <div className="flex flex-col gap-2">
                 <p>MaSach: {deleteOne.maSach}</p>
                 <p className="font-bold">{deleteOne.tenSach}</p>
@@ -284,8 +332,18 @@ const Page = () => {
               </div>
             </div>
             <div className="flex justify-end mt-4 gap-4">
-              <Button onClick={() => setPopUpOpen(false)} className="bg-gray-500 hover:bg-gray-700 text-white">Hủy</Button>
-              <Button onClick={() => handleDelete(deleteOne)} className="bg-red-500 hover:bg-red-700 text-white">Xóa</Button>
+              <Button
+                onClick={() => setPopUpOpen(false)}
+                className="bg-gray-500 hover:bg-gray-700 text-white"
+              >
+                Hủy
+              </Button>
+              <Button
+                onClick={() => handleDelete(deleteOne)}
+                className="bg-red-500 hover:bg-red-700 text-white"
+              >
+                Xóa
+              </Button>
             </div>
           </div>
         </div>

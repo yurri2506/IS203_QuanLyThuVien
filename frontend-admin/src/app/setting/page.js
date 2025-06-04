@@ -15,39 +15,45 @@ const page = () => {
   const [startMail, setStartMail] = useState(0);
   const fetchSetting = async () => {
     try {
-      const res = await fetch("http://localhost:8080/api/settings", {
-        method: "GET",
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/settings`,
+        {
+          method: "GET",
+        }
+      );
       if (!res.ok) throw new Error("Không thể tải cài đặt.");
       const result = await res.json();
-      setFine(result?.finePerDay?result?.finePerDay:3000)
-      setWait(result?.waitingToTake?result?.waitingToTake:3)
-      setBorrow(result?.borrowDay?result?.borrowDay:21)
-      setStartMail(result?.startToMail?result?.startToMail:3)
+      setFine(result?.finePerDay ? result?.finePerDay : 3000);
+      setWait(result?.waitingToTake ? result?.waitingToTake : 3);
+      setBorrow(result?.borrowDay ? result?.borrowDay : 21);
+      setStartMail(result?.startToMail ? result?.startToMail : 3);
     } catch (error) {
       toast.error(error.message);
     }
-  }
+  };
   useEffect(() => {
     setLoading(true);
     fetchSetting();
     setLoading(false);
   }, []);
-  const handleSubmit = async()=>{
-    setLoading(true)
+  const handleSubmit = async () => {
+    setLoading(true);
     try {
-      const res = await fetch("http://localhost:8080/api/settings", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          finePerDay:fine,
-          waitingToTake:wait,
-          borrowDay:borrow,
-          startToMail: startMail
-        }),
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/settings`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            finePerDay: fine,
+            waitingToTake: wait,
+            borrowDay: borrow,
+            startToMail: startMail,
+          }),
+        }
+      );
       if (!res.ok) throw new Error("Cập nhật thất bại");
       const data = await res.json();
       setFine(data?.finePerDay);
@@ -56,10 +62,10 @@ const page = () => {
       setLoading(false);
       return;
     }
-    fetchSetting()
+    fetchSetting();
     setLoading(false);
-    toast.success("Lưu cài đặt thành công")
-  }
+    toast.success("Lưu cài đặt thành công");
+  };
   return (
     <div className="flex flex-row w-full min-h-screen h-full bg-[#EFF3FB]">
       <Sidebar />
@@ -86,7 +92,9 @@ const page = () => {
             />
           </div>
           <div className="flex flex-col w-full gap-[5px] md:gap-[10px]">
-            <p className="font-semibold text-lg mt-3">Số ngày chờ nhận sách tối đa</p>
+            <p className="font-semibold text-lg mt-3">
+              Số ngày chờ nhận sách tối đa
+            </p>
             <Input
               type="number"
               placeholder="Nhập số ngày chờ"
@@ -96,7 +104,9 @@ const page = () => {
             />
           </div>
           <div className="flex flex-col w-full gap-[5px] md:gap-[10px]">
-            <p className="font-semibold text-lg mt-3">Số ngày mượn sách tối đa</p>
+            <p className="font-semibold text-lg mt-3">
+              Số ngày mượn sách tối đa
+            </p>
             <Input
               type="number"
               placeholder="Nhập số tiền phạt"
@@ -106,7 +116,9 @@ const page = () => {
             />
           </div>
           <div className="flex flex-col w-full gap-[5px] md:gap-[10px]">
-            <p className="font-semibold text-lg mt-3">Số ngày bắt đầu gửi email</p>
+            <p className="font-semibold text-lg mt-3">
+              Số ngày bắt đầu gửi email
+            </p>
             <Input
               type="number"
               placeholder="Nhập số tiền phạt"

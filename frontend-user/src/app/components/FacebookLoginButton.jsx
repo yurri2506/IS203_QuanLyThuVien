@@ -50,11 +50,11 @@ const FacebookLoginButton = () => {
         // Gửi accessToken tới backend
         const apiUrl =
           process.env.NODE_ENV === "development"
-            ? "http://localhost:8080/api/auth/facebook"
+            ? `${process.env.NEXT_PUBLIC_API_URL}/api/auth/facebook`
             : "https://your-production-url/api/auth/facebook"; // Thay bằng URL sản xuất
 
         const fetchResponse = await fetch(
-          "http://localhost:8080/api/auth/facebook",
+          `${process.env.NEXT_PUBLIC_API_URL}/api/auth/facebook`,
           {
             method: "POST",
             headers: {

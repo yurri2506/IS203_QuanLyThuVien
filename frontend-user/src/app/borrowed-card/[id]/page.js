@@ -53,9 +53,7 @@ const BorrowingInfo = ({ info }) => {
         <div className="flex flex-col gap-5 items-start text-[1.125rem] font-medium text-black">
           <p className="text-[1rem] font-semibold text-[#131313]/50">
             ID Phiếu:{" "}
-            <span className="text-[#131313] font-medium ">
-              {info.id}
-            </span>
+            <span className="text-[#131313] font-medium ">{info.id}</span>
           </p>
           <p className="text-[1rem] font-semibold text-[#131313]/50">
             Ngày mượn:{" "}
@@ -113,7 +111,7 @@ const ChiTietPhieuMuon = () => {
     const fetchBorrowCardDetail = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:8080/api/borrow-cards/${id}`
+          `${process.env.NEXT_PUBLIC_API_URL}/api/borrow-cards/${id}`
         );
         setBorrowDetail(response.data);
         console.log(response.data);
@@ -129,7 +127,9 @@ const ChiTietPhieuMuon = () => {
 
   const handleDelete = async (info) => {
     try {
-      await axios.delete(`http://localhost:8081/borrow-card/${info.borrowCardId}`);
+      await axios.delete(
+        `http://localhost:8081/borrow-card/${info.borrowCardId}`
+      );
       toast.success("Xóa phiếu thành công");
       setPopUpOpen(false);
 

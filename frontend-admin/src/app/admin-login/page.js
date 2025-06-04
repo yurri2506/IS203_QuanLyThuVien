@@ -87,13 +87,16 @@ const Page = () => {
         isFEAdmin: true,
       };
 
-      const response = await fetch("http://localhost:8080/api/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/login`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -126,7 +129,7 @@ const Page = () => {
     try {
       const payload = { email: email, otp: data.otp };
       const response = await fetch(
-        "http://localhost:8080/api/admin/verify-otp",
+        `${process.env.NEXT_PUBLIC_API_URL}/api/admin/verify-otp`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -144,7 +147,6 @@ const Page = () => {
 
       localStorage.setItem("accessToken", result.data.accessToken);
       localStorage.setItem("id", result.data.admin.id || "");
-
 
       Cookies.set("refreshToken", result.data.refreshToken, {
         expires: 7,

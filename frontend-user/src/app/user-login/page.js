@@ -146,13 +146,16 @@ const Page = () => {
         gender: data.gioiTinh,
       };
 
-      const response = await fetch("http://localhost:8080/api/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/register`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
 
       const result = await response.json();
 
@@ -180,7 +183,7 @@ const Page = () => {
   const onSubmitOTP = async (data) => {
     try {
       const verifyResponse = await fetch(
-        "http://localhost:8080/api/register/verify-otp",
+        `${process.env.NEXT_PUBLIC_API_URL}/api/register/verify-otp`,
         {
           method: "POST",
           headers: {
@@ -221,13 +224,16 @@ const Page = () => {
         password: data.matKhau,
       };
 
-      const response = await fetch("http://localhost:8080/api/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/login`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
 
       const result = await response.json();
 
