@@ -15,18 +15,26 @@ import java.util.Optional;
 @Repository
 public interface BookRepository extends JpaRepository<Book, Long> {
     Optional<Book> findByTenSachAndTenTacGia(String tenSach, String tenTacGia);
+
     List<Book> findByCategoryChild_Id(String categoryChildId);
+
     // List<Book> findAllById(List<Long> bookIds);
     List<Book> findByCreatedAtAfter(LocalDate date);
+
     List<Book> findByTrangThaiNot(TrangThai trangThai);
+
     List<Book> findByCreatedAtAfterAndTrangThaiNot(LocalDate date, TrangThai trangThai);
 
- 
+    @Query("SELECT b FROM Book b WHERE b.createdAt BETWEEN :startDate AND :endDate AND b.trangThai != :trangThai")
+    List<Book> findByCreatedAtBetweenAndTrangThaiNot(@Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate, @Param("trangThai") Book.TrangThai trangThai);
+
     // New method for finding books needing restocking
     @Query("SELECT b FROM Book b WHERE b.tongSoLuong < :quantity OR b.trangThai != 'CON_SAN'")
     List<Book> findBooksNeedingRestock(@Param("quantity") int quantity);
 
     List<Book> findByTenSachContainingIgnoreCase(String query);
+
     List<Book> findByTenTacGiaContainingIgnoreCase(String query);
     // List<Book> findByTheLoaiContainingIgnoreCase(String query);
 }
