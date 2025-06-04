@@ -98,7 +98,7 @@ const benefits = [
 
 const page = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-yellow-50 to-pink-100 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-b from-[#EFF3FB] to-blue-100 flex flex-col -mr-[180px]">
       {/* Header */}
       <header className="bg-white py-4 shadow-md">
         <div className="container mx-auto px-4 text-center">
@@ -106,50 +106,40 @@ const page = () => {
         </div>
       </header>
 
-      <section className="container mx-auto px-4 py-10 text-center max-w-7xl">
-        <h2 className="text-4xl font-bold mb-6 text-blue-800">
+      <section className="container mx-auto px-4 py-10 text-center max-w-5xl">
+        <h2 className="text-4xl font-bold mt-6 mb-6 text-blue-800">
           Giới thiệu Hệ thống Quản lý Thư viện
         </h2>
         <div className="container mx-auto px-4 py-10">
-          <div className="flex flex-col md:flex-row items-start gap-6">
+          <div className="flex flex-col md:flex-row items-start gap-20">
             {/* Image on the left */}
             <div className="flex-shrink-0 h-[400px] place-items-start">
-              <Image
-                src="/images/thuvien.jpg"
+              <img
+                src="https://media-cdn-v2.laodong.vn/Storage/NewsPortal/2020/10/5/842222/F4bfd9e1649e82dcfdbe.jpg"
                 alt="Library Management System"
-                width={250}
+                width={350}
                 height={350}
-                className="object-cover rounded-lg shadow-md"
+                className="object-cover rounded-lg shadow-md transition-transform duration-300 ease-in-out hover:scale-105 hover:shadow-xl hover:brightness-110"
               />
             </div>
             {/* Text on the right */}
             <div className="flex-1">
               <p className="text-gray-600 text-lg mb-4">
-                Trong thời đại chuyển đổi số mạnh mẽ như hiện nay, việc ứng dụng
-                công nghệ vào công tác quản lý là xu hướng tất yếu trong nhiều
-                lĩnh vực, đặc biệt là trong giáo dục. Tại các trường học, công
-                tác quản lý thư viện vẫn còn tồn tại nhiều hạn chế như sử dụng
-                phương pháp ghi chép thủ công, mất nhiều thời gian trong việc
-                tìm kiếm sách, quản lý mượn/trả, và thống kê số liệu. Những khó
-                khăn này không chỉ ảnh hưởng đến hiệu quả làm việc của thủ thư
-                mà còn gây bất tiện cho người dùng cuối là sinh viên và giảng
-                viên. Nhận thấy vấn đề trên, nhóm chúng tôi đã quyết định thực
-                hiện đồ án <strong>Hệ thống Quản lý Thư viện</strong> với mong
-                muốn xây dựng một nền tảng trực tuyến hỗ trợ việc tra cứu, mượn,
-                trả và quản lý sách một cách thuận tiện, chính xác và hiện đại.
-                Hệ thống không chỉ giúp tiết kiệm thời gian và công sức cho cả
-                người dùng và quản trị viên, mà còn tạo điều kiện cho việc mở
-                rộng và tích hợp các tính năng nâng cao trong tương lai như:
-                đăng nhập mạng xã hội, quản lý sách điện tử, gửi thông báo tự
-                động,... Bên cạnh đó, đây cũng là cơ hội để nhóm áp dụng các
-                kiến thức đã học và thực hiện đồ án môn IS216-Lập trình Java như
-                phát triển frontend bằng <strong>Next.js</strong>, xây dựng
-                backend với <strong>Spring Boot</strong>, sử dụng cơ sở dữ liệu{" "}
-                <strong>Supabase</strong> và tích hợp xác thực người dùng qua{" "}
-                <strong>Supabase OAuth</strong>. Qua dự án này, nhóm không chỉ
-                rèn luyện kỹ năng lập trình và làm việc nhóm mà còn góp phần
-                mang đến một giải pháp thực tiễn cho nhu cầu quản lý thư viện
-                hiện nay.
+                Trong bối cảnh chuyển đổi số, quản lý thư viện truyền thống gặp
+                nhiều hạn chế như ghi chép thủ công, mất thời gian tìm kiếm và
+                quản lý mượn/trả sách. Nhận thấy vấn đề trên, nhóm chúng tôi đã
+                quyết định thực hiện đồ án{" "}
+                <strong>Hệ thống Quản lý Thư viện</strong> với mong muốn xây
+                dựng một nền tảng trực tuyến hỗ trợ việc tra cứu, mượn, trả và
+                quản lý sách một cách thuận tiện, chính xác và hiện đại. Bên
+                cạnh đó, đây cũng là cơ hội để nhóm áp dụng các kiến thức đã học
+                và thực hiện đồ án môn IS216-Lập trình Java như phát triển
+                frontend bằng <strong>Next.js</strong>, xây dựng backend với{" "}
+                <strong>Spring Boot</strong>, sử dụng cơ sở dữ liệu{" "}
+                <strong>Supabase</strong>. Dự án không chỉ giúp hiện đại hóa
+                quản lý thư viện mà còn mở rộng các tính năng như đăng nhập mạng
+                xã hội, quản lý sách điện tử, gửi thông báo tự động, đồng thời
+                rèn luyện kỹ năng lập trình và làm việc nhóm.
               </p>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-gray-700 text-sm mt-2">
                 <div className="bg-white p-4 rounded-xl shadow text-sm font-medium text-gray-700 flex items-center gap-2 hover:shadow-md transition">
@@ -167,11 +157,11 @@ const page = () => {
         </div>
       </section>
 
-      <section className="container mx-auto px-4 py-10 bg-pink-200 rounded-lg shadow-md justify-items-center">
-        <h2 className="text-4xl font-bold mb-6 text-blue-800 text-center">
+      <section className="container mx-auto px-4 py-10 bg-blue-300 rounded-lg shadow-md justify-items-center">
+        <h2 className="text-4xl font-bold mb-12 text-white text-center">
           Các tính năng nổi bật
         </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4  gap-8 max-w-7xl">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4  gap-8 max-w-5xl">
           {features.map((feature, index) => (
             <motion.div
               key={index}
@@ -189,71 +179,14 @@ const page = () => {
             </motion.div>
           ))}
         </div>
-        {/*<p className="text-center text-gray-600 mb-6">
-          Discover Your Heart Friend: Discover Our Chatters To Choose Who Makes
-          Of Sense Of Place, Walking Or Cuddling. Or Loving Family, By Adopting
-          You’re Not Only Changing One-Life-You’re Making A Difference For
-          Countless Others, Visit Us Today And Find A Friend Who’ll Bring Joy
-          And Unconditional Love Into Your Life!
-        </p>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div className="bg-white p-4 rounded-lg shadow-md text-center">
-            <img
-              src="/ninja-warrior.jpg"
-              alt="Ninja Warrior"
-              className="w-full h-40 object-cover rounded-md mb-2"
-            />
-            <h3 className="font-semibold">Ninja Warrior</h3>
-            <p className="text-gray-600">
-              Tender nature, loves to roam and sniffing new friends. Perfect
-              match for you all! 3 years old.
-            </p>
-          </div>
-          <div className="bg-white p-4 rounded-lg shadow-md text-center">
-            <img
-              src="/cat-sophie.jpg"
-              alt="Sophie"
-              className="w-full h-40 object-cover rounded-md mb-2"
-            />
-            <h3 className="cat-sophie">Sophie</h3>
-            <p className="text-gray-600">
-              A medium mini with enormous heart, loves curious explorer with
-              kids. 1-2 years old.
-            </p>
-          </div>
-          <div className="bg-white p-4 rounded-lg shadow-md text-center">
-            <img
-              src="/cat-winky.jpg"
-              alt="Winky"
-              className="w-full h-40 object-cover rounded-md mb-2"
-            />
-            <h3 className="font-semibold">Winky</h3>
-            <p className="text-gray-600">
-              Fun and energetic cat from chasing feather toys to darting around
-              house with love. 2 years old.
-            </p>
-          </div>
-          <div className="bg-white p-4 rounded-lg shadow-md text-center">
-            <img
-              src="/t-rex.jpg"
-              alt="T-Rex"
-              className="w-full h-40 object-cover rounded-md mb-2"
-            />
-            <h3 className="font-semibold">T-Rex</h3>
-            <p className="text-gray-600">
-              T-Rex is a happy pup with an overly complex love of fetch and
-              snuggle. 2 years old.
-            </p>
-          </div>
-        </div>*/}
       </section>
 
       {/* Đa dạng thể loại sách */}
-      <section className="container mx-auto px-4 py-10 text-center justify-items-center max-w-9xl">
-        <h2 className="text-4xl font-bold mb-6 text-blue-800">
+      <section className="container mx-auto px-4 py-10 text-center justify-items-center ">
+        <h2 className="text-4xl font-bold mb-12 text-blue-800">
           Đa dạng thể loại sách
         </h2>
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mt-4 ">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mt-4 max-w-5xl">
           {genres.map((genre, idx) => (
             <div
               key={idx}
@@ -266,11 +199,11 @@ const page = () => {
         </div>
       </section>
 
-      <section className="container mx-auto px-4 py-10 bg-pink-200 rounded-lg shadow-md justify-items-center">
-        <h2 className="text-4xl font-bold mb-6 text-blue-800 text-center">
+      <section className="container mx-auto px-4 py-10 bg-blue-300 rounded-lg shadow-md justify-items-center">
+        <h2 className="text-4xl font-bold mb-12 text-white text-center">
           Lợi ích khi sử dụng
         </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-gray-700 text-sm mt-6">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 text-gray-700 text-sm mt-6 max-w-5xl">
           {benefits.map((item, idx) => (
             <div
               key={idx}
@@ -284,8 +217,8 @@ const page = () => {
       </section>
 
       {/* Meet our team */}
-      <section className="container mx-auto px-4 py-10 text-center justify-items-center max-w-9xl">
-        <h2 className="text-4xl font-bold mb-6 text-blue-800">
+      <section className="container mx-auto px-4 py-10 text-center justify-items-center max-w-7xl">
+        <h2 className="text-4xl font-bold mb-12 text-blue-800">
           Nhóm phát triển
         </h2>
         <div className="flex flex-col sm:flex-row justify-center items-center gap-14 mb-0">

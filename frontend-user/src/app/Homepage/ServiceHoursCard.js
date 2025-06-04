@@ -1,7 +1,7 @@
 import React from "react";
 const ServiceHoursCard = () => {
   return (
-    <article className="flex flex-col flex-1 shrink flex-grow items-start self-stretch p-5 my-auto bg-white rounded-xl basis-0 w-full h-full max-md:max-w-full">
+    <article className="flex flex-col flex-1 shrink flex-grow items-start self-stretch p-5 my-auto bg-white rounded-xl basis-0 w-full h-[320px] max-md:max-w-full">
       <h2 className="self-start text-center px-5 py-2.5 text-[1.25rem] text-white bg-[#062D76] rounded-lg">
         Thời gian phục vụ
       </h2>

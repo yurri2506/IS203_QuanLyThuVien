@@ -98,6 +98,11 @@ const UploadImage = () => {
         setLoading(false);
         return;
       }
+      if (response.length === 0) {
+        toast.error("Không tìm thấy phiếu mượn nào");
+        setLoading(false);
+        return;
+      }
       const res = await response.json();
       setBorrowCard(res);
     } catch (e) {
@@ -170,11 +175,11 @@ const UploadImage = () => {
   const BookInfo = ({ book }) => {
     return (
       <div
-        className={`w-full flex justify-between items-center border-1 ${
-          book?.checked === false ? "bg-white" : "bg-green-100"
+        className={`w-full h-[200px] flex justify-between items-center rounded-xl ${
+          book?.checked === false ? "bg-gray-200" : "bg-green-100"
         } my-3 px-5`}
       >
-        <div className="flex flex-col">
+        <div className="flex flex-col mr-4">
           <p
             className={`font-semibold ${
               currentChoose?.status !== "Đã yêu cầu" ? "" : "hidden"
@@ -184,7 +189,7 @@ const UploadImage = () => {
           </p>
           <p className="font-semibold">Tên: {book?.tenSach}</p>
           <p>Tên tác giả: {book?.tenTacGia}</p>
-          <p>Tên nhà suất bản: {book?.nxb}</p>
+          <p>Tên NXB: {book?.nxb}</p>
           <p>Vị trí:&nbsp;{book?.viTri}</p>
         </div>
         <img src={book?.hinhAnh[0]} width={140} height={140} />
@@ -252,7 +257,9 @@ const UploadImage = () => {
       } else {
         const childId = resultChild.id;
         console.log("tới đay");
-        const foundBook = currentInfo.find((book) => book.childId.childBookId === childId);
+        const foundBook = currentInfo.find(
+          (book) => book.childId.childBookId === childId
+        );
         if (!foundBook) {
           toast.error("Sách không tồn tại trong danh sách đã mượn!");
           return;
@@ -262,7 +269,9 @@ const UploadImage = () => {
           return;
         }
         const updatedBooks = currentInfo.map((book) =>
-          book.childId.childBookId === childId ? { ...book, checked: true } : book
+          book.childId.childBookId === childId
+            ? { ...book, checked: true }
+            : book
         );
         setInfo(updatedBooks);
       }
@@ -337,10 +346,10 @@ const UploadImage = () => {
           />
         </div>
       ) : !result ? (
-        <div className="flex flex-col w-full items-center h-[10px] mb-10 gap-5 px-10 py-6 ">
+        <div className="flex flex-col items-center h-auto w-fit mt-10 mb-10 gap-5 px-10 py-6 bg-white rounded-lg drop-shadow-lg">
           <img width={200} height={200} src="/images/logo.jpg" />
           <p className="text-3xl font-semibold text-#062D76">Library Web</p>
-          <p className="text-xl font-semibold ">
+          <p className="text-xl font-semibold w-fit">
             Vui lòng nhập mã người dùng của bạn
           </p>
           <div className="flex flex-col w-full items-center justify-center gap-1">
@@ -349,14 +358,14 @@ const UploadImage = () => {
               value={text}
               onChange={(e) => setText(e.target.value)}
               placeholder="Nhập user ID của bạn"
-              className="bg-white rounded w-1/4"
+              className="bg-white rounded w-fit"
               onKeyDown={(e) => e.key === "Enter" && handleEnter()}
             />
             <p className="text-sm italic text-[#062D76]">
               Nhập Enter để tiến hành tìm kiếm
             </p>
           </div>
-          <p className="text-2xl font-semibold ">Hoặc</p>
+          <p className="text-2xl font-semibold mt-10">Hoặc</p>
           <p className="text-xl font-semibold ">
             Tải ảnh barcode mã người dùng của bạn
           </p>
@@ -370,7 +379,7 @@ const UploadImage = () => {
           </div>
         </div>
       ) : (
-        <div className="flex flex-col w-full h-full min-h-screen items-center h-[10px] py-6 gap-5 bg-[#EFF3FB]">
+        <div className="flex flex-col w-full h-full min-h-screen items-center py-6 gap-5 bg-[#EFF3FB]">
           {/*Nút Back*/}
           <div className="absolute top-5 left-5 md:left-57 fixed">
             <Button
@@ -390,8 +399,8 @@ const UploadImage = () => {
                 className="w-full h-full bg-black opacity-[80%] absolute top-0 left-0"
                 onClick={() => handleCloseCard()}
               ></div>
-              <div className="flex w-3/4 lg:w-2/3 h-[400px] lg:h-[600px] bg-white p-6 rounded-lg shadow-lg fixed justify-between py-10">
-                <div className="flex flex-col w-1/2">
+              <div className="flex lg:w-2/3 h-[400px] w-fit lg:h-[600px] bg-white p-6 rounded-lg shadow-lg fixed justify-between py-10">
+                <div className="flex flex-col w-1/2 mr-4">
                   <CardInfo card={currentChoose} />
                   <div className="h-[400px] overflow-y-auto flex flex-col items-center">
                     {currentInfo?.map((book, index) => {
@@ -399,7 +408,7 @@ const UploadImage = () => {
                     })}
                   </div>
                   <Button
-                    className="self-end w-full flex z-100 bg-[#062D76]"
+                    className="self-center w-fit flex z-100 bg-[#062D76] hover:bg-white hover:text-[#062D76] text-white rounded-lg mt-4"
                     disabled={!done}
                     onClick={() => {
                       handleUpdateBorrowCard();
@@ -408,7 +417,7 @@ const UploadImage = () => {
                     Hoàn tất
                   </Button>
                 </div>
-                <div className="flex flex-col w-1/2 items-center justify-center">
+                <div className="flex flex-col ml-4 w-1/2 items-center justify-center">
                   <UploadChild
                     resultChild={resultChild}
                     setResultChild={setResultChild}
@@ -420,12 +429,12 @@ const UploadImage = () => {
               </p>
             </div>
           )}
-          <div className="flex flex-col bg-white w-1/2 rounded-lg mt-2 drop-shadow-lg p-5 gap-10 items-center">
-            <h1>ID Người dùng:&nbsp;{result?.id}</h1>
-            <div className="flex flex-col gap-[10px] w-full">
-              <p className="font-bold">
-                Tên người dùng:&nbsp;{result?.fullname}
-              </p>
+          <div className="flex flex-col bg-white w-1/2 rounded-lg mt-2 drop-shadow-lg p-5 gap-4">
+            <h1 className="rounded-full bg-blue-200 text-blue-400 font-bold px-2 py-2 w-fit">
+              ID:&nbsp;{result?.id}
+            </h1>
+            <div className="flex flex-col gap-[10px] w-full items-start">
+              <p className="font-bold">Họ và tên:&nbsp;{result?.fullname}</p>
               <p className="">Email:&nbsp;{result?.email}</p>
               <p className="">Ngày sinh:&nbsp;{result?.birthday}</p>
               <p className="">Số điện thoại:&nbsp;{result?.phone}</p>
@@ -437,9 +446,9 @@ const UploadImage = () => {
                 Không có lịch sử phiếu mượn nào
               </p>
             ) : (
-              <div className="w-full grid grid-cols-1 lg:grid-cols-2">
+              <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div>
-                  <div className="flex bg-white text-[#062D76] rounded p-5 justify-center items-center gap-5">
+                  <div className="flex bg-white text-[#062D76] rounded-xl p-5 justify-center items-center gap-5">
                     <Book width={24} height={24} />
                     <p className="text-lg font-semibold">
                       {" "}
@@ -459,7 +468,7 @@ const UploadImage = () => {
                   </div>
                 </div>
                 <div>
-                  <div className="flex bg-white text-[#062D76] rounded p-5 justify-center items-center gap-5">
+                  <div className="flex bg-white text-[#062D76] rounded-xl p-5 justify-center items-center gap-5">
                     <CalendarClock width={24} height={24} />
                     <p className="text-lg font-semibold">
                       Phiếu mượn đang mượn

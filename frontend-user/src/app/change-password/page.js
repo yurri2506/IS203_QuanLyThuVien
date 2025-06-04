@@ -1,54 +1,153 @@
 "use client"
-import React, { useState, useEffect, use } from "react";
+import React, { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
 import { Eye, EyeOff } from "lucide-react";
 import LeftSideBar from "../components/LeftSideBar";
-//import axios from "axios";
+import axios from "axios";
+import toast, { Toaster } from "react-hot-toast";
+import { useRouter } from "next/navigation";
+
+const schema = yup.object().shape({
+  currentPassword: yup.string().required("Vui lòng nhập mật khẩu hiện tại"),
+  newPassword: yup
+    .string()
+    .required("Vui lòng nhập mật khẩu mới")
+    .min(6, "Mật khẩu mới phải có ít nhất 6 ký tự")
+    .notOneOf([yup.ref("currentPassword")], "Mật khẩu mới không được trùng mật khẩu cũ"),
+  confirmPassword: yup
+    .string()
+    .required("Vui lòng xác nhận mật khẩu mới")
+    .oneOf([yup.ref("newPassword")], "Xác nhận mật khẩu không khớp"),
+});
 
 const ChangePassword = () => {
-  const [user, setUser] = useState({ name: "", email: "", avatar: "" });
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [user, setUser] = useState({ name: "", email: "", avatar: null });
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const router = useRouter();
 
-  
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(schema),
+  });
+
+  const handleLogin = () => {
+    router.push("/login");
+  };
+
   useEffect(() => {
-    // Giả lập API call để lấy thông tin user từ backend
-    setUser({ name: "Vy Đỗ", email: "Vyhap@gmail.com", avatar: "/images/logo. jpg" });
+    const fetchUserData = async () => {
+      try {
+        const userId = localStorage.getItem("id");
+        const accessToken = localStorage.getItem("accessToken");
+
+        if (!userId || !accessToken) {
+          toast.error("Không tìm thấy thông tin đăng nhập. Vui lòng đăng nhập lại.");
+          setTimeout(() => handleLogin(), 1000);
+          return;
+        }
+
+        const response = await axios.get(`http://localhost:8080/api/user/${userId}`, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+
+        const userData = response.data;
+        setUser({
+          name: userData.username || userData.fullname || "Người dùng",
+          email: userData.email || "",
+          avatar: userData.avatar_url || null,
+        });
+      } catch (err) {
+        toast.error(
+          err.response?.data?.message || "Không thể lấy thông tin người dùng. Vui lòng thử lại."
+        );
+        if (err.response?.status === 401 || err.response?.status === 403) {
+          toast.error("Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.");
+          setTimeout(() => handleLogin(), 1000);
+        }
+      }
+    };
+
+    fetchUserData();
   }, []);
 
+  const onSubmit = async (data) => {
+    try {
+      const userId = localStorage.getItem("id");
+      const accessToken = localStorage.getItem("accessToken");
 
-return (
-  <div className="flex min-h-screen bg-[#EFF3FB]">
-    <LeftSideBar />
-    {/* Container bọc form - flex-1 để đẩy form qua phải, 
-          justify-end để form sát phải, items-end để form sát đáy */}
+      if (!userId || !accessToken) {
+        toast.error("Không tìm thấy thông tin đăng nhập. Vui lòng đăng nhập lại.");
+        setTimeout(() => handleLogin(), 1000);
+        return;
+      }
+
+      const response = await axios.put(
+        "http://localhost:8080/api/change-password",
+        {
+          id: userId,
+          oldPassword: data.currentPassword,
+          newPassword: data.newPassword,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      toast.success(response.data.message || "Đổi mật khẩu thành công");
+      reset();
+      setTimeout (router.push("/Honepage"),1000); //
+    } catch (err) {
+      toast.error(
+        err.response?.data?.message || "Đổi mật khẩu thất bại. Vui lòng kiểm tra lại."
+      );
+    }
+  };
+
+  return (
+    <div className="flex min-h-screen bg-[#EFF3FB]">
+      <Toaster position="top-center" toastOptions={{ duration: 5000 }} />
+      <LeftSideBar />
       <div className="flex-1 flex justify-end items-end">
-        {/* Bỏ mt-5 để form không bị đẩy lên, dùng mb-0 để dính sát đáy */}
-        <div className="bg-white w-full max-w-[1330px] h-[623px] p-18 mr-0 mb-0 rounded-lg shadow-md">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="bg-white w-full max-w-[1330px] h-[623px] p-18 mr-0 mb-0 rounded-lg shadow-md"
+        >
           <div className="flex items-center gap-4 mb-6">
-            <img
-              className="w-20 h-20 rounded-full"
-              //src={user.avatar}
-              src="/images/logo.jpg"
-              alt="Avatar"
-            />
+            {user.avatar ? (
+              <img
+                className="w-20 h-20 rounded-full"
+                src={user.avatar}
+                alt="Avatar"
+              />
+            ) : (
+              <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
+                No Avatar
+              </div>
+            )}
             <div>
               <h3 className="text-xl font-semibold">{user.name}</h3>
               <p className="text-gray-500">{user.email}</p>
             </div>
           </div>
 
+          {/* Mật khẩu hiện tại */}
           <div className="mb-4">
             <label className="block text-black">Mật khẩu hiện tại</label>
             <div className="relative">
               <input
                 type={showCurrentPassword ? "text" : "password"}
                 className="w-full p-2 border rounded mt-1 pr-10"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
+                {...register("currentPassword")}
               />
               <button
                 type="button"
@@ -58,16 +157,21 @@ return (
                 {showCurrentPassword ? <Eye size={20} /> : <EyeOff size={20} />}
               </button>
             </div>
+            {errors.currentPassword && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.currentPassword.message}
+              </p>
+            )}
           </div>
 
+          {/* Mật khẩu mới */}
           <div className="mb-4">
             <label className="block text-black">Mật khẩu mới</label>
             <div className="relative">
               <input
                 type={showNewPassword ? "text" : "password"}
                 className="w-full p-2 border rounded mt-1 pr-10"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
+                {...register("newPassword")}
               />
               <button
                 type="button"
@@ -77,16 +181,19 @@ return (
                 {showNewPassword ? <Eye size={20} /> : <EyeOff size={20} />}
               </button>
             </div>
+            {errors.newPassword && (
+              <p className="text-red-500 text-sm mt-1">{errors.newPassword.message}</p>
+            )}
           </div>
 
+          {/* Xác nhận mật khẩu */}
           <div className="mb-6">
             <label className="block text-black">Xác nhận mật khẩu</label>
             <div className="relative">
               <input
                 type={showConfirmPassword ? "text" : "password"}
                 className="w-full p-2 border rounded mt-1 pr-10"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                {...register("confirmPassword")}
               />
               <button
                 type="button"
@@ -96,20 +203,25 @@ return (
                 {showConfirmPassword ? <Eye size={20} /> : <EyeOff size={20} />}
               </button>
             </div>
+            {errors.confirmPassword && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.confirmPassword.message}
+              </p>
+            )}
           </div>
 
           <div className="text-center">
-            <button className="w-[200px] mx-auto bg-[#6CB1DA] text-white p-3 rounded-lg hover:bg-blue-400">
+            <button
+              type="submit"
+              className="w-[200px] mx-auto bg-[#6CB1DA] text-white p-3 rounded-lg hover:bg-blue-400"
+            >
               Cập nhật tài khoản
             </button>
           </div>
-
-        </div>
+        </form>
       </div>
     </div>
   );
 };
 
 export default ChangePassword;
-
-

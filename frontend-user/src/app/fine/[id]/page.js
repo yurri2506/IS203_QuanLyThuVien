@@ -100,20 +100,18 @@ function page() {
       </article>
     );
   };
+
+  // Hàm xử lý thanh toán
   const handleThanhToan = async () => {
-    // const response = await axios.post(
-    //   `http://localhost:8080/fine/pay-momo/${fine.id}`
-    // );
-    // const payUrl = response.data;
-    // window.location.href = payUrl;
-    toast.success("Thanh toán thành công", {
-      style: { background: "#d1fae5", color: "#065f46" },
-    });
+    const response = await axios.post(
+      `http://localhost:8080/api/fine/pay-momo/${fine.id}`
+    );
+    const payUrl = response.data;
+    window.location.href = payUrl;
   };
   return (
     <main className="flex flex-col min-h-screen text-foreground">
       <div className="pt-16 flex">
-        <LeftSideBar />
         <section className="self-stretch pr-[1.25rem] md:pl-60 ml-[1.25rem] my-auto w-full max-md:max-w-full mt-2 mb-2">
           {/*Nút Back - Floating Button*/}
           {/*Nút Back*/}
