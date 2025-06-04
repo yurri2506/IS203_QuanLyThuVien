@@ -3,7 +3,7 @@ import { Button } from "@/app/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import useSidebarStore from "@/store/sideBarStore";
 import { LogOut } from "lucide-react";
-import { User, Book, Settings, FileWarning, ArrowDownUp, LayoutDashboard } from "lucide-react";
+import { User, Book, Settings, FileWarning, ArrowDownUp, LayoutDashboard, ScanQrCode } from "lucide-react";
 import { useRouter, usePathname } from "next/navigation";
 
 
@@ -51,6 +51,7 @@ const Sidebar = () => {
     { path: "/books", icon: Book, label: "Sách" },
     { path: "/borrow", icon: ArrowDownUp, label: "Mượn/Trả" },
     { path: "/fine", icon: FileWarning, label: "Phiếu phạt" },
+    { path: "/scan", icon: ScanQrCode, label: "Quét sách" },
     { path: "/setting", icon: Settings, label: "Cài đặt" },
   ];
 

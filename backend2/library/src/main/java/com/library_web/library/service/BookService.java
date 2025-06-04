@@ -1,6 +1,8 @@
 package com.library_web.library.service;
 
 import com.library_web.library.model.Book;
+
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -24,7 +26,12 @@ public interface BookService {
 
     long getTotalBookQuantity();
 
-    long getNewBooksThisWeek();
+    // long getNewBooksThisWeek();
+    long getNewBooksThisMonth();
+
+    long getNewBooksInRange(LocalDate startDate, LocalDate endDate);
+
+    long getBorrowCountInRange(LocalDate startDate, LocalDate endDate);
 
     List<Book> findBooksNeedingRestock(int quantity);
 
