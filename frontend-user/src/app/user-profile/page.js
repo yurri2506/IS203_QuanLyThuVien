@@ -37,13 +37,15 @@ const DatePickerField = ({ value, onChange }) => {
         selected={startDate}
         onChange={handleDateChange}
         dateFormat="yyyy-MM-dd"
-        className="px-2.5 py-3.5 border-black bg-gray-100 text-black text-m font-normal w-full rounded"
+        className="px-2 py-2 border-black bg-gray-100 text-black text-m font-normal w-full rounded"
         placeholderText="yyyy-mm-dd"
       />
       <Button
         className="absolute right-2 h-8 w-8 bg-blue-300 hover:bg-blue-400 rounded cursor-pointer"
         onClick={() =>
-          document.querySelector(".react-datepicker__input-container input")?.focus()
+          document
+            .querySelector(".react-datepicker__input-container input")
+            ?.focus()
         }
       >
         <Calendar className="w-5 h-5" color="white" />
@@ -85,13 +87,15 @@ const OtpInput = ({ otp, setOtp, onVerifyOtp, isOtpSent }) => {
 
 // InfoRow Component (updated to handle DatePicker for birthdate)
 const InfoRow = ({ label, name, value, isEditing, onChange, isDateField }) => (
-  <div className="flex flex-col gap-3">
+  <div className="flex flex-col w-[400px] gap-2">
     <label className="text-sm text-black font-medium">{label}</label>
     {isEditing ? (
       name === "birthdate" ? (
         <DatePickerField
           value={value}
-          onChange={(date) => onChange({ target: { name: "birthdate", value: date } })}
+          onChange={(date) =>
+            onChange({ target: { name: "birthdate", value: date } })
+          }
         />
       ) : (
         <input
@@ -99,12 +103,12 @@ const InfoRow = ({ label, name, value, isEditing, onChange, isDateField }) => (
           name={name}
           value={value || ""}
           onChange={onChange}
-          className="px-2.5 py-3.5 border-black bg-gray-100 rounded-full text-black text-sm font-normal"
+          className="px-2 py-2 border-black bg-gray-100 rounded text-black text-m font-normal"
         />
       )
     ) : (
-      <div className="px-2.5 py-3.5 border-b border-black">
-        <p className="text-black text-sm font-normal">{value}</p>
+      <div className="px-2 py-2 border-b border-black">
+        <p className="text-black text-m font-normal">{value}</p>
       </div>
     )}
   </div>
@@ -123,11 +127,11 @@ const StatCard = ({ number, label, onClick }) => (
 
 // Section Component (unchanged)
 const Section = ({ title, children }) => (
-  <div className="flex flex-col gap-7 w-full">
-    <div className="bg-slate-200 w-fit text-center px-6 py-3 mt-4 rounded-lg text-sky-900 text-[18px]">
+  <div className="flex flex-col gap-3 w-full">
+    <div className="bg-slate-200 w-fit text-center px-3 py-2 mt-6 rounded-lg text-sky-900 text-[18px]">
       {title}
     </div>
-    <div className="grid grid-cols-2 gap-10">{children}</div>
+    <div className="grid grid-cols-2 gap-5 ml-3">{children}</div>
   </div>
 );
 
@@ -197,11 +201,14 @@ const ProfileCard = () => {
     const id = localStorage.getItem("id");
     const fetchUserInfo = async () => {
       try {
-        const response = await axios.get(`http://localhost:8080/api/user/${id}`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/user/${id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
 
         const user = response.data;
         setFormData({
@@ -255,7 +262,7 @@ const ProfileCard = () => {
   const handleBorrowedCard = () => {
     router.push("/borrowed-card");
   };
-   const handleFine = () => {
+  const handleFine = () => {
     router.push("/fine");
   };
 
@@ -272,12 +279,16 @@ const ProfileCard = () => {
     };
 
     try {
-      const response = await axios.put(`http://localhost:8080/api/user/${id}`, updates, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
+      const response = await axios.put(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/user/${id}`,
+        updates,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
 
       const data = response.data;
       if (data.message?.includes("OTP")) {
@@ -305,7 +316,10 @@ const ProfileCard = () => {
         setMessage("Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.");
         router.push("/login");
       } else {
-        setMessage(error.response?.data?.message || "Có lỗi xảy ra khi cập nhật thông tin");
+        setMessage(
+          error.response?.data?.message ||
+            "Có lỗi xảy ra khi cập nhật thông tin"
+        );
       }
       setIsError(true);
     }
@@ -332,7 +346,7 @@ const ProfileCard = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:8080/api/user/upload-avatar",
+        `${process.env.NEXT_PUBLIC_API_URL}/api/user/upload-avatar`,
         formData,
         {
           headers: {
@@ -352,7 +366,9 @@ const ProfileCard = () => {
       setAvatarFile(null);
     } catch (error) {
       console.error("Lỗi khi upload ảnh:", error);
-      setMessage(error.response?.data?.message || "Có lỗi xảy ra khi upload ảnh");
+      setMessage(
+        error.response?.data?.message || "Có lỗi xảy ra khi upload ảnh"
+      );
       setIsError(true);
     }
   };
@@ -367,7 +383,7 @@ const ProfileCard = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:8080/api/user/verify-email-update",
+        `${process.env.NEXT_PUBLIC_API_URL}/api/user/verify-email-update`,
         {
           id: localStorage.getItem("id"),
           email: formData.email,
@@ -415,145 +431,141 @@ const ProfileCard = () => {
   };
 
   return (
-    <div
-      className={`flex-1 py-4 px-0 transition-all duration-300 ${
-        isSidebarOpen ? "md:ml-64" : "md:ml-0"
-      }`}
-    >
-      <div className="p-15 bg-white rounded-2xl flex flex-col overflow-y-auto">
-        {message && (
-          <div
-            className={`mb-4 p-3 rounded-lg ${
-              isError ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"
-            }`}
-          >
-            {message}
-          </div>
-        )}
-
-        <div className="w-full flex justify-between items-start">
-          <div className="flex items-center gap-3.5">
-            {formData.avatar_url ? (
-              <img
-                src={formData.avatar_url}
-                alt="User Avatar"
-                width={100}
-                height={100}
-                className="w-[100px] h-[100px] rounded-full object-cover"
-                onError={() => setFormData((prev) => ({ ...prev, avatar_url: null }))}
-              />
-            ) : (
-              <div className="w-[100px] h-[100px] rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
-                No Avatar
-              </div>
-            )}
-            <div className="flex flex-col gap-3">
-              <h2 className="text-neutral-900 text-xl font-semibold">{formData.fullName}</h2>
-              <p className="text-neutral-900 text-opacity-50 text-l font-medium">{formData.email}</p>
-            </div>
-          </div>
-          <Button
-            onClick={isEditing ? handleSave : toggleEdit}
-            className="w-20 p-3 bg-blue-300 rounded-2xl text-white text-l font-medium hover:bg-blue-400"
-          >
-            {isEditing ? "Lưu" : "Sửa"}
-          </Button>
+    <div className="p-15 ml-64 bg-white w-[1000px] rounded-2xl flex flex-col overflow-y-auto">
+      {message && (
+        <div
+          className={`mb-4 p-3 rounded-lg ${
+            isError ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700"
+          }`}
+        >
+          {message}
         </div>
+      )}
 
-        <Section title="Thông tin cá nhân">
-          <InfoRow
-            label="Họ và Tên"
-            name="fullName"
-            value={formData.fullName || "Chưa cập nhật"}
-            isEditing={isEditing}
-            onChange={handleChange}
-          />
-          <InfoRow
-            label="MSSV"
-            name="studentId"
-            value={formData.studentId || "Chưa cập nhật"}
-            isEditing={false}
-          />
-          <InfoRow
-            label="Email"
-            name="email"
-            value={formData.email || "Chưa cập nhật"}
-            isEditing={isEditing}
-            onChange={handleChange}
-          />
-          <InfoRow
-            label="Ngày Sinh"
-            name="birthdate"
-            value={formatDateForDisplay(formData.birthdate)}
-            isEditing={isEditing}
-            onChange={handleChange}
-            isDateField={true}
-          />
-             {showOtpInput && (
+      <div className="w-full flex justify-between items-start">
+        <div className="flex items-center gap-3.5">
+          {formData.avatar_url ? (
+            <img
+              src={formData.avatar_url}
+              alt="User Avatar"
+              width={100}
+              height={100}
+              className="w-[100px] h-[100px] rounded-full object-cover"
+              onError={() =>
+                setFormData((prev) => ({ ...prev, avatar_url: null }))
+              }
+            />
+          ) : (
+            <div className="w-[100px] h-[100px] rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
+              No Avatar
+            </div>
+          )}
+          <div className="flex flex-col gap-3">
+            <h2 className="text-neutral-900 text-xl font-semibold">
+              {formData.fullName}
+            </h2>
+            <p className="text-neutral-900 text-opacity-50 text-l font-medium">
+              {formData.email}
+            </p>
+          </div>
+        </div>
+        <Button
+          onClick={isEditing ? handleSave : toggleEdit}
+          className="w-20 p-3 bg-blue-300 rounded-2xl text-white text-l font-medium hover:bg-blue-400"
+        >
+          {isEditing ? "Lưu" : "Sửa"}
+        </Button>
+      </div>
+
+      <Section title="Thông tin cá nhân">
+        <InfoRow
+          label="Họ và Tên"
+          name="fullName"
+          value={formData.fullName || "Chưa cập nhật"}
+          isEditing={isEditing}
+          onChange={handleChange}
+        />
+        <InfoRow
+          label="MSSV"
+          name="studentId"
+          value={formData.studentId || "Chưa cập nhật"}
+          isEditing={false}
+        />
+        <InfoRow
+          label="Email"
+          name="email"
+          value={formData.email || "Chưa cập nhật"}
+          isEditing={isEditing}
+          onChange={handleChange}
+        />
+        <InfoRow
+          label="Ngày Sinh"
+          name="birthdate"
+          value={formatDateForDisplay(formData.birthdate)}
+          isEditing={isEditing}
+          onChange={handleChange}
+          isDateField={true}
+        />
+        {showOtpInput && (
           <OtpInput
             otp={otp}
             setOtp={setOtp}
             onVerifyOtp={handleVerifyOtp}
             isOtpSent={isOtpSent}
           />
-        )} 
-          <InfoRow
-            label="Số Điện Thoại"
-            name="phone"
-            value={formData.phone || "Chưa cập nhật"}
-            isEditing={isEditing}
-            onChange={handleChange}
-          />
-          <InfoRow
-            label="Ngày Tham Gia"
-            name="joinDate"
-            value={formatDateForDisplay(formData.joinDate)}
-            isEditing={false}
-          />
-        </Section>
-
-        {isEditing && (
-          <div className="mt-4">
-            <label className="text-black text-l font-medium">Upload ảnh đại diện</label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleAvatarChange}
-              className="px-2.5 py-3.5 border-black bg-gray-100 text-black text-m font-normal w-full rounded"
-            />
-            <Button
-              onClick={handleUploadAvatar}
-              className="mt-2 w-20 p-3 bg-blue-300 rounded-2xl text-white text-l font-medium hover:bg-blue-400"
-            >
-              Upload
-            </Button>
-          </div>
         )}
+        <InfoRow
+          label="Số Điện Thoại"
+          name="phone"
+          value={formData.phone || "Chưa cập nhật"}
+          isEditing={isEditing}
+          onChange={handleChange}
+        />
+        <InfoRow
+          label="Ngày Tham Gia"
+          name="joinDate"
+          value={formatDateForDisplay(formData.joinDate)}
+          isEditing={false}
+        />
+      </Section>
 
-    
+      {isEditing && (
+        <div className="mt-4">
+          <label className="text-black text-l font-medium">
+            Upload ảnh đại diện
+          </label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleAvatarChange}
+            className="px-2.5 py-3.5 border-black bg-gray-100 text-black text-m font-normal w-full rounded"
+          />
+          <Button
+            onClick={handleUploadAvatar}
+            className="mt-2 w-20 p-3 bg-blue-300 rounded-2xl text-white text-l font-medium hover:bg-blue-400"
+          >
+            Upload
+          </Button>
+        </div>
+      )}
 
-        <Section title="Thông tin mượn sách">
-          <div className="flex gap-3">
-            <StatCard
-              number={8}
-              label="Tài liệu đang mượn"
-              onClick={handleBorrowedCard}
-            />
-            <StatCard
-              number={4}
-              label="Tài liệu quá hạn"
-              onClick={handleFine}
-            />
-          </div>
-        </Section>
-      </div>
+      <Section title="Thông tin mượn sách">
+        <div className="flex gap-3">
+          <StatCard
+            number={8}
+            label="Tài liệu đang mượn"
+            onClick={handleBorrowedCard}
+          />
+          <StatCard number={4} label="Tài liệu quá hạn" onClick={handleFine} />
+        </div>
+      </Section>
     </div>
   );
 };
 
 const Page = () => {
   return (
-    <div className="pt-16 ml-60 flex flex-1 gap-5 bg-[#E6EAF1]">
+    <div className="pt-20 pb-4 max-w-7xl flex flex-1 gap-5">
       <LeftSideBar />
       <ProfileCard />
     </div>

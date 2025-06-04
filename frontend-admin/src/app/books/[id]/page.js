@@ -4,19 +4,14 @@ import React, { useState, useEffect, useRef } from "react";
 import Sidebar from "@/app/components/sidebar/Sidebar";
 import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
-import {
-  ArrowUpFromLine,
-  ChevronDown,
-  CircleCheck,
-  Undo2,
-} from "lucide-react";
+import { ArrowUpFromLine, ChevronDown, CircleCheck, Undo2 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { ThreeDot } from "react-loading-indicators";
 import axios from "axios";
 
 // ==== CẤU HÌNH CHUNG CHO AXIOS ====
-axios.defaults.baseURL = "http://localhost:8080";
+axios.defaults.baseURL = `${process.env.NEXT_PUBLIC_API_URL}`;
 axios.defaults.headers.common["Content-Type"] = "application/json";
 
 function Page() {
@@ -74,8 +69,6 @@ function Page() {
 
   const isDeleted = status === "DA_XOA";
 
-
-
   useEffect(() => {
     if (!id) return;
 
@@ -95,7 +88,7 @@ function Page() {
         setYear(data.nam?.toString() || "");
         setQuantity(data.tongSoLuong?.toString() || "");
         setOriginQuantity(data.tongSoLuong || 0);
-        setQuantity(""); 
+        setQuantity("");
         setDescription(data.moTa || "");
         setCategory(data.categoryChild?.parent?.name || null);
         setCategory2(data.categoryChild?.name || null);
@@ -162,7 +155,6 @@ function Page() {
     });
     return res.data;
   };
-  
 
   const handleValidation = () => {
     const newErrors = {
@@ -174,8 +166,6 @@ function Page() {
     setErrors(newErrors);
     return !Object.values(newErrors).some((error) => error);
   };
-  
-
 
   const handleSubmit = async () => {
     if (!id) {
@@ -200,7 +190,7 @@ function Page() {
         router.back();
       } catch (err) {
         console.error("Lỗi chi tiết:", err.response?.data || err.message);
-      toast.error(err.response?.data?.message || "Lỗi server");
+        toast.error(err.response?.data?.message || "Lỗi server");
       } finally {
         setLoading(false);
       }
@@ -208,26 +198,33 @@ function Page() {
     }
 
     const initialData = (await axios.get(`/api/book/${id}`)).data;
-    const addQty = +quantity; 
+    const addQty = +quantity;
     if (isNaN(addQty) || addQty < 0) {
       toast.error("Số lượng thêm phải >= 0");
       return;
     }
     const bookUpdates = {};
 
-    if (bookname && bookname !== initialData.tenSach) bookUpdates.tenSach = bookname;
-    if (description && description !== initialData.moTa) bookUpdates.moTa = description;
-    if (author && author !== initialData.tenTacGia) bookUpdates.tenTacGia = author;
+    if (bookname && bookname !== initialData.tenSach)
+      bookUpdates.tenSach = bookname;
+    if (description && description !== initialData.moTa)
+      bookUpdates.moTa = description;
+    if (author && author !== initialData.tenTacGia)
+      bookUpdates.tenTacGia = author;
     if (publisher && publisher !== initialData.nxb) bookUpdates.nxb = publisher;
-    if (year && !isNaN(+year) && +year !== initialData.nam) bookUpdates.nam = +year;
-    if (weight && !isNaN(+weight) && +weight !== initialData.trongLuong) bookUpdates.trongLuong = +weight;
-    if (price && !isNaN(+price) && +price !== initialData.donGia) bookUpdates.donGia = +price;
+    if (year && !isNaN(+year) && +year !== initialData.nam)
+      bookUpdates.nam = +year;
+    if (weight && !isNaN(+weight) && +weight !== initialData.trongLuong)
+      bookUpdates.trongLuong = +weight;
+    if (price && !isNaN(+price) && +price !== initialData.donGia)
+      bookUpdates.donGia = +price;
 
     bookUpdates.tongSoLuong = addQty;
-    
-    
+
     if (category2) {
-      const sel = totalCate.find((c) => c.name === category)?.children.find((ch) => ch.name === category2);
+      const sel = totalCate
+        .find((c) => c.name === category)
+        ?.children.find((ch) => ch.name === category2);
       if (sel && sel.id !== initialData.categoryChild?.id) {
         bookUpdates.categoryChildId = sel.id;
       }
@@ -237,13 +234,13 @@ function Page() {
       book: Object.keys(bookUpdates).length > 0 ? bookUpdates : {},
       quantity: +quantity || initialData.tongSoLuong || 0,
     };
- 
+
     if (Object.keys(bookUpdates).length === 0) {
       toast("Không có thay đổi nào để cập nhật", { icon: "⚠️" });
       return;
     }
 
-   // Upload ảnh nếu có
+    // Upload ảnh nếu có
     let newImgs = [];
     try {
       newImgs = await uploadImagesToCloudinary();
@@ -261,7 +258,6 @@ function Page() {
       await axios.patch(`/api/book/${id}`, bookUpdates);
       toast.success("Cập nhật sách thành công");
       router.push(`/books/details/${id}`);
-
     } catch (err) {
       console.error("Lỗi chi tiết:", err.response?.data || err.message);
       toast.error(err.response?.data?.message || "Lỗi server rồi bà");
@@ -286,7 +282,6 @@ function Page() {
     );
   }
 
-  
   return (
     <div className="flex flex-row w-full h-full min-h-screen bg-[#EFF3FB] pb-15">
       <Sidebar />
@@ -366,14 +361,13 @@ function Page() {
           <div className="flex w-full justify-between gap-10">
             <div className="flex flex-col w-2/3 gap-[5px] md:gap-[10px]">
               <p className="font-semibold text-lg mt-3">Số Sách Thêm</p>
-                <Input
-                  type="number"
-                  placeholder="Nhập số sách muốn thêm"
-                  className="font-semibold rounded-lg w-full h-10 flex items-center px-5 bg-white"
-                  value={quantity}
-                  onChange={(e) => setQuantity(e.target.value)}
-                />
-
+              <Input
+                type="number"
+                placeholder="Nhập số sách muốn thêm"
+                className="font-semibold rounded-lg w-full h-10 flex items-center px-5 bg-white"
+                value={quantity}
+                onChange={(e) => setQuantity(e.target.value)}
+              />
             </div>
             <div className="flex flex-col w-full gap-[5px] md:gap-[10px] space-y-2 relative inline-block text-left">
               <p className="font-semibold text-lg mt-3">Thể Loại Chính</p>
@@ -438,7 +432,9 @@ function Page() {
               <Input
                 type="number"
                 placeholder="Nhập trọng lượng"
-                className={`font-semibold rounded-lg w-full h-10 flex items-center px-5 bg-white ${errors.weight ? "border-red-500" : ""}`}
+                className={`font-semibold rounded-lg w-full h-10 flex items-center px-5 bg-white ${
+                  errors.weight ? "border-red-500" : ""
+                }`}
                 disabled={isDeleted}
                 value={weight}
                 onChange={(e) => setWeight(e.target.value)}
@@ -449,13 +445,15 @@ function Page() {
               <Input
                 type="number"
                 placeholder="Nhập đơn giá"
-                className={`font-semibold rounded-lg w-full h-10 flex items-center px-5 bg-white ${errors.price ? "border-red-500" : ""}`}
+                className={`font-semibold rounded-lg w-full h-10 flex items-center px-5 bg-white ${
+                  errors.price ? "border-red-500" : ""
+                }`}
                 disabled={isDeleted}
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
               />
             </div>
-            </div> 
+          </div>
 
           <div className="flex flex-col w-full gap-[5px] md:gap-[10px]">
             <p className="font-semibold text-lg mt-3">Mô Tả</p>

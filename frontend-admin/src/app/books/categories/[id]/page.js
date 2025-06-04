@@ -20,7 +20,7 @@ export default function EditCategoryPage() {
   });
   const [loading, setLoading] = useState(true);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState(null); 
+  const [deleteTarget, setDeleteTarget] = useState(null);
   const [showAddChildModal, setShowAddChildModal] = useState(false);
   const [newChildName, setNewChildName] = useState("");
   const didFetch = useRef(false);
@@ -42,8 +42,14 @@ export default function EditCategoryPage() {
     didFetch.current = true;
     (async () => {
       try {
-        const res = await axios.get(`http://localhost:8080/api/category/${id}`);
-        setData({ name: res.data.name, soLuongDanhMuc: res.data.children.length, children: res.data.children });
+        const res = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/category/${id}`
+        );
+        setData({
+          name: res.data.name,
+          soLuongDanhMuc: res.data.children.length,
+          children: res.data.children,
+        });
       } catch (err) {
         console.error("Lỗi khi lấy danh mục:", err);
         toast.error("Không thể tải danh mục");
@@ -65,7 +71,7 @@ export default function EditCategoryPage() {
     }
     try {
       const res = await axios.post(
-        `http://localhost:8080/api/category-child/category/${id}/add`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/category-child/category/${id}/add`,
         { name: newChildName }
       );
       setData((prev) => ({
@@ -88,9 +94,12 @@ export default function EditCategoryPage() {
       return;
     }
     try {
-      await axios.patch(`http://localhost:8080/api/category/${id}`, {
-        name: data.name,
-      });
+      await axios.patch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/category/${id}`,
+        {
+          name: data.name,
+        }
+      );
       toast.success("Cập nhật danh mục thành công");
       router.replace("/books/categories");
     } catch (err) {
@@ -101,7 +110,9 @@ export default function EditCategoryPage() {
 
   const deleteParent = async () => {
     try {
-      await axios.delete(`http://localhost:8080/api/category/${id}`);
+      await axios.delete(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/category/${id}`
+      );
       toast.success("Xóa toàn bộ danh mục thành công");
       router.replace("/books/categories");
     } catch (err) {
@@ -115,10 +126,14 @@ export default function EditCategoryPage() {
       if (err.response?.data) {
         const errorData = err.response.data;
         const errorString = JSON.stringify(errorData).toLowerCase();
-        if (errorString.includes("foreign key constraint") || errorString.includes("referenced from table")) {
+        if (
+          errorString.includes("foreign key constraint") ||
+          errorString.includes("referenced from table")
+        ) {
           errorMessage = "Không thể xóa vì có sách liên quan đến danh mục con";
         } else if (err.response.status === 400) {
-          errorMessage = errorData.message || "Không thể xóa do có dữ liệu liên quan";
+          errorMessage =
+            errorData.message || "Không thể xóa do có dữ liệu liên quan";
         } else if (err.response.status === 404) {
           errorMessage = "Danh mục cha không tồn tại";
         } else if (errorData.message) {
@@ -138,7 +153,9 @@ export default function EditCategoryPage() {
 
   const deleteChild = async (childId) => {
     try {
-      await axios.delete(`http://localhost:8080/api/category-child/${childId}`);
+      await axios.delete(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/category-child/${childId}`
+      );
       setData((prev) => ({
         ...prev,
         soLuongDanhMuc: prev.soLuongDanhMuc - 1,
@@ -156,10 +173,14 @@ export default function EditCategoryPage() {
       if (err.response?.data) {
         const errorData = err.response.data;
         const errorString = JSON.stringify(errorData).toLowerCase();
-        if (errorString.includes("foreign key constraint") || errorString.includes("referenced from table")) {
+        if (
+          errorString.includes("foreign key constraint") ||
+          errorString.includes("referenced from table")
+        ) {
           errorMessage = "Không thể xóa vì đang có sách liên kết.";
         } else if (err.response.status === 400) {
-          errorMessage = errorData.message || "Không thể xóa do có dữ liệu liên quan";
+          errorMessage =
+            errorData.message || "Không thể xóa do có dữ liệu liên quan";
         } else if (err.response.status === 404) {
           errorMessage = "Danh mục con không tồn tại";
         } else if (errorData.message) {
@@ -196,7 +217,7 @@ export default function EditCategoryPage() {
       <div className="flex-1 p-8 md:ml-52">
         <div className="flex items-center gap-4 mb-6">
           <Button
-            onClick={() => router.replace("/books/categories")} 
+            onClick={() => router.replace("/books/categories")}
             className="bg-[#062D76] p-2 rounded-full"
           >
             <Undo2 color="white" />
@@ -236,7 +257,9 @@ export default function EditCategoryPage() {
               <li key={ch.id} className="flex items-center gap-2 mb-2">
                 <span className="flex-1">{ch.name}</span>
                 <Button
-                  onClick={() => router.replace(`/books/categories/child/${ch.id}`)} 
+                  onClick={() =>
+                    router.replace(`/books/categories/child/${ch.id}`)
+                  }
                   className="bg-[#6BE5FF] p-2 rounded"
                 >
                   <Edit2 color="white" />

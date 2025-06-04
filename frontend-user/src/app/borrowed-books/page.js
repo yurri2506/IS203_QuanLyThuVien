@@ -32,7 +32,7 @@ const BorrowedPage = () => {
       try {
         // Gọi endpoint trả về BookChild có status BORROWED
         const { data: children } = await axios.get(
-          "http://localhost:8080/api/bookchild/borrowed"
+          `${process.env.NEXT_PUBLIC_API_URL}/api/bookchild/borrowed`
         );
         // Map ra thông tin cần hiển thị
         const list = children.map((c) => {
@@ -45,9 +45,10 @@ const BorrowedPage = () => {
             title: b.tenSach,
             author: b.tenTacGia,
             publisher: b.nxb,
-            image: Array.isArray(b.hinhAnh) && b.hinhAnh.length
-              ? b.hinhAnh[0]
-              : "/images/test.webp",
+            image:
+              Array.isArray(b.hinhAnh) && b.hinhAnh.length
+                ? b.hinhAnh[0]
+                : "/images/test.webp",
             status: "Đã mượn",
             available,
           };

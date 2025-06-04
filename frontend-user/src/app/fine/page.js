@@ -54,7 +54,9 @@ const page = () => {
 
     try {
       console.log("Fetching fines for userId22:", userId);
-      const response = await axios.get(`http://localhost:8080/api/fines/${userId}`);
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/fines/${userId}`
+      );
       console.log("Dữ liệu trả về từ API:", response.data);
       if (response.status === 200) {
         const data = response.data;
@@ -103,7 +105,9 @@ const page = () => {
           </p>
           <p className="text-[1rem] font-semibold text-[#131313]/50">
             User ID:{" "}
-            <span className="text-[#131313] font-medium ">{fine.userId.id}</span>
+            <span className="text-[#131313] font-medium ">
+              {fine.userId.id}
+            </span>
           </p>
           <p className="text-[1rem] font-semibold text-[#131313]/50">
             Số Tiền:{" "}

@@ -44,7 +44,7 @@ const Dashboard = () => {
       setLoading(true);
       try {
         const dashboardResponse = await axios.get(
-          "http://localhost:8080/api/book/dashboard",
+          `${process.env.NEXT_PUBLIC_API_URL}/api/book/dashboard`,
           { headers: { "Cache-Control": "no-cache" } }
         );
 
@@ -60,7 +60,7 @@ const Dashboard = () => {
         setBooksToRestock(dashboardResponse.data.booksToRestock || []);
 
         const booksResponse = await axios.get(
-          "http://localhost:8080/api/book",
+          `${process.env.NEXT_PUBLIC_API_URL}/api/book`,
           {
             headers: { "Cache-Control": "no-cache" },
           }
@@ -116,7 +116,9 @@ const Dashboard = () => {
       queryParams.append("sortByBorrowCount", params.sortByBorrowCount);
 
       const response = await axios.get(
-        `http://localhost:8080/api/book/search?${queryParams.toString()}`,
+        `${
+          process.env.NEXT_PUBLIC_API_URL
+        }/api/book/search?${queryParams.toString()}`,
         { headers: { "Cache-Control": "no-cache" } }
       );
       console.log("Search results:", response.data);
@@ -397,9 +399,7 @@ const Dashboard = () => {
                   ? searchParams.year
                   : searchParams.title
               }
-              name={
-                searchParams.mode !== "all" ? searchParams.mode : "title"
-              }
+              name={searchParams.mode !== "all" ? searchParams.mode : "title"}
               onChange={handleSearchChange}
               onKeyDown={handleKeyDown}
               className="flex-1 p-3 text-black bg-white shadow font-thin italic cursor-text"

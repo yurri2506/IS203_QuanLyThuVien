@@ -56,9 +56,12 @@ export default function ForgotPasswordPage() {
     }
 
     try {
-      await axios.post("http://localhost:8080/api/forgot-password", {
-        emailOrPhone,
-      });
+      await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/forgot-password`,
+        {
+          emailOrPhone,
+        }
+      );
       toast.success("OTP đã được gửi");
       setStep("reset");
       setResendTimeout(60);
@@ -75,11 +78,14 @@ export default function ForgotPasswordPage() {
     }
 
     try {
-      await axios.post("http://localhost:8080/api/reset-password", {
-        emailOrPhone,
-        otp,
-        newPassword,
-      });
+      await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/reset-password`,
+        {
+          emailOrPhone,
+          otp,
+          newPassword,
+        }
+      );
       toast.success("Đặt lại mật khẩu thành công");
       router.push("/user-login");
     } catch (error) {

@@ -3,6 +3,7 @@ package com.library_web.library.config;
 import com.library_web.library.security.JwtAuthenticationFilter;
 import com.library_web.library.service.TokenService;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -21,6 +22,7 @@ import org.springframework.web.filter.CorsFilter;
 
 import java.util.List;
 
+
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -31,6 +33,8 @@ private final TokenService tokenService;
 public SecurityConfig(TokenService tokenService) {
     this.tokenService = tokenService;
 }
+@Value("${spring.web.cors.allowed-origins}")
+private String allowedOrigin;
 
 @Bean
 public PasswordEncoder passwordEncoder() {
@@ -44,7 +48,7 @@ public PasswordEncoder passwordEncoder() {
 public CorsFilter corsFilter() {
     CorsConfiguration config = new CorsConfiguration();
     config.setAllowCredentials(true);
-    config.setAllowedOrigins(List.of("http://localhost:3000"));
+    config.setAllowedOrigins(List.of(allowedOrigin));
 
     config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
     config.setAllowedHeaders(List.of("*"));
@@ -98,7 +102,7 @@ public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Excepti
 public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration config = new CorsConfiguration();
     config.setAllowCredentials(true);
-    config.setAllowedOrigins(List.of("http://localhost:3000"));
+    config.setAllowedOrigins(List.of(allowedOrigin));
     config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
     config.setAllowedHeaders(List.of("*"));
 

@@ -28,9 +28,12 @@ function AddFine() {
   const fetchUser = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`http://localhost:8080/api/user`, {
-        method: "GET",
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/user`,
+        {
+          method: "GET",
+        }
+      );
       if (!response.ok) {
         console.log("Không tìm thấy người dùng nào");
         setLoading(false);
@@ -49,7 +52,7 @@ function AddFine() {
     setLoading(true);
     try {
       const response = await fetch(
-        `http://localhost:8080/api/borrow-cards/user/${userId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/borrow-cards/user/${userId}`,
         {
           method: "POST",
         }
@@ -124,13 +127,16 @@ function AddFine() {
     };
     console.log(data);
     try {
-      const response = await fetch(`http://localhost:8080/api/addFine`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/addFine`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        }
+      );
       if (!response.ok) {
         toast.error("Đã xảy ra lỗi. Vui lòng thử lại.");
         return;
@@ -155,7 +161,9 @@ function AddFine() {
 
   const handleEnterBook = async () => {
     const selected = await (
-      await fetch(`http://localhost:8080/api/bookchild/${bookText}`)
+      await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/bookchild/${bookText}`
+      )
     ).json();
     if (!selected) {
       toast.error("Không tìm thấy sách con với id này");

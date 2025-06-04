@@ -78,7 +78,7 @@ const page = () => {
     try {
       setLoading(true); // Bắt đầu tải dữ liệu
       const response = await fetch(
-        `http://localhost:8080/api/cart/${user.id}` // Endpoint API lấy giỏ hàng theo userId
+        `env/api/cart/${user.id}` // Endpoint API lấy giỏ hàng theo userId
       ); // Endpoint API lấy giỏ hàng theo userId
 
       if (response.ok) {
@@ -115,7 +115,7 @@ const page = () => {
   const handleDeleteBooks = async () => {
     try {
       const response = await axios.delete(
-        `http://localhost:8080/api/cart/${cartId}`, // Endpoint API xóa sách trong giỏ hàng
+        `env/api/cart/${cartId}`, // Endpoint API xóa sách trong giỏ hàng
         {
           data: selected,
         }
@@ -137,28 +137,25 @@ const page = () => {
       const booksInCart = selected; // Các sách đã chọn trong giỏ hàng
       // console.log(booksInCart);
       // Gửi yêu cầu đến backend để tạo phiếu mượn
-      const response = await axios.post(
-        "http://localhost:8080/api/borrow-cards",
-        {
-          userId: user.id,
-          borrowedBooks: booksInCart.map((bookId) => ({
-            bookId: bookId,
-            childBookId: null,
-          })),
-          borrowDate: new Date().toISOString(),
-          status: "REQUESTED",
-          dueDate: new Date(
-            new Date().setDate(new Date().getDate() + 14)
-          ).toISOString(), // Ngày trả sách là 14 ngày sau
-        }
-      );
+      const response = await axios.post("env/api/borrow-cards", {
+        userId: user.id,
+        borrowedBooks: booksInCart.map((bookId) => ({
+          bookId: bookId,
+          childBookId: null,
+        })),
+        borrowDate: new Date().toISOString(),
+        status: "REQUESTED",
+        dueDate: new Date(
+          new Date().setDate(new Date().getDate() + 14)
+        ).toISOString(), // Ngày trả sách là 14 ngày sau
+      });
 
       if (response.status === 200) {
         alert("Phiếu mượn đã được tạo!");
         console.log(response.data); // Xem chi tiết phiếu mượn
 
         const deleteResponse = await axios.delete(
-          `http://localhost:8080/api/cart/${user.id}/remove/books`,
+          `env/api/cart/${user.id}/remove/books`,
           {
             data: booksInCart,
           }

@@ -35,7 +35,7 @@ const BookDetailsPage = () => {
     const fetchBook = async () => {
       try {
         const { data } = await axios.get(
-          `http://localhost:8080/api/book/${id}`
+          `${process.env.NEXT_PUBLIC_API_URL}/api/book/${id}`
         );
         // nếu backend trả về mảng, lấy phần tử đầu
         const book = Array.isArray(data) ? data[0] : data;
@@ -50,15 +50,17 @@ const BookDetailsPage = () => {
   useEffect(() => {
     const checkBookInCart = async () => {
       try {
-        const res = await axios.get(`http://localhost:8080/api/cart/${user.id}`);
+        const res = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/cart/${user.id}`
+        );
         const cartBooks = res.data.data; // giả sử trả về mảng books [{ id: ..., ... }]
-        const found = cartBooks?.some(book => book.bookId == id); // id là id của sách hiện tại
+        const found = cartBooks?.some((book) => book.bookId == id); // id là id của sách hiện tại
         setIsAddedToCart(found);
       } catch (error) {
         console.error("Lỗi khi kiểm tra giỏ hàng:", error);
       }
     };
-  
+
     checkBookInCart();
   }, [user.id, id]);
 
@@ -73,8 +75,8 @@ const BookDetailsPage = () => {
   const handleAddToCart = async () => {
     try {
       const res = await axios.post(
-        `http://localhost:8080/api/cart/${user.id}/add/books`,
-          [id] // đưa vào mảng 1 phần tử
+        `${process.env.NEXT_PUBLIC_API_URL}/api/cart/${user.id}/add/books`,
+        [id] // đưa vào mảng 1 phần tử
       );
 
       alert("Đã thêm sách vào giỏ!");
@@ -95,7 +97,7 @@ const BookDetailsPage = () => {
       console.log(id);
       // gửi yêu cầu mượn sách
       const response = await axios.post(
-        `http://localhost:8080/api/borrow-cards`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/borrow-cards`,
         {
           userId: user.id,
           borrowedBooks: [
