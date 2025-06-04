@@ -74,7 +74,7 @@ const Dashboard = () => {
       setLoading(true);
       try {
         const dashboardResponse = await axios.get(
-          "http://localhost:8080/api/book/dashboard",
+          `${process.env.NEXT_PUBLIC_API_URL}/api/book/dashboard`,
           { headers: { "Cache-Control": "no-cache" } }
         );
 
@@ -88,8 +88,15 @@ const Dashboard = () => {
         setBooksToRestock(dashboardResponse.data.booksToRestock || []);
 
         const booksResponse = await axios.get(
-          "http://localhost:8080/api/book",
-          { headers: { "Cache-Control": "no-cache" } }
+// <<<<<<< thanhtri
+//           "http://localhost:8080/api/book",
+//           { headers: { "Cache-Control": "no-cache" } }
+// =======
+          `${process.env.NEXT_PUBLIC_API_URL}/api/book`,
+          {
+            headers: { "Cache-Control": "no-cache" },
+          }
+
         );
 
         setAllBooks(booksResponse.data || []);
@@ -228,7 +235,9 @@ const Dashboard = () => {
       queryParams.append("sortByBorrowCount", params.sortByBorrowCount);
 
       const response = await axios.get(
-        `http://localhost:8080/api/book/search?${queryParams.toString()}`,
+        `${
+          process.env.NEXT_PUBLIC_API_URL
+        }/api/book/search?${queryParams.toString()}`,
         { headers: { "Cache-Control": "no-cache" } }
       );
       console.log("Search results:", response.data);

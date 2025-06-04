@@ -1,8 +1,8 @@
 import React from "react";
 const ServiceHoursCard = () => {
   return (
-    <article className="flex flex-col flex-1 shrink flex-grow items-start self-stretch p-5 my-auto bg-white rounded-xl basis-0 w-full h-[320px] max-md:max-w-full">
-      <h2 className="self-start text-center px-5 py-2.5 text-[1.25rem] text-white bg-[#062D76] rounded-lg">
+    <article className="flex flex-col flex-1 items-start self-stretch p-5 my-auto bg-white rounded-xl basis-0 w-[750px] h-[500px]">
+      <h2 className="self-start text-center px-5 py-2.5 text-[1.25rem] text-white bg-blue-300 rounded-lg">
         Thời gian phục vụ
       </h2>
       <div className="self-stretch my-[1rem] text-[1rem] font-medium text-black">
@@ -16,7 +16,12 @@ const ServiceHoursCard = () => {
         </p>
         <p className="font-normal">
           Thư viện không phục vụ vào chủ nhật, ngày lễ, tết theo quy định và các
-          ngày nghỉ đột xuất khác (có thông báo)
+          ngày nghỉ đột xuất khác (có thông báo). Để đảm bảo chất lượng phục vụ,
+          thư viện có thể điều chỉnh thời gian mở cửa trong các kỳ thi, sự kiện
+          hoặc bảo trì hệ thống. Bạn đọc vui lòng theo dõi thông báo trên bảng
+          tin hoặc website thư viện để cập nhật các thay đổi mới nhất về lịch
+          làm việc. Ngoài ra, dịch vụ mượn/trả sách trực tuyến vẫn hoạt động
+          liên tục trên hệ thống điện tử ngay cả khi thư viện đóng cửa.
         </p>
       </div>
       <img

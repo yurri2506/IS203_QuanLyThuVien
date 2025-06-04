@@ -47,7 +47,9 @@ const InputField = ({ label, value, disabled, onChange, placeholder }) => (
       disabled={disabled}
       placeholder={placeholder}
       className={`h-10 text-lg rounded-[10px] ${
-        disabled ? "bg-zinc-300 text-neutral-500 cursor-not-allowed" : "bg-white text-black"
+        disabled
+          ? "bg-zinc-300 text-neutral-500 cursor-not-allowed"
+          : "bg-white text-black"
       }`}
     />
   </div>
@@ -76,7 +78,9 @@ const DatePickerField = ({ value, onChange }) => {
 
   return (
     <div className="flex flex-col w-full">
-      <label className="mb-2 ml-2 text-lg font-bold text-black">Ngày Sinh</label>
+      <label className="mb-2 ml-2 text-lg font-bold text-black">
+        Ngày Sinh
+      </label>
       <div className="relative flex items-center">
         <DatePicker
           selected={startDate}
@@ -88,7 +92,9 @@ const DatePickerField = ({ value, onChange }) => {
         <Button
           className="absolute right-2 h-8 w-8 bg-[#062D76] hover:bg-gray-700 rounded-[10px] cursor-pointer"
           onClick={() =>
-            document.querySelector(".react-datepicker__input-container input")?.focus()
+            document
+              .querySelector(".react-datepicker__input-container input")
+              ?.focus()
           }
         >
           <Calendar className="w-5 h-5" color="white" />
@@ -106,21 +112,27 @@ const AvatarUpload = ({ avatarUrl, onAvatarChange }) => {
       const formData = new FormData();
       formData.append("file", file);
       try {
-        const response = await axios.post("http://localhost:8080/api/upload", formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-          },
-        });
+        const response = await axios.post(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/upload`,
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+              Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+            },
+          }
+        );
         onAvatarChange(response.data.url || URL.createObjectURL(file));
         toast.success("Tải ảnh đại diện thành công");
       } catch (error) {
         console.error("Error uploading file:", {
           message: error.message,
-          response: error.response ? {
-            status: error.response.status,
-            data: error.response.data,
-          } : "No response data",
+          response: error.response
+            ? {
+                status: error.response.status,
+                data: error.response.data,
+              }
+            : "No response data",
         });
         onAvatarChange(URL.createObjectURL(file)); // Fallback to local URL
         toast.error("Không thể tải ảnh đại diện");
@@ -129,7 +141,8 @@ const AvatarUpload = ({ avatarUrl, onAvatarChange }) => {
   };
 
   // Use a placeholder image if avatarUrl is empty or falsy
-  const displayAvatarUrl = avatarUrl || "https://via.placeholder.com/200?text=Avatar";
+  const displayAvatarUrl =
+    avatarUrl || "https://via.placeholder.com/200?text=Avatar";
 
   return (
     <div className="flex flex-col w-[380px] max-md:w-full mt-8">
@@ -150,7 +163,10 @@ const AvatarUpload = ({ avatarUrl, onAvatarChange }) => {
         asChild
         className="mt-4 w-[200px] h-10 bg-[#062D76] hover:bg-gray-700 rounded-[10px]"
       >
-        <label htmlFor="avatarUpload" className="flex items-center gap-2 cursor-pointer">
+        <label
+          htmlFor="avatarUpload"
+          className="flex items-center gap-2 cursor-pointer"
+        >
           <Upload className="w-5 h-5" color="white" />
           Tải ảnh đại diện
         </label>
@@ -166,7 +182,9 @@ const roleMap = {
   "Người dùng": "USER",
   "Nhân viên": "STAFF",
 };
-const reverseRoleMap = Object.fromEntries(Object.entries(roleMap).map(([k, v]) => [v, k]));
+const reverseRoleMap = Object.fromEntries(
+  Object.entries(roleMap).map(([k, v]) => [v, k])
+);
 
 const RoleSelector = ({ value, onChange }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -305,13 +323,16 @@ export default function Page() {
 
     const fetchUser = async () => {
       try {
-        const response = await axios.get("http://localhost:8080/api/admin/users", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-            Accept: "*/*",
-          },
-        });
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/admin/users`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+              Accept: "*/*",
+            },
+          }
+        );
         const user = response.data.data.find((u) => u.id === parseInt(id));
         console.log("Fetched user data:", user);
         if (user) {
@@ -334,13 +355,17 @@ export default function Page() {
       } catch (error) {
         console.error("Error fetching user:", {
           message: error.message,
-          response: error.response ? {
-            status: error.response.status,
-            data: error.response.data,
-          } : "No response data",
+          response: error.response
+            ? {
+                status: error.response.status,
+                data: error.response.data,
+              }
+            : "No response data",
         });
         if (error.response?.status === 403) {
-          toast.error("Bạn không có quyền truy cập. Vui lòng đăng nhập với tài khoản admin");
+          toast.error(
+            "Bạn không có quyền truy cập. Vui lòng đăng nhập với tài khoản admin"
+          );
           router.push("/login");
         } else {
           toast.error(error.response?.data?.message || "Lỗi khi tải dữ liệu");
@@ -369,7 +394,7 @@ export default function Page() {
 
     try {
       await axios.put(
-        `http://localhost:8080/api/admin/users/${id}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/admin/users/${id}`,
         { email: formData.email },
         {
           headers: {
@@ -384,10 +409,12 @@ export default function Page() {
     } catch (error) {
       console.error("Error requesting OTP:", {
         message: error.message,
-        response: error.response ? {
-          status: error.response.status,
-          data: error.response.data,
-        } : "No response data",
+        response: error.response
+          ? {
+              status: error.response.status,
+              data: error.response.data,
+            }
+          : "No response data",
       });
       toast.error(error.response?.data?.message || "Không thể gửi OTP");
     }
@@ -417,7 +444,7 @@ export default function Page() {
 
       try {
         const otpResponse = await axios.post(
-          "http://localhost:8080/api/admin/verify-email-update",
+          `${process.env.NEXT_PUBLIC_API_URL}/api/admin/verify-email-update`,
           {
             id: formData.id,
             email: formData.email,
@@ -435,10 +462,12 @@ export default function Page() {
       } catch (error) {
         console.error("Error verifying OTP:", {
           message: error.message,
-          response: error.response ? {
-            status: error.response.status,
-            data: error.response.data,
-          } : "No response data",
+          response: error.response
+            ? {
+                status: error.response.status,
+                data: error.response.data,
+              }
+            : "No response data",
         });
         toast.error(error.response?.data?.message || "Xác thực OTP thất bại");
         return;
@@ -456,13 +485,17 @@ export default function Page() {
     };
 
     try {
-      const response = await axios.put(`http://localhost:8080/api/admin/users/${id}`, userData, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-          Accept: "*/*",
-        },
-      });
+      const response = await axios.put(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/admin/users/${id}`,
+        userData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+            Accept: "*/*",
+          },
+        }
+      );
 
       toast.success("Cập nhật người dùng thành công");
       setTimeout(() => {
@@ -471,10 +504,12 @@ export default function Page() {
     } catch (error) {
       console.error("Error updating user:", {
         message: error.message,
-        response: error.response ? {
-          status: error.response.status,
-          data: error.response.data,
-        } : "No response data",
+        response: error.response
+          ? {
+              status: error.response.status,
+              data: error.response.data,
+            }
+          : "No response data",
       });
       if (error.response?.status === 403) {
         toast.error("Bạn không có quyền thực hiện hành động này");
@@ -580,7 +615,10 @@ export default function Page() {
           </section>
 
           <section className="w-full">
-            <DatePickerField value={formData.birthDate} onChange={handleDateChange} />
+            <DatePickerField
+              value={formData.birthDate}
+              onChange={handleDateChange}
+            />
           </section>
 
           <section className="w-full">
@@ -588,19 +626,27 @@ export default function Page() {
           </section>
 
           <section className="w-full">
-            <GenderSelector value={formData.gender} onChange={handleGenderChange} />
+            <GenderSelector
+              value={formData.gender}
+              onChange={handleGenderChange}
+            />
           </section>
         </div>
 
         <section className="mb-6">
-          <AvatarUpload avatarUrl={formData.avatar} onAvatarChange={handleAvatarChange} />
+          <AvatarUpload
+            avatarUrl={formData.avatar}
+            onAvatarChange={handleAvatarChange}
+          />
         </section>
 
         <footer className="flex justify-end items-center gap-4">
           <Button
             onClick={handleSubmit}
             className={`flex items-center gap-2 h-10 w-[200px] rounded-[10px] ${
-              isFormChanged ? "bg-[#062D76] hover:bg-gray-700 cursor-pointer" : "bg-gray-400 cursor-not-allowed"
+              isFormChanged
+                ? "bg-[#062D76] hover:bg-gray-700 cursor-pointer"
+                : "bg-gray-400 cursor-not-allowed"
             }`}
             disabled={!isFormChanged}
           >

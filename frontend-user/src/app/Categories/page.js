@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -8,7 +7,7 @@ import BookCard from "../components/BookCard";
 import LeftSideBar from "../components/LeftSideBar";
 
 const api = axios.create({
-  baseURL: "http://localhost:8080/api",
+  baseURL: `${process.env.NEXT_PUBLIC_API_URL}/api`,
   timeout: 5000,
 });
 
@@ -48,10 +47,9 @@ export default function CategoriesPage() {
       .catch((err) => console.error("Lỗi fetch category-child:", err));
   }, [activeCategoryId]);
 
-
   useEffect(() => {
     if (!activeCategoryChildId) return;
-  
+
     setLoadingBooks(true);
     api
       .get(`/book/category/${activeCategoryChildId}`)
@@ -62,7 +60,6 @@ export default function CategoriesPage() {
       .catch((err) => console.error("Lỗi fetch books:", err))
       .finally(() => setLoadingBooks(false));
   }, [activeCategoryChildId]);
-  
 
   return (
     <div className="flex flex-col min-h-screen text-foreground">
@@ -122,8 +119,11 @@ export default function CategoriesPage() {
                     key={book.maSach}
                     id={book.maSach}
                     imageSrc={book.hinhAnh?.[0] || "/placeholder.png"}
-                    status={book.trangThai} 
-                    available={book.trangThai === "CON_SAN"|| book.trangThai === "DA_HET"}
+                    status={book.trangThai}
+                    available={
+                      book.trangThai === "CON_SAN" ||
+                      book.trangThai === "DA_HET"
+                    }
                     title={book.tenSach}
                     author={book.tenTacGia}
                     publisher={`${book.nxb} (${book.nam})`}

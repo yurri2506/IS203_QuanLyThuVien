@@ -11,7 +11,15 @@ const RequireAuth = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [hasToken, setHasToken] = useState(false);
 
-  const publicRoutes = ["/user-login", "/forgot-password", "/", "/Categories", "/About", "/Help", "/book-detail"];
+  const publicRoutes = [
+    "/user-login",
+    "/forgot-password",
+    "/",
+    "/Categories",
+    "/About",
+    "/Help",
+    "/book-detail",
+  ];
 
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
@@ -43,6 +51,9 @@ const RequireAuth = ({ children }) => {
             padding: "0 180px 0 0px",
             maxWidth: "100%",
             boxSizing: "border-box",
+            backgroundImage: 'url("/images/bg.png")',
+            backgroundSize: "cover",
+            backgroundPosition: "center",
           }}
         >
           {children}

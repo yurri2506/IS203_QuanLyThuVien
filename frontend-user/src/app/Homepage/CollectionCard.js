@@ -8,7 +8,7 @@ const CollectionCard = ({
   buttonTextColor,
 }) => {
   return (
-    <article className="flex overflow-hidden relative flex-col self-stretch my-auto rounded-xl aspect-[1.6] h-[320px] w-auto">
+    <article className="flex overflow-hidden relative flex-col self-stretch my-auto rounded-xl aspect-[1.6] w-[750px] h-[500px]">
       <img
         src={imageSrc}
         alt=""

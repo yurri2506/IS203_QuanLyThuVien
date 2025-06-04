@@ -46,7 +46,9 @@ const InputField = ({ label, value, disabled, onChange, type = "text" }) => (
       onChange={(e) => onChange(e.target.value)}
       disabled={disabled}
       className={`h-10 text-lg rounded-[10px] ${
-        disabled ? "bg-zinc-300 text-neutral-500 cursor-not-allowed" : "bg-white text-black"
+        disabled
+          ? "bg-zinc-300 text-neutral-500 cursor-not-allowed"
+          : "bg-white text-black"
       }`}
     />
   </div>
@@ -65,7 +67,9 @@ const DatePickerField = ({ value, onChange }) => {
 
   return (
     <div className="flex flex-col w-full">
-      <label className="mb-2 ml-2 text-lg font-bold text-black">Ngày Sinh</label>
+      <label className="mb-2 ml-2 text-lg font-bold text-black">
+        Ngày Sinh
+      </label>
       <div className="relative flex items-center">
         <DatePicker
           selected={startDate}
@@ -75,7 +79,11 @@ const DatePickerField = ({ value, onChange }) => {
         />
         <Button
           className="absolute right-2 h-8 w-8 bg-[#062D76]  rounded-[10px] cursor-pointer"
-          onClick={() => document.querySelector(".react-datepicker__input-container input").focus()}
+          onClick={() =>
+            document
+              .querySelector(".react-datepicker__input-container input")
+              .focus()
+          }
         >
           <Calendar className="w-5 h-5" color="white" />
         </Button>
@@ -92,12 +100,16 @@ const AvatarUpload = ({ avatarUrl, onAvatarChange }) => {
       const formData = new FormData();
       formData.append("file", file);
       try {
-        const response = await axios.post("http://localhost:8080/api/upload", formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-          },
-        });
+        const response = await axios.post(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/upload`,
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+              Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+            },
+          }
+        );
         onAvatarChange(response.data.url || URL.createObjectURL(file));
         toast.success("Tải ảnh đại diện thành công");
       } catch (error) {
@@ -127,7 +139,10 @@ const AvatarUpload = ({ avatarUrl, onAvatarChange }) => {
         asChild
         className="mt-4 w-[200px] h-10 bg-[#062D76] hover:bg-gray-700 rounded-[10px]"
       >
-        <label htmlFor="avatarUpload" className="flex items-center gap-2 cursor-pointer">
+        <label
+          htmlFor="avatarUpload"
+          className="flex items-center gap-2 cursor-pointer"
+        >
           <Upload className="w-5 h-5" color="white" />
           Tải ảnh đại diện
         </label>
@@ -143,7 +158,9 @@ const roleMap = {
   "Người dùng": "USER",
   "Nhân viên": "STAFF",
 };
-const reverseRoleMap = Object.fromEntries(Object.entries(roleMap).map(([k, v]) => [v, k]));
+const reverseRoleMap = Object.fromEntries(
+  Object.entries(roleMap).map(([k, v]) => [v, k])
+);
 
 const RoleSelector = ({ value, onChange }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -249,12 +266,17 @@ export default function Page() {
     if (userId) {
       const fetchUser = async () => {
         try {
-          const response = await axios.get("http://localhost:8080/api/admin/users", {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-          const user = response.data.data.find((u) => u.id === parseInt(userId));
+          const response = await axios.get(
+            `${process.env.NEXT_PUBLIC_API_URL}/api/admin/users`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+          const user = response.data.data.find(
+            (u) => u.id === parseInt(userId)
+          );
           if (user) {
             setFormData({
               id: user.id.toString(),
@@ -262,7 +284,10 @@ export default function Page() {
               email: user.email || "",
               phone: user.phone || "",
               birthDate: user.birthdate
-                ? new Date(user.birthdate).toLocaleDateString("en-GB").split("/").join("/")
+                ? new Date(user.birthdate)
+                    .toLocaleDateString("en-GB")
+                    .split("/")
+                    .join("/")
                 : "01/01/2000",
               avatar: user.avatar_url || "",
               role: user.role,
@@ -278,11 +303,15 @@ export default function Page() {
         } catch (error) {
           console.error("Error fetching user:", error);
           if (error.response?.status === 403) {
-            toast.error("Bạn không có quyền truy cập. Vui lòng đăng nhập với tài khoản admin");
+            toast.error(
+              "Bạn không có quyền truy cập. Vui lòng đăng nhập với tài khoản admin"
+            );
             router.push("/login");
           } else {
             toast.error(error.response?.data?.message || "Lỗi khi tải dữ liệu");
-            setPopupMessage(error.response?.data?.message || "Lỗi khi tải dữ liệu");
+            setPopupMessage(
+              error.response?.data?.message || "Lỗi khi tải dữ liệu"
+            );
             setPopupColor("red-600");
             setIsPopupOpen(true);
             setTimeout(() => setIsPopupOpen(false), 3000);
@@ -302,7 +331,9 @@ export default function Page() {
     }
 
     const [day, month, year] = formData.birthDate.split("/");
-    const birthDate = new Date(`${year}-${month}-${day}`).toISOString().split("T")[0];
+    const birthDate = new Date(`${year}-${month}-${day}`)
+      .toISOString()
+      .split("T")[0];
 
     const userData = {
       username: formData.username,
@@ -315,7 +346,9 @@ export default function Page() {
     };
 
     try {
-      const url = userId ? `http://localhost:8080/api/admin/users/${userId}` : "http://localhost:8080/api/admin/users";
+      const url = userId
+        ? `${process.env.NEXT_PUBLIC_API_URL}/api/admin/users/${userId}`
+        : `${process.env.NEXT_PUBLIC_API_URL}/api/admin/users`;
       const method = userId ? "put" : "post";
       const response = await axios({
         method,
@@ -338,8 +371,12 @@ export default function Page() {
         return;
       }
 
-      toast.success(userId ? "Cập nhật thành công!" : "Tạo người dùng thành công!");
-      setPopupMessage(userId ? "Cập nhật thành công!" : "Tạo người dùng thành công!");
+      toast.success(
+        userId ? "Cập nhật thành công!" : "Tạo người dùng thành công!"
+      );
+      setPopupMessage(
+        userId ? "Cập nhật thành công!" : "Tạo người dùng thành công!"
+      );
       setPopupColor("green-600");
       setIsPopupOpen(true);
       setTimeout(() => {
@@ -371,7 +408,7 @@ export default function Page() {
 
     try {
       const response = await axios.post(
-        "http://localhost:8080/api/admin/verify-otp-create",
+        `${process.env.NEXT_PUBLIC_API_URL}/api/admin/verify-otp-create`,
         { email: otpEmail, otp },
         {
           headers: {
@@ -380,7 +417,7 @@ export default function Page() {
           },
         }
       );
-      console.log("data",otpEmail, otp);
+      console.log("data", otpEmail, otp);
       console.log("OTP verification response:", response.data);
 
       toast.success("Tạo người dùng thành công!");
@@ -396,8 +433,12 @@ export default function Page() {
       }, 2000);
     } catch (error) {
       console.error("Error verifying OTP:", error);
-      toast.error(error.response?.data?.message || "Mã OTP không hợp lệ hoặc đã hết hạn");
-      setPopupMessage(error.response?.data?.message || "Mã OTP không hợp lệ hoặc đã hết hạn");
+      toast.error(
+        error.response?.data?.message || "Mã OTP không hợp lệ hoặc đã hết hạn"
+      );
+      setPopupMessage(
+        error.response?.data?.message || "Mã OTP không hợp lệ hoặc đã hết hạn"
+      );
       setPopupColor("red-600");
       setIsPopupOpen(true);
       setTimeout(() => setIsPopupOpen(false), 3000);
@@ -453,7 +494,11 @@ export default function Page() {
         </section>
 
         <section className="mb-6">
-          <InputField label="Tên Người Dùng" value={formData.username} onChange={handleUserNameChange} />
+          <InputField
+            label="Tên Người Dùng"
+            value={formData.username}
+            onChange={handleUserNameChange}
+          />
         </section>
 
         <section className="mb-6">
@@ -467,11 +512,18 @@ export default function Page() {
 
         <div className="grid grid-cols-2 gap-6">
           <section className="w-full">
-            <InputField label="Số Điện Thoại" value={formData.phone} onChange={handlePhoneChange} />
+            <InputField
+              label="Số Điện Thoại"
+              value={formData.phone}
+              onChange={handlePhoneChange}
+            />
           </section>
 
           <section className="w-full">
-            <DatePickerField value={formData.birthDate} onChange={handleDateChange} />
+            <DatePickerField
+              value={formData.birthDate}
+              onChange={handleDateChange}
+            />
           </section>
 
           <section className="w-full">
@@ -479,7 +531,10 @@ export default function Page() {
           </section>
 
           <section className="w-full">
-            <GenderSelector value={formData.gender} onChange={handleGenderChange} />
+            <GenderSelector
+              value={formData.gender}
+              onChange={handleGenderChange}
+            />
           </section>
         </div>
 
@@ -495,20 +550,29 @@ export default function Page() {
         )}
 
         <section className="mb-6">
-          <AvatarUpload avatarUrl={formData.avatar} onAvatarChange={handleAvatarChange} />
+          <AvatarUpload
+            avatarUrl={formData.avatar}
+            onAvatarChange={handleAvatarChange}
+          />
         </section>
 
         <footer className="flex justify-end items-center gap-4">
           {isPopupOpen && (
-            <div className={`fixed top-10 right-10 bg-white p-4 rounded-lg shadow-lg border border-${popupColor}`}>
-              <p className={`text-${popupColor} font-semibold`}>{popupMessage}</p>
+            <div
+              className={`fixed top-10 right-10 bg-white p-4 rounded-lg shadow-lg border border-${popupColor}`}
+            >
+              <p className={`text-${popupColor} font-semibold`}>
+                {popupMessage}
+              </p>
             </div>
           )}
           {isOtpRequired ? (
             <Button
               onClick={handleVerifyOtp}
               className={`flex items-center gap-2 h-10 w-[200px] rounded-[10px] ${
-                otp ? "bg-[#062D76] hover:bg-gray-700 cursor-pointer" : "bg-gray-400 cursor-not-allowed"
+                otp
+                  ? "bg-[#062D76] hover:bg-gray-700 cursor-pointer"
+                  : "bg-gray-400 cursor-not-allowed"
               }`}
               disabled={!otp}
             >
@@ -519,7 +583,9 @@ export default function Page() {
             <Button
               onClick={handleSubmit}
               className={`flex items-center gap-2 h-10 w-[200px] rounded-[10px] ${
-                isFormChanged ? "bg-[#062D76] hover:bg-gray-700 cursor-pointer" : "bg-gray-400 cursor-not-allowed"
+                isFormChanged
+                  ? "bg-[#062D76] hover:bg-gray-700 cursor-pointer"
+                  : "bg-gray-400 cursor-not-allowed"
               }`}
               disabled={!isFormChanged}
             >
