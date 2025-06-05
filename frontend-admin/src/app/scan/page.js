@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import { format } from "date-fns";
 import { Book, CalendarClock, Undo2 } from "lucide-react";
 import UploadChild from "./childBook/page";
+import Link from "next/link";
 
 const UploadImage = () => {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -352,7 +353,9 @@ const UploadImage = () => {
         </div>
       ) : !result ? (
         <div className="flex flex-col items-center h-auto w-fit mt-10 mb-10 gap-5 px-10 py-6 bg-white rounded-lg drop-shadow-lg">
-          <img width={200} height={200} src="/images/logo.jpg" />
+          <Link href="/">
+            <img width={460} height={230} src="/images/logoN.png" />
+          </Link>
           <p className="text-3xl font-semibold text-#062D76">Library Web</p>
           <p className="text-xl font-semibold w-fit">
             Vui lòng nhập mã người dùng của bạn
