@@ -2,6 +2,7 @@ package com.library_web.library.repository;
 
 import com.library_web.library.model.Book;
 import com.library_web.library.model.Book.TrangThai;
+import com.library_web.library.model.BorrowCard;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -37,4 +38,6 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 
     List<Book> findByTenTacGiaContainingIgnoreCase(String query);
     // List<Book> findByTheLoaiContainingIgnoreCase(String query);
+
+    List<Book> findAllByMaSachIn(List<Long> borrowedBookIds);
 }

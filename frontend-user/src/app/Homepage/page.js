@@ -15,6 +15,7 @@ import BookRecommend from "../components/BookRecomend";
 
 const HomePage = () => {
   const [books, setBooks] = useState([]);
+  const [bookSuggest, setBooksSuggest] = useState([]);
   const [q, setQ] = useState("");
   const [mode, setMode] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
@@ -64,6 +65,37 @@ const HomePage = () => {
       fetchAll();
     }
   }, [mode, currentPage]);
+
+  useEffect(() => {
+    const fetchBooksSuggest = async () => {
+      try {
+        const userId = localStorage.getItem("id"); // thay bằng userId thật của bạn
+        const searchKeywords = localStorage.getItem("searchKeywords"); // mảng keyword ví dụ
+        const keywords = searchKeywords ? JSON.parse(searchKeywords) : [];
+
+        const response = await axios.post("http://localhost:8080/api/book/suggest", {
+          userId: userId,
+          keywords: keywords,
+        });
+        // console.log("Dữ liệu sách:", response.data);
+        const convertedBooks = response.data.map((book) => ({
+          id: book.maSach,
+          imageSrc: book.hinhAnh[0],
+          available: book.tongSoLuong - book.soLuongMuon - book.soLuongXoa > 0,
+          title: book.tenSach,
+          author: book.tenTacGia,
+          publisher: book.nxb,
+          borrowCount: book.soLuongMuon,
+        }));
+        setBooksSuggest(convertedBooks);
+        console.log(convertedBooks)
+      } catch (error) {
+        console.error("Lỗi khi fetch sách:", error);
+      }
+    };
+
+    fetchBooksSuggest();
+  }, []);
 
   const fetchAll = async () => {
     setLoading(true);
@@ -297,7 +329,7 @@ const HomePage = () => {
                   Có thể bạn sẽ thích
                 </h2>
                 <Slider {...sliderRecommendSettings} className="mt-5 max-w-6xl">
-                  {books.slice(0, 6).map((book) => (
+                  {bookSuggest.map((book) => (
                     <div key={book.id} className="px-2">
                       <BookRecommend {...book} />
                     </div>

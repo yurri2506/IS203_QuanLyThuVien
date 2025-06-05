@@ -263,6 +263,7 @@ const Page = () => {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true); // Trạng thái loading
   const [error, setError] = useState(null);
+  const [unreadCount, setUnreadCount] = useState("")
   const [readStatus, setReadStatus] = useState(() => {
     const saved = localStorage.getItem("notificationReadStatus");
     return saved ? JSON.parse(saved) : {};
