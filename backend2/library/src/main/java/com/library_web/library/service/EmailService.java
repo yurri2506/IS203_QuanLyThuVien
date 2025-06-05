@@ -35,10 +35,10 @@ public class EmailService {
     String body = String.format(
         """
                 <h3><b>Xin chào %s,</b></h3>
-                <p>Chúng tôi nhận thấy bạn đã đăng ký mượn sách tại <b>Ja97 Library Web</b> nhưng chưa đến nhận sách trong thời gian quy định.</p>
+                <p>Chúng tôi nhận thấy bạn đã đăng ký mượn sách tại <b>8ooK Library Web</b> nhưng chưa đến nhận sách trong thời gian quy định.</p>
                 <p>Vì lý do đó, <b>phiếu mượn sách <i>%s</i> của bạn đã bị hủy</b> để đảm bảo công bằng cho các bạn đọc khác.</p>
                 <p>Nếu có sự nhầm lẫn hoặc bạn vẫn có nhu cầu mượn sách, vui lòng đăng ký lại hoặc liên hệ với quản trị viên để được hỗ trợ.</p>
-                <p>Trân trọng,<br><b>Ja97 Library Web</b></p>
+                <p>Trân trọng,<br><b>8ooK Library Web</b></p>
             """,
         tenND, idPhieu);
     emailConfig.sendEmail(List.of(email), subject, body);
@@ -57,7 +57,7 @@ public class EmailService {
     String body = String.format(
         """
                 <h3><b>Xin chào %s,</b></h3>
-                <p>Chúng tôi xác nhận rằng bạn đã <b>nhận sách thành công</b> theo <b>phiếu mượn %s</b> tại <b>Ja97 Library Web</b>.</p>
+                <p>Chúng tôi xác nhận rằng bạn đã <b>nhận sách thành công</b> theo <b>phiếu mượn %s</b> tại <b>8ooK Library Web</b>.</p>
                 <p>Hãy ghi nhớ <b>ngày hết hạn trả sách</b> để tránh bị phạt!</p>
                 <p>Thông tin phiếu mượn:</p>
                 <ul>
@@ -66,7 +66,7 @@ public class EmailService {
                 <li><b>Ngày trả dự kiến:</b> %s</li>
                 </ul>
                 <<p>Chúc bạn có trải nghiệm đọc sách thật tuyệt vời!</p>
-                <p>Trân trọng,<br><b>Ja97 Library Web</b></p>
+                <p>Trân trọng,<br><b>8ooK Library Web</b></p>
             """,
         tenND, idPhieu, idPhieu, ngayLay, ngayTra);
     emailConfig.sendEmail(List.of(email), subject, body);
@@ -89,9 +89,9 @@ public class EmailService {
     String subject = "Sắp đến hạn trả sách";
     String body = """
             <h3><b>Xin chào,</b></h3>
-            <p>Đây là thông báo quan trọng từ <b>Ja97 Library Web</b> dành cho bạn.</p>
+            <p>Đây là thông báo quan trọng từ <b>8ooK Library Web</b> dành cho bạn.</p>
             <p>Vui lòng kiểm tra <i>thông tin mượn sách</i> của bạn càng sớm càng tốt.</p>
-            <p>Trân trọng,<br>Ja97 Library Web</p>
+            <p>Trân trọng,<br>8ooK Library Web</p>
         """;
     emailConfig.sendEmail(targetList, subject, body);
   }
@@ -108,14 +108,14 @@ public class EmailService {
     String body = String.format(
         """
                 <h3><b>Xin chào %s,</b></h3>
-                <p>Chúng tôi xác nhận rằng bạn đã <b>trả sách thành công</b> tại <b>Ja97 Library Web</b>.</p>
+                <p>Chúng tôi xác nhận rằng bạn đã <b>trả sách thành công</b> tại <b>8ooK Library Web</b>.</p>
                 <p>Thông tin phiếu mượn:</p>
                 <ul>
                 <li><b>Mã phiếu:</b> %s</li>
                 <li><b>Ngày trả:</b> %s</li>
                 </ul>
                 <p>Cảm ơn bạn đã sử dụng dịch vụ thư viện của chúng tôi. Hy vọng sẽ tiếp tục được phục vụ bạn trong những lần mượn tiếp theo.</p>
-                <p>Trân trọng,<br><b>Ja97 Library Web</b></p>
+                <p>Trân trọng,<br><b>8ooK Library Web</b></p>
             """,
         tenND, idPhieu, ngayTra);
     emailConfig.sendEmail(List.of(email), subject, body);
@@ -133,11 +133,11 @@ public class EmailService {
         ? (fine.getNoiDung() + " - " + fine.getCardId()).toString()
         : fine.getNoiDung();
     String money = Double.toString(fine.getSoTien()) + " đồng";
-    String subject = "Thông báo lập phiếu phạt – Ja97 Library Web";
+    String subject = "Thông báo lập phiếu phạt – 8ooK Library Web";
     String body = String.format(
         """
                 <h3><b>Xin chào %s,</b></h3>
-                <p><b>Ja97 Library Web</b> xin thông báo rằng một phiếu phạt đã được lập cho tài khoản của bạn.</p>
+                <p><b>8ooK Library Web</b> xin thông báo rằng một phiếu phạt đã được lập cho tài khoản của bạn.</p>
                 <p>Thông tin chi tiết phiếu phạt:</p>
                 <ul>
                 <li><b>Mã phiếu:</b> %s</li>
@@ -146,8 +146,8 @@ public class EmailService {
                 <li><b>Thời gian lập phiếu:</b> %s</li>
                 </ul>
                 <p>Quý bạn vui lòng thanh toán khoản phạt này tại quầy thủ thư hoặc thông qua hệ thống thanh toán trực tuyến trong vòng 7 ngày kể từ khi thông báo. Việc không thanh toán đúng hạn có thể ảnh hưởng đến quyền mượn sách trong tương lai.</p>
-                <p>Nếu bạn có bất kỳ thắc mắc nào về phiếu phạt này, xin vui lòng liên hệ với chúng tôi qua email <b>librarywebja97@gmail.com</b> hoặc số điện thoại <b>0779765688</b>.</p>
-                <p>Trân trọng,<br><b>Ja97 Library Web</b></p>
+                <p>Nếu bạn có bất kỳ thắc mắc nào về phiếu phạt này, xin vui lòng liên hệ với chúng tôi qua email <b>libraryweb8ooK@gmail.com</b> hoặc số điện thoại <b>0779765688</b>.</p>
+                <p>Trân trọng,<br><b>8ooK Library Web</b></p>
             """,
         tenND, idPhieu, reason, money, today);
     emailConfig.sendEmail(List.of(email), subject, body);
@@ -169,7 +169,7 @@ public class EmailService {
     String body = String.format(
         """
                 <h3><b>Xin chào %s,</b></h3>
-                <p><b>Ja97 Library Web</b> xin thông báo rằng thanh toán thành công cho phiếu phạt của bạn.</p>
+                <p><b>8ooK Library Web</b> xin thông báo rằng thanh toán thành công cho phiếu phạt của bạn.</p>
                 <p>Thông tin chi tiết phiếu phạt:</p>
                 <ul>
                 <li><b>Mã phiếu:</b> %s</li>
@@ -178,8 +178,8 @@ public class EmailService {
                 <li><b>Ngày thanh toán:</b> %s</li>
                 </ul>
                 <p>Chúng tôi xin chân thành cảm ơn Quý bạn vì sự hợp tác và trách nhiệm trong việc sử dụng dịch vụ thư viện.</p>
-                <p>Việc thanh toán của Quý bạn đã được ghi nhận thành công trong hệ thống. Nếu bạn có bất kỳ thắc mắc nào về phiếu phạt này, xin vui lòng liên hệ với chúng tôi qua email <b>librarywebja97@gmail.com</b> hoặc số điện thoại <b>0779765688</b>.</p>
-                <p>Trân trọng,<br><b>Ja97 Library Web</b></p>
+                <p>Việc thanh toán của Quý bạn đã được ghi nhận thành công trong hệ thống. Nếu bạn có bất kỳ thắc mắc nào về phiếu phạt này, xin vui lòng liên hệ với chúng tôi qua email <b>libraryweb8ooK@gmail.com</b> hoặc số điện thoại <b>0779765688</b>.</p>
+                <p>Trân trọng,<br><b>8ooK Library Web</b></p>
             """,
         tenND, idPhieu, reason, money, today);
     emailConfig.sendEmail(List.of(email), subject, body);
