@@ -146,11 +146,11 @@ const HomePage = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen text-foreground max-w-7xl">
-      <main className="pt-18 flex">
+    <div className="flex flex-col min-h-screen -mr-[180px] mt-20">
+      <main className="flex">
         <LeftSideBar />
         {loading ? (
-          <div className="flex ml-64 w-full h-screen justify-center items-center">
+          <div className="flex w-full h-screen justify-center items-center">
             <ThreeDot
               color="#062D76"
               size="large"
@@ -161,7 +161,7 @@ const HomePage = () => {
           </div>
         ) : (
           <>
-            <section className="flex-1 pr-5 md:pl-45 mt-2 items-center">
+            <section className="flex-1 max-w-7xl mx-auto px-4 items-center">
               <div className="grid grid-cols-[3fr_2fr]">
                 <div className="px-4 h-[510px] w-[800px]">
                   <Slider
@@ -293,12 +293,12 @@ const HomePage = () => {
                 </button>
               </form> */}
               <div className="bg-white rounded-xl p-5">
-                <h2 className="inline-block px-4 py-2 text-white bg-blue-300 rounded-lg">
+                <h2 className="inline-block px-6 py-2 text-white bg-blue-300 rounded-lg">
                   Có thể bạn sẽ thích
                 </h2>
                 <Slider {...sliderRecommendSettings} className="mt-5 max-w-6xl">
                   {books.slice(0, 6).map((book) => (
-                    <div key={book.id} className="px-2">
+                    <div key={book.id} className="px-10">
                       <BookRecommend {...book} />
                     </div>
                   ))}
