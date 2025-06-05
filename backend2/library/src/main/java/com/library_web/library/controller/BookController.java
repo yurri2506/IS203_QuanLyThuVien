@@ -97,6 +97,21 @@ public class BookController {
                 service.delBook(id);
         }
 
+        @PostMapping("/suggest")
+        public List<Book> suggestBooks(@RequestBody Map<String, Object> requestBody) {
+                List<String> keywords = (List<String>) requestBody.get("keywords");
+
+                // Nếu có userId và không rỗng thì gợi ý cá nhân hóa
+                Object userIdObj = requestBody.get("userId");
+
+                if (userIdObj != null && userIdObj instanceof Long userId) {
+                        return service.getPersonalizedSuggestions(userId, keywords);
+                }
+
+                // Nếu không có userId thì gợi ý bình thường
+                return service.getGeneralSuggestions(keywords);
+        }
+
         @GetMapping("/search")
         public List<BookDTO> searchBooks(
                         @RequestParam(required = false) String all,
