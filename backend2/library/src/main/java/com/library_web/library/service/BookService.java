@@ -36,4 +36,8 @@ public interface BookService {
     List<Book> findBooksNeedingRestock(int quantity);
 
     List<Book> searchBooks2(String query);
+
+    List<Book> getGeneralSuggestions(List<String> keywords);
+
+    List<Book> getPersonalizedSuggestions(Long userId, List<String> keywords);
 }

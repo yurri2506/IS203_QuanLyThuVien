@@ -96,10 +96,23 @@ public class BorrowCardService {
         System.out.println("dữ liệu: " + bookIds);
         LocalDateTime borrowDate = LocalDateTime.now();
         int waitingToTake = settingService.getSetting().getWaitingToTake();
+
+        BorrowCard borrowCard = new BorrowCard(userId, borrowDate, waitingToTake, new ArrayList<>());
+        // List<BorrowedBook> borrowedBooks = bookIds.stream()
+        // .map(id -> new BorrowedBook(id, null))
+        // .toList();
+        // BorrowCard borrowCard = new BorrowCard(userId, borrowDate, waitingToTake,
+        // borrowedBooks);
         List<BorrowedBook> borrowedBooks = bookIds.stream()
-                .map(id -> new BorrowedBook(id, null))
+                .map(id -> {
+                    BorrowedBook borrowedBook = new BorrowedBook(id, null);
+                    borrowedBook.setBorrowCard(borrowCard); // Gán borrowCard
+                    return borrowedBook;
+                })
                 .toList();
-        BorrowCard borrowCard = new BorrowCard(userId, borrowDate, waitingToTake, borrowedBooks);
+
+        // Gán danh sách borrowedBooks vào borrowCard
+        borrowCard.setBorrowedBooks(borrowedBooks);
         for (Long bookId : bookIds) {
             Book book = BookRepository.findById(bookId)
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy sách với id: " + bookId));
@@ -107,11 +120,11 @@ public class BorrowCardService {
             book.setSoLuongMuon(book.getSoLuongMuon() + 1);
             BookRepository.save(book);
         }
-        borrowCard = repository.save(borrowCard);
+        BorrowCard savedBorrowCard = repository.save(borrowCard);
         String message = "Bạn đã tạo phiếu mượn sách thành công! Vui lòng đến lấy sách trong thời gian sớm nhất nhé!\nID Phiếu mượn: "
-                + borrowCard.getId();
-        notificationService.sendNotification(borrowCard.getUserId(), message);
-        return borrowCard;
+                + savedBorrowCard.getId();
+        notificationService.sendNotification(savedBorrowCard.getUserId(), message);
+        return savedBorrowCard;
     }
 
     public boolean delete(Long id) {
@@ -146,7 +159,8 @@ public class BorrowCardService {
                     .filter(bb -> bb.getBookId().equals(parentId)
                             && (bb.getChildBookId() == null || bb.getChildBookId().isEmpty()))
                     .findFirst()
-                    .orElseThrow(() -> new RuntimeException("Không tìm thấy sách cha phù hợp cho sách con id: " + childId));
+                    .orElseThrow(
+                            () -> new RuntimeException("Không tìm thấy sách cha phù hợp cho sách con id: " + childId));
 
             matched.setChildBookId(childId);
             child.setStatus(BookChild.Status.BORROWED);
@@ -246,7 +260,8 @@ public class BorrowCardService {
                     Long borrowCount = entry.getValue();
                     Book book = BookRepository.findById(bookId)
                             .orElseThrow(() -> new RuntimeException("Không tìm thấy sách với id: " + bookId));
-                    return new BorrowStatsDTO.BookBorrowDetail(bookId, book.getTenSach(), book.getTenTacGia(), borrowCount);
+                    return new BorrowStatsDTO.BookBorrowDetail(bookId, book.getTenSach(), book.getTenTacGia(),
+                            borrowCount);
                 })
                 .collect(Collectors.toList());
 

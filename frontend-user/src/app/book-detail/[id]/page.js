@@ -9,11 +9,13 @@ import { Button } from "../../../components/ui/button";
 import BookReview from "../../../components/ui/bookreview";
 import axios from "axios";
 import { BsCartPlus } from "react-icons/bs";
+import { useRouter } from "next/navigation";
 
 const BookDetailsPage = () => {
   const { id } = useParams();
+  const router = useRouter();
   const [details, setDetails] = useState(null);
-  const user = JSON.parse(localStorage.getItem("persist:root")); // lấy thông tin người dùng từ localStorage
+  const user = JSON.parse(localStorage.getItem("persist:root")) || null; // lấy thông tin người dùng từ localStorage
   const [isAddedToCart, setIsAddedToCart] = useState(false);
 
   // map enum sang label
@@ -48,20 +50,22 @@ const BookDetailsPage = () => {
   }, [id]);
 
   useEffect(() => {
-    const checkBookInCart = async () => {
-      try {
-        const res = await axios.get(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/cart/${user.id}`
-        );
-        const cartBooks = res.data.data; // giả sử trả về mảng books [{ id: ..., ... }]
-        const found = cartBooks?.some((book) => book.bookId == id); // id là id của sách hiện tại
-        setIsAddedToCart(found);
-      } catch (error) {
-        console.error("Lỗi khi kiểm tra giỏ hàng:", error);
-      }
-    };
-
-    checkBookInCart();
+    if (user.id != "") {
+      console.log("sos", user.id)
+      const checkBookInCart = async () => {
+        try {
+          const res = await axios.get(
+            `${process.env.NEXT_PUBLIC_API_URL}/api/cart/${user.id}`
+          );
+          const cartBooks = res.data.data; // giả sử trả về mảng books [{ id: ..., ... }]
+          const found = cartBooks?.some((book) => book.bookId == id); // id là id của sách hiện tại
+          setIsAddedToCart(found);
+        } catch (error) {
+          console.error("Lỗi khi kiểm tra giỏ hàng:", error);
+        }
+        checkBookInCart();
+      };
+    }
   }, [user.id, id]);
 
   if (!details) {
@@ -73,57 +77,79 @@ const BookDetailsPage = () => {
   }
 
   const handleAddToCart = async () => {
-    try {
-      const res = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/cart/${user.id}/add/books`,
-        [id] // đưa vào mảng 1 phần tử
-      );
+    if (user.id == "") {
+      router.push("/user-login");
+    } else {
+      try {
+        console.log("sos", user.id)
+        const res = await axios.post(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/cart/${user.id}/add/books`,
+          [id] // đưa vào mảng 1 phần tử
+        );
 
-      alert("Đã thêm sách vào giỏ!");
-      console.log(res.data);
-      setIsAddedToCart(true); // Đánh dấu là đã thêm vào giỏ hàng
+        alert("Đã thêm sách vào giỏ!");
+        console.log(res.data);
+        setIsAddedToCart(true); // Đánh dấu là đã thêm vào giỏ hàng
 
-      // Reload lại trang để làm mới giỏ hàng
-      window.location.reload();
-    } catch (error) {
-      console.error("Lỗi khi thêm sách vào giỏ:", error);
-      alert("Có lỗi xảy ra khi thêm sách vào giỏ.");
+        // Reload lại trang để làm mới giỏ hàng
+        window.location.reload();
+      } catch (error) {
+        console.error("Lỗi khi thêm sách vào giỏ:", error);
+        alert("Có lỗi xảy ra khi thêm sách vào giỏ.");
+      }
     }
   };
 
   const handleBorrowBook = async () => {
-    try {
-      const user = JSON.parse(localStorage.getItem("persist:root")); // lấy thông tin người dùng từ localStorage
-      console.log(id);
-      // gửi yêu cầu mượn sách
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/borrow-cards`,
-        {
-          userId: user.id,
-          borrowedBooks: [
-            {
-              bookId: id,
-              childBookId: null,
-            },
-          ],
-          borrowDate: new Date().toISOString(),
-          status: "REQUESTED",
-          dueDate: new Date(
-            new Date().setDate(new Date().getDate() + 14)
-          ).toISOString(), // Ngày trả sách là 14 ngày sau
-        }
-      );
+    if (user.id == "") {
+      router.push("/user-login");
+    } else {
+      try {
+        console.log("sos", user.id)
+        console.log({
+            userId: user.id,
+            borrowedBooks: [
+              {
+                bookId: id,
+                childBookId: null,
+              },
+            ],
+            borrowDate: new Date().toISOString(),
+            status: "REQUESTED",
+            dueDate: new Date(
+              new Date().setDate(new Date().getDate() + 14)
+            ).toISOString(), // Ngày trả sách là 14 ngày sau
+          })
+        // gửi yêu cầu mượn sách
+        const response = await axios.post(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/borrow-cards`,
+          {
+            userId: user.id,
+            borrowedBooks: [
+              {
+                bookId: id,
+                childBookId: null,
+              },
+            ],
+            borrowDate: new Date().toISOString(),
+            status: "REQUESTED",
+            dueDate: new Date(
+              new Date().setDate(new Date().getDate() + 14)
+            ).toISOString(), // Ngày trả sách là 14 ngày sau
+          }
+        );
 
-      if (response.status === 200) {
-        alert("Phiếu mượn đã được tạo");
-        console.log("Phiếu mượn đã được tạo:", response.data);
-        window.location.href = "/borrowed-card";
-      } else {
-        alert("Có lỗi xảy ra khi tạo phiếu mượn");
+        if (response.status === 200) {
+          alert("Phiếu mượn đã được tạo");
+          console.log("Phiếu mượn đã được tạo:", response.data);
+          window.location.href = "/borrowed-card";
+        } else {
+          alert("Có lỗi xảy ra khi tạo phiếu mượn");
+        }
+      } catch (error) {
+        console.error("Lỗi khi mượn sách:", error);
+        alert("Có lỗi xảy ra khi mượn sách");
       }
-    } catch (error) {
-      console.error("Lỗi khi mượn sách:", error);
-      alert("Có lỗi xảy ra khi mượn sách");
     }
   };
 

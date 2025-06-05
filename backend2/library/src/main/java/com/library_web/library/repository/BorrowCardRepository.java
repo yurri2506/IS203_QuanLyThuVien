@@ -14,4 +14,5 @@ public interface BorrowCardRepository extends JpaRepository<BorrowCard, Long> {
 
   List<BorrowCard> findByBorrowDateBetween(LocalDateTime startDate, LocalDateTime endDate);
 
+  List<BorrowCard> findTop5ByUserIdOrderByBorrowDateDesc(Long userId);
 }
