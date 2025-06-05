@@ -3,18 +3,23 @@ import { Button } from "@/app/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import useSidebarStore from "@/store/sideBarStore";
 import { LogOut } from "lucide-react";
-import { User, Book, Settings, FileWarning, ArrowDownUp, LayoutDashboard, ScanQrCode } from "lucide-react";
+import {
+  User,
+  Book,
+  Settings,
+  FileWarning,
+  ArrowDownUp,
+  LayoutDashboard,
+  ScanQrCode,
+} from "lucide-react";
 import { useRouter, usePathname } from "next/navigation";
-
 
 const SidebarItem = ({ path, icon: Icon, label }) => {
   const router = useRouter();
   const pathname = usePathname();
   const { isSidebarOpen, toggleSidebar } = useSidebarStore();
 
-
   const isActive = pathname === path;
-
 
   const handleClick = () => {
     router.push(path);
@@ -22,7 +27,6 @@ const SidebarItem = ({ path, icon: Icon, label }) => {
       toggleSidebar();
     }
   };
-
 
   return (
     <Button
@@ -40,10 +44,8 @@ const SidebarItem = ({ path, icon: Icon, label }) => {
   );
 };
 
-
 const Sidebar = () => {
   const { isSidebarOpen } = useSidebarStore();
-
 
   const menuItems = [
     { path: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
@@ -55,7 +57,6 @@ const Sidebar = () => {
     { path: "/setting", icon: Settings, label: "Cài đặt" },
   ];
 
-
   return (
     <aside
       className={`fixed left-0 h-full w-52 p-4 transform bg-white transition-transform duration-200 ease-in-out md:translate-x-0 flex flex-col z-50 md:z-0 shadow-lg ${
@@ -64,11 +65,10 @@ const Sidebar = () => {
     >
       <div className="flex flex-col h-full overflow-y-auto">
         {/* Logo */}
-        <div className="flex flex-col items-center mb-4">
-          <img src="/images/logo.jpg" alt="Vibely Logo" className="w-36" />
+        <div className="flex flex-col items-center mb-8">
+          <img src="/images/logoN.png" alt="Vibely Logo" className="w-40" />
         </div>
         <hr className="border-t border-gray-100 mb-6" />
-
 
         {/* Navigation */}
         <nav className="space-y-3 flex-grow">
@@ -76,7 +76,6 @@ const Sidebar = () => {
             <SidebarItem key={item.path} {...item} />
           ))}
         </nav>
-
 
         <div className="mb-4">
           <Separator className="my-3" />
@@ -94,6 +93,5 @@ const Sidebar = () => {
     </aside>
   );
 };
-
 
 export default Sidebar;

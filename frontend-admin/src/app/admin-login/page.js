@@ -284,9 +284,9 @@ const Page = () => {
           <CardHeader className="text-center">
             <CardTitle>
               <img
-                src="/images/logo.jpg"
+                src="/images/logoN.png"
                 alt="Admin Panel"
-                className="w-24 mx-auto"
+                className="w-40 h-25 mx-auto"
               />
             </CardTitle>
             <CardDescription className="text-center text-[#1CA2C1] text-[16px]">
