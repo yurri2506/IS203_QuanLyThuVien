@@ -5,6 +5,7 @@ import { Newspaper } from "lucide-react";
 import Link from "next/link";
 import CardNew from "./CardNew";
 import { Button } from "@/components/ui/button";
+import ChatBotButton from "../components/ChatBoxButton";
 
 const page = () => {
   return (
@@ -24,11 +25,13 @@ const page = () => {
             </h1>
             <div className="mt-4 items-center">
               <div className="grid grid-cols-3 justify-around items-center mb-8 gap-4">
-                <CardNew
-                  title="Ra mắt bản dịch tác phẩm 'Cuốn sách hoang dã' của tác giả Juan Villoro"
-                  date="Thứ Ba, 06/05/2025"
-                  imageSrc="https://bizweb.dktcdn.net/100/363/455/articles/494621307-1097261965774870-6550418258675179038-n.jpg?v=1746519986820"
-                />
+                <Link href="/News/Detail">
+                  <CardNew
+                    title="Ra mắt bản dịch tác phẩm 'Cuốn sách hoang dã' của tác giả Juan Villoro"
+                    date="Thứ Ba, 06/05/2025"
+                    imageSrc="https://bizweb.dktcdn.net/100/363/455/articles/494621307-1097261965774870-6550418258675179038-n.jpg?v=1746519986820"
+                  />
+                </Link>
                 <CardNew
                   title="Sự kiện giới thiệu tác phẩm 'Dọc đường 2' và gặp gỡ nhà văn Nguyên"
                   date="Thứ Hai, 21/04/2025"
@@ -83,6 +86,7 @@ const page = () => {
           </div>
         </section>
       </main>
+      <ChatBotButton />
     </div>
   );
 };
