@@ -64,10 +64,7 @@ public class UserController {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Không tìm thấy người dùng với ID: " + id));
 
-        if (currentRole.equals("USER") && !currentUsername.equals(user.getUsername())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
-                    "Bạn không có quyền truy cập thông tin người dùng này");
-        }
+        
         // Đảm bảo avatar_url không bao giờ là chuỗi rỗng
         if (user.getAvatar_url() != null && user.getAvatar_url().isEmpty()) {
             user.setAvatar_url(null);
