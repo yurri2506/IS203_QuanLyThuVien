@@ -83,7 +83,8 @@ const page = () => {
 
       if (response.ok) {
         const data = await response.json();
-        cartId = data.id;
+        cartId = data.data.id;
+        console.log(data.data)
         setBooks(data.data); // Giả sử API trả về đối tượng có key 'books'
       } else {
         console.error("Lỗi khi lấy giỏ hàng");
@@ -113,16 +114,19 @@ const page = () => {
 
   // Xóa sách trong giỏ hàng
   const handleDeleteBooks = async () => {
+    console.log("id", cartId);
+    console.log("id sach", selected)
     try {
       const response = await axios.delete(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/cart/${cartId}`, // Endpoint API xóa sách trong giỏ hàng
+        `${process.env.NEXT_PUBLIC_API_URL}/api/cart/${user.id}/remove/books`, // Endpoint API xóa sách trong giỏ hàng
         {
           data: selected,
         }
       );
+      fetchCart();
 
-      setBooks(response.data.data); // Cập nhật lại giỏ hàng sau khi xóa
-      console.log("Xóa sách thành công:", response.data);
+      // setBooks(response.data.data); // Cập nhật lại giỏ hàng sau khi xóa
+      // console.log("Xóa sách thành công:", response.data);
       alert("Xóa sách thành công!");
       setSelected([]); // Reset lại danh sách đã chọn
     } catch (error) {

@@ -2,6 +2,7 @@ package com.library_web.library.service;
 
 import com.library_web.library.model.Book;
 import com.library_web.library.model.BookChild;
+import com.library_web.library.model.BorrowCard;
 import com.library_web.library.model.CategoryChild;
 import com.library_web.library.repository.BookChildRepository;
 import com.library_web.library.repository.BookRepository;
@@ -445,5 +446,77 @@ public class BookServiceImpl implements BookService {
         // }
 
         return books;
+    }
+
+    @Override
+    // Gợi ý theo phiếu mượn (nếu có userId)
+    public List<Book> getPersonalizedSuggestions(Long userId, List<String> keywords) {
+        // 1. Lấy 5 phiếu mượn gần nhất
+        List<BorrowCard> recentBorrows = borrowCardRepository.findTop5ByUserIdOrderByBorrowDateDesc(userId);
+
+        // 2. Lấy tất cả bookIds từ phiếu mượn
+        List<String> borrowedBookIds = recentBorrows.stream()
+                .map(BorrowCard::getBookIds)
+                .flatMap(Collection::stream)
+                .distinct()
+                .collect(Collectors.toList());
+
+        // Convert List<String> to List<Long>
+        List<Long> borrowedBookIdLongs = borrowedBookIds.stream()
+                .map(idStr -> {
+                    try {
+                        return Long.parseLong(idStr);
+                    } catch (NumberFormatException e) {
+                        return null;
+                    }
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+        if (borrowedBookIdLongs.isEmpty()) {
+            // Nếu user chưa mượn sách nào, fallback sang gợi ý thường
+            return getGeneralSuggestions(keywords);
+        }
+
+        // 3. Lấy thông tin sách đã mượn
+        List<Book> borrowedBooks = repo.findAllByMaSachIn(borrowedBookIdLongs);
+
+        // 4. Set id sách đã mượn để lọc
+        Set<Long> borrowedBookIdSet = borrowedBooks.stream()
+                .map(Book::getMaSach)
+                .collect(Collectors.toSet());
+
+        // 5. Gộp từ khóa + tên tác giả của sách đã mượn
+        List<String> authors = borrowedBooks.stream()
+                .map(Book::getTenTacGia)
+                .distinct()
+                .toList();
+
+        List<String> allKeywords = new ArrayList<>(keywords);
+        allKeywords.addAll(authors);
+
+        // 6. Lọc sách chưa mượn, tên/tác giả/thể loại/mô tả chứa keyword
+        return repo.findAll().stream()
+                .filter(book -> !borrowedBookIdSet.contains(book.getMaSach()))
+                .filter(book -> allKeywords.stream()
+                        .anyMatch(kw -> book.getTenSach().toLowerCase().contains(kw.toLowerCase()) ||
+                                book.getTenTacGia().toLowerCase().contains(kw.toLowerCase()) ||
+                                book.getCategoryChild().getName().toLowerCase().contains(kw.toLowerCase()) ||
+                                book.getMoTa().toLowerCase().contains(kw.toLowerCase())))
+                .limit(10)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    // Gợi ý không cá nhân hóa (không cần userId)
+    public List<Book> getGeneralSuggestions(List<String> keywords) {
+        return repo.findAll().stream()
+                .filter(book -> keywords.stream()
+                        .anyMatch(kw -> book.getTenSach().toLowerCase().contains(kw.toLowerCase()) ||
+                                book.getTenTacGia().toLowerCase().contains(kw.toLowerCase()) ||
+                                book.getCategoryChild().getName().toLowerCase().contains(kw.toLowerCase()) ||
+                                book.getMoTa().toLowerCase().contains(kw.toLowerCase())))
+                .limit(10)
+                .collect(Collectors.toList());
     }
 }
