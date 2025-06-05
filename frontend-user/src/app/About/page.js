@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import ChatBotButton from "../components/ChatBoxButton";
 
 const features = [
   {
@@ -264,6 +265,7 @@ const page = () => {
           </div>
         </section>
       </div>
+      <ChatBotButton />
 
       {/* Contact */}
       <footer className=" py-4 text-center">

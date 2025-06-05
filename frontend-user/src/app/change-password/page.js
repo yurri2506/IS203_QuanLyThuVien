@@ -42,7 +42,7 @@ const ChangePassword = () => {
   });
 
   const handleLogin = () => {
-    router.push("/login");
+    router.push("/user-login");
   };
 
   useEffect(() => {
@@ -116,7 +116,7 @@ const ChangePassword = () => {
 
       toast.success(response.data.message || "Đổi mật khẩu thành công");
       reset();
-      setTimeout(router.push("/Honepage"), 1000); //
+      setTimeout(router.push("/Homepage"), 1000); //
     } catch (err) {
       toast.error(
         err.response?.data?.message ||
@@ -126,13 +126,13 @@ const ChangePassword = () => {
   };
 
   return (
-    <div className="flex min-h-screen justify-center items-center pt-16 ml-16">
+    <div className="flex flex-1 min-h-screen justify-center items-center pt-20 -mr-[180px]">
       <Toaster position="top-center" toastOptions={{ duration: 5000 }} />
       <LeftSideBar />
-      <div className="flex-1 flex justify-end items-end">
+      <div className="flex-1 max-w-7xl mx-auto w-full flex">
         <form
           onSubmit={handleSubmit(onSubmit)}
-          className="bg-white w-full max-w-[1100px] h-[500px] p-10 mr-0 mb-0 rounded-lg shadow-md"
+          className="bg-white mx-auto h-[500px] p-10 rounded-lg shadow-md"
         >
           <div className="flex items-center gap-4 mb-6">
             {user.avatar ? (
