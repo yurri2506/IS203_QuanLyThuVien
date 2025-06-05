@@ -431,7 +431,7 @@ const ProfileCard = () => {
   };
 
   return (
-    <div className="p-15 ml-64 bg-white w-[1000px] rounded-2xl flex flex-col overflow-y-auto">
+    <div className="p-15 bg-white mx-auto rounded-2xl overflow-y-auto">
       {message && (
         <div
           className={`mb-4 p-3 rounded-lg ${
@@ -565,9 +565,10 @@ const ProfileCard = () => {
 
 const Page = () => {
   return (
-    <div className="pt-20 pb-4 max-w-7xl flex flex-1 gap-5">
-      <LeftSideBar />
-      <ProfileCard />
+    <div className="pt-20 pb-4 -mr-[180px] flex flex-1 justify-items-center items-center gap-5">
+      <main className="max-w-7xl mx-auto w-full flex flex-col gap-5">
+        <ProfileCard />
+      </main>
     </div>
   );
 };
