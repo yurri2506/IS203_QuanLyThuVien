@@ -300,8 +300,10 @@ const UploadImage = () => {
   const handleUpdateBorrowCard = async () => {
     setLoading(true);
     try {
+      let response;
+
       if (currentChoose.status === "Đã yêu cầu") {
-        const response = await fetch(
+        response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/api/borrow-cards/borrow/${currentChoose?.id}`,
           {
             method: "PUT",
@@ -311,33 +313,33 @@ const UploadImage = () => {
             body: JSON.stringify(children),
           }
         );
-        if (!response.ok) {
-          toast.error("Không thể cập nhật phiếu mượn");
-          setLoading(false);
-          return;
-        }
       } else {
-        const response = await fetch(
+        response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/api/borrow-cards/return/${currentChoose?.id}`,
           {
             method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
           }
         );
-        if (!response.ok) {
-          toast.error("Không thể cập nhật phiếu mượn");
-          setLoading(false);
-          return;
-        }
+      }
+
+      if (!response.ok) {
+        toast.error("Không thể cập nhật phiếu mượn");
+      } else {
+        toast.success("Updated");
+        handleCloseCard();
+        await getBorrowCard();
       }
     } catch (error) {
-      console.log(error);
-      return;
+      console.error(error);
+      toast.error("Có lỗi xảy ra khi cập nhật");
+    } finally {
+      setLoading(false);
     }
-    toast.success("Updated");
-    handleCloseCard();
-    getBorrowCard();
-    setLoading(false);
   };
+
   return (
     <div className="flex w-full min-h-screen h-full flex-col gap-2 items-center bg-[#EFF3FB]">
       {loading ? (
