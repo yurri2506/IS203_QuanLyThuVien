@@ -428,27 +428,7 @@ public class BookServiceImpl implements BookService {
         return repo.findBooksNeedingRestock(quantity);
     }
 
-<<<<<<< HEAD
-    @Override
-    public List<Book> searchBooks2(String query) {
-        // Kiểm tra nếu query không phải là null hoặc rỗng
-        if (query == null || query.trim().isEmpty()) {
-            return List.of(); // Trả về danh sách rỗng nếu không có input
-        }
 
-        // Tìm kiếm theo tên sách, tên tác giả hoặc thể loại (kiểm tra đầy đủ các trường
-        // hợp)
-        List<Book> books = repo.findByTenSachContainingIgnoreCase(query);
-        if (books.isEmpty()) {
-            books = repo.findByTenTacGiaContainingIgnoreCase(query);
-        }
-        // if (books.isEmpty()) {
-        // books = repo.findByTheLoaiContainingIgnoreCase(query);
-        // }
-
-        return books;
-    }
-=======
     // @Override
     // public List<Book> searchBooks2(String query) {
     //     // Kiểm tra nếu query không phải là null hoặc rỗng
@@ -534,7 +514,7 @@ public List<Book> searchBooks2(String query) {
         })
         .collect(Collectors.toList());
 }
->>>>>>> PhuongThao
+
 
     @Override
     // Gợi ý theo phiếu mượn (nếu có userId)
