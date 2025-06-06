@@ -45,7 +45,7 @@ const UploadImage = () => {
 
       if (!response.ok) {
         const error = await response.json();
-        toast.error(error.error);
+        window.alert(error.error);
         setLoading(false);
         return;
       }
@@ -73,7 +73,7 @@ const UploadImage = () => {
         }
       );
       if (!response.ok) {
-        toast.error("Không tìm thấy người dùng");
+        window.alert("Không tìm thấy người dùng");
         setLoading(false);
         return;
       }
@@ -103,7 +103,7 @@ const UploadImage = () => {
         return;
       }
       if (response.length === 0) {
-        toast.error("Không tìm thấy phiếu mượn nào");
+        window.alert("Không tìm thấy phiếu mượn nào");
         setLoading(false);
         return;
       }
@@ -248,11 +248,11 @@ const UploadImage = () => {
         const parentId = resultChild.bookId;
         const foundBook = currentInfo.find((book) => book.maSach === parentId);
         if (!foundBook) {
-          toast.error("Sách cha không tồn tại trong danh sách!");
+          window.alert("Sách cha không tồn tại trong danh sách!");
           return;
         }
         if (foundBook.checked) {
-          toast.error("Sách cha đã được chọn!");
+          window.alert("Sách cha đã được chọn!");
           return;
         }
         const updatedBooks = currentInfo.map((book) =>
@@ -267,11 +267,11 @@ const UploadImage = () => {
           (book) => book.childId.childBookId === childId
         );
         if (!foundBook) {
-          toast.error("Sách không tồn tại trong danh sách đã mượn!");
+          window.alert("Sách không tồn tại trong danh sách đã mượn!");
           return;
         }
         if (foundBook.checked) {
-          toast.error("Sách này đã được chọn!");
+          window.alert("Sách này đã được chọn!");
           return;
         }
         const updatedBooks = currentInfo.map((book) =>
@@ -332,15 +332,15 @@ const UploadImage = () => {
       }
 
       if (!response.ok) {
-        toast.error("Không thể cập nhật phiếu mượn");
+        window.alert("Không thể cập nhật phiếu mượn");
       } else {
-        toast.success("Updated");
+        window.alert("Updated");
         handleCloseCard();
         await getBorrowCard();
       }
     } catch (error) {
       console.error(error);
-      toast.error("Có lỗi xảy ra khi cập nhật");
+      window.alert("Có lỗi xảy ra khi cập nhật");
     } finally {
       setLoading(false);
     }
