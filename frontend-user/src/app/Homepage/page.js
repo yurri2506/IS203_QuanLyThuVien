@@ -12,6 +12,7 @@ import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import BookRecommend from "../components/BookRecomend";
+import ImageCard from "./ImageCard";
 
 const HomePage = () => {
   const [books, setBooks] = useState([]);
@@ -47,7 +48,7 @@ const HomePage = () => {
     slidesToShow: 2, // Hiển thị 2 slide cùng lúc trên màn hình lớn
     slidesToScroll: 1, // Chuyển 1 slide mỗi lần
     autoplay: true, // Tự động chuyển slide
-    autoplaySpeed: 3000, // Chuyển slide mỗi 3 giây
+    autoplaySpeed: 2000, // Chuyển slide mỗi 3 giây
     ltr: true,
     responsive: [
       {
@@ -73,10 +74,13 @@ const HomePage = () => {
         const searchKeywords = localStorage.getItem("searchKeywords"); // mảng keyword ví dụ
         const keywords = searchKeywords ? JSON.parse(searchKeywords) : [];
 
-        const response = await axios.post("http://localhost:8080/api/book/suggest", {
-          userId: userId,
-          keywords: keywords,
-        });
+        const response = await axios.post(
+          "http://localhost:8080/api/book/suggest",
+          {
+            userId: userId,
+            keywords: keywords,
+          }
+        );
         // console.log("Dữ liệu sách:", response.data);
         const convertedBooks = response.data.map((book) => ({
           id: book.maSach,
@@ -88,7 +92,7 @@ const HomePage = () => {
           borrowCount: book.soLuongMuon,
         }));
         setBooksSuggest(convertedBooks);
-        console.log(convertedBooks)
+        console.log(convertedBooks);
       } catch (error) {
         console.error("Lỗi khi fetch sách:", error);
       }
@@ -201,20 +205,32 @@ const HomePage = () => {
                     className="mb-5 max-w-5xl h-auto gap-12"
                   >
                     <ServiceHoursCard />
-                    <CollectionCard
-                      title="Tài liệu số"
-                      category="Bộ sưu tập"
-                      imageSrc="https://cdn.builder.io/api/v1/image/assets/TEMP/9b777cb3ef9abb920d086e97e27ac4f6f3559695"
-                      bgColor="bg-teal-500"
-                      buttonTextColor="text-teal-500"
+
+                    <img
+                      src="https://mintbook.com/blog/wp-content/uploads/Must-Have-Digital-Library-Tools-1.jpeg.webp"
+                      alt="anh bi loi"
+                      className="object-cover max-md:size-full size-auto rounded-2xl h-[500px]"
                     />
-                    <CollectionCard
-                      title="Sách"
-                      category="Bộ sưu tập"
-                      imageSrc="https://cdn.builder.io/api/v1/image/assets/TEMP/9b777cb3ef9abb920d086e97e27ac4f6f3559695"
-                      bgColor="bg-sky-600"
-                      buttonTextColor="text-sky-600"
+                    <img
+                      src="https://static.vecteezy.com/system/resources/thumbnails/027/196/314/small/concept-of-electronic-library-online-bookstore-ebook-online-library-people-reading-books-with-digital-library-service-users-learn-with-book-archives-illustration-for-web-design-vector.jpg"
+                      alt="anh bi loi"
+                      className="object-cover max-md:size-full size-auto rounded-2xl h-[500px]"
                     />
+                    <img
+                      src="https://fsucard.com/wp-content/uploads/2022/10/Computer-Library.jpeg"
+                      alt="anh bi loi"
+                      className="object-cover max-md:size-full size-auto rounded-2xl h-[500px]"
+                    />
+                    <img
+                      src="https://img.freepik.com/free-vector/online-library-app-reading-banner_33099-1733.jpg"
+                      alt="anh bi loi"
+                      className="object-cover max-md:size-full size-auto rounded-2xl h-[500px]"
+                    />
+                    <img
+                      src="https://img.freepik.com/free-vector/audio-books-isometric-composition-with-character-female-librarian-with-book-shelves-inside-smartphone-screen-frame-vector-illustration_1284-80591.jpg"
+                      alt="anh bi loi"
+                      className="object-cover max-md:size-full size-auto rounded-2xl h-[500px]"
+                    ></img>
                   </Slider>
                 </div>
                 <div>
@@ -331,7 +347,6 @@ const HomePage = () => {
                 <Slider {...sliderRecommendSettings} className="mt-5 max-w-6xl">
                   {bookSuggest.map((book) => (
                     <div key={book.id} className="px-10">
-
                       <BookRecommend {...book} />
                     </div>
                   ))}
