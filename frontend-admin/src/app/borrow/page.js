@@ -17,7 +17,7 @@ import { Input } from "../components/ui/input";
 import toast from "react-hot-toast";
 import { ThreeDot } from "react-loading-indicators";
 
-const page = () => {
+const Page = () => {
   const [allBorrowCards, setAllBorrowCards] = useState([]);
   const [selectedButton, setSelectedButton] = useState("Đã yêu cầu");
   const [loading, setLoading] = useState(false);
@@ -430,4 +430,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;
