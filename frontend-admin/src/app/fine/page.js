@@ -8,7 +8,7 @@ import { Plus, Search, ReceiptText, Timer, DollarSign } from "lucide-react";
 import { ThreeDot } from "react-loading-indicators";
 import toast from "react-hot-toast";
 
-const page = () => {
+const Page = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [allFines, setAllFines] = useState([]);
   const [filterFines, setFilterFines] = useState([]);
@@ -252,4 +252,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;
