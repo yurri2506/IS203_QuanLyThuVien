@@ -5,13 +5,9 @@ import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
 import { useParams } from "next/navigation";
 import { CalendarClock, Check, Search, X } from "lucide-react";
-<<<<<<< HEAD
-import toast from "react-hot-toast";
-import { ThreeDot } from "react-loading-indicators";
-=======
 import { ThreeDot } from "react-loading-indicators";
 import toast, { Toaster } from "react-hot-toast";
->>>>>>> PhuongThao
+
 import Sidebar from "@/app/components/sidebar/Sidebar";
 import axios from "axios";
 const Page = () => {
