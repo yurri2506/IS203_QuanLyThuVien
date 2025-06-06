@@ -45,7 +45,7 @@ const UploadImage = () => {
 
       if (!response.ok) {
         const error = await response.json();
-        toast.error(error.error);
+        window.alert(error.error);
         setLoading(false);
         return;
       }
@@ -73,7 +73,7 @@ const UploadImage = () => {
         }
       );
       if (!response.ok) {
-        toast.error("Không tìm thấy người dùng");
+        window.alert("Không tìm thấy người dùng");
         setLoading(false);
         return;
       }
@@ -103,7 +103,7 @@ const UploadImage = () => {
         return;
       }
       if (response.length === 0) {
-        toast.error("Không tìm thấy phiếu mượn nào");
+        window.alert("Không tìm thấy phiếu mượn nào");
         setLoading(false);
         return;
       }
@@ -248,11 +248,11 @@ const UploadImage = () => {
         const parentId = resultChild.bookId;
         const foundBook = currentInfo.find((book) => book.maSach === parentId);
         if (!foundBook) {
-          toast.error("Sách cha không tồn tại trong danh sách!");
+          window.alert("Sách cha không tồn tại trong danh sách!");
           return;
         }
         if (foundBook.checked) {
-          toast.error("Sách cha đã được chọn!");
+          window.alert("Sách cha đã được chọn!");
           return;
         }
         const updatedBooks = currentInfo.map((book) =>
@@ -267,11 +267,11 @@ const UploadImage = () => {
           (book) => book.childId.childBookId === childId
         );
         if (!foundBook) {
-          toast.error("Sách không tồn tại trong danh sách đã mượn!");
+          window.alert("Sách không tồn tại trong danh sách đã mượn!");
           return;
         }
         if (foundBook.checked) {
-          toast.error("Sách này đã được chọn!");
+          window.alert("Sách này đã được chọn!");
           return;
         }
         const updatedBooks = currentInfo.map((book) =>
@@ -301,8 +301,10 @@ const UploadImage = () => {
   const handleUpdateBorrowCard = async () => {
     setLoading(true);
     try {
+      let response;
+      console.log(children)
       if (currentChoose.status === "Đã yêu cầu") {
-        const response = await fetch(
+        response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/api/borrow-cards/borrow/${currentChoose?.id}`,
           {
             method: "PUT",
@@ -312,33 +314,38 @@ const UploadImage = () => {
             body: JSON.stringify(children),
           }
         );
-        if (!response.ok) {
-          toast.error("Không thể cập nhật phiếu mượn");
-          setLoading(false);
-          return;
-        }
+        setChildren([])
+        console.log(children)
       } else {
-        const response = await fetch(
+        response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/api/borrow-cards/return/${currentChoose?.id}`,
           {
             method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(children),
           }
         );
-        if (!response.ok) {
-          toast.error("Không thể cập nhật phiếu mượn");
-          setLoading(false);
-          return;
-        }
+         setChildren([])
+        console.log(children)
+      }
+
+      if (!response.ok) {
+        window.alert("Không thể cập nhật phiếu mượn");
+      } else {
+        window.alert("Updated");
+        handleCloseCard();
+        await getBorrowCard();
       }
     } catch (error) {
-      console.log(error);
-      return;
+      console.error(error);
+      window.alert("Có lỗi xảy ra khi cập nhật");
+    } finally {
+      setLoading(false);
     }
-    toast.success("Updated");
-    handleCloseCard();
-    getBorrowCard();
-    setLoading(false);
   };
+
   return (
     <div className="flex w-full min-h-screen h-full flex-col gap-2 items-center bg-[#EFF3FB]">
       {loading ? (

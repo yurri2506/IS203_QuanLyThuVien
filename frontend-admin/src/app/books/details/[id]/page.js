@@ -38,7 +38,7 @@ const Page = () => {
         setChildBookList(children);
       } catch (error) {
         console.error(error);
-        toast.error(error.message || "Lỗi khi tải dữ liệu");
+        window.alert(error.message || "Lỗi khi tải dữ liệu");
       } finally {
         setLoading(false);
       }
@@ -53,7 +53,7 @@ const Page = () => {
       );
       const newChildBook = response.data;
 
-      toast.success("Đã tạo sách con mới");
+      window.alert("Đã tạo sách con mới");
 
       setChildBookList((prev) => [
         ...prev,
@@ -64,7 +64,7 @@ const Page = () => {
       ]);
     } catch (error) {
       console.error(error);
-      toast.error("Không thể thêm sách con");
+      window.alert("Không thể thêm sách con");
     } finally {
       setActionLoading(false);
     }

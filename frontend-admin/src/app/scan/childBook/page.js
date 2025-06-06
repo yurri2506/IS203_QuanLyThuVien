@@ -26,7 +26,7 @@ const UploadChild = ({ resultChild, setResultChild }) => {
     formData.append("type", "book");
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/upload/barcodeImage`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/upload/barcodeImage`,
         {
           method: "POST",
           body: formData,
@@ -66,7 +66,7 @@ const UploadChild = ({ resultChild, setResultChild }) => {
       );
 
       if (!response.ok) {
-        toast.error("Không tìm thấy sách");
+        window.alert("Không tìm thấy sách");
         setLoading(false);
         return;
       }

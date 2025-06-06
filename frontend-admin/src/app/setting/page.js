@@ -7,7 +7,7 @@ import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
 import { CircleCheck } from "lucide-react";
 
-const page = () => {
+const Page = () => {
   const [loading, setLoading] = useState(false);
   const [fine, setFine] = useState(0);
   const [wait, setWait] = useState(0);
@@ -147,4 +147,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;

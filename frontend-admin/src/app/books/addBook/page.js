@@ -52,7 +52,7 @@ function Page() {
         setCateList(data.map((item) => item.name));
       } catch (error) {
         console.error("Error fetching categories:", error);
-        toast.error("Không thể tải danh mục");
+        window.alert("Không thể tải danh mục");
       }
     };
     fetchCategory();
@@ -112,7 +112,7 @@ function Page() {
       return res.data;
     } catch (error) {
       console.error("Error uploading images:", error);
-      toast.error("Upload hình ảnh thất bại");
+      window.alert("Upload hình ảnh thất bại");
       throw error;
     }
   };
@@ -142,19 +142,19 @@ function Page() {
       category2 === "" ||
       quantity === ""
     ) {
-      toast.error("Vui lòng điền đầy đủ thông tin");
+      window.alert("Vui lòng điền đầy đủ thông tin");
       return;
     }
     if (parseInt(quantity) < 1) {
-      toast.error("Số lượng sách phải lớn hơn 0");
+      window.alert("Số lượng sách phải lớn hơn 0");
       return;
     }
     if (weight === "" || isNaN(+weight) || +weight <= 0) {
-      toast.error("Nhập trọng lượng (> 0)");
+      window.alert("Nhập trọng lượng (> 0)");
       return;
     }
     if (price === "" || isNaN(+price) || +price <= 0) {
-      toast.error("Nhập đơn giá (> 0)");
+      window.alert("Nhập đơn giá (> 0)");
       return;
     }
 
@@ -168,14 +168,14 @@ function Page() {
 
       const selectedParent = totalCate.find((cate) => cate.name === category);
       if (!selectedParent) {
-        toast.error("Thể loại chính không hợp lệ");
+        window.alert("Thể loại chính không hợp lệ");
         return;
       }
       const selectedChild = selectedParent.children.find(
         (child) => child.name === category2
       );
       if (!selectedChild) {
-        toast.error("Thể loại phụ không hợp lệ");
+        window.alert("Thể loại phụ không hợp lệ");
         return;
       }
       const childId = selectedChild.id;
@@ -202,12 +202,12 @@ function Page() {
         `${process.env.NEXT_PUBLIC_API_URL}/api/book`,
         bookData
       );
-      toast.success("Thêm sách thành công");
+      window.alert("Thêm sách thành công");
       const newId = res.data.maSach;
       route.push(`/books/details/${newId}`);
     } catch (error) {
       console.error("Lỗi:", error.message);
-      toast.error("Thêm sách thất bại");
+      window.alert("Thêm sách thất bại");
     } finally {
       setLoading(false);
     }
