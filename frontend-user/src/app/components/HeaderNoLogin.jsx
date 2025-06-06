@@ -244,7 +244,7 @@ const HeaderNoLogin = () => {
                 <Menu as="div" className="relative">
                   <Menu.Button
                     onClick={handleLogin}
-                    className="text-blue-300 font-medium px-4 py-2 rounded-md hover:bg-blue-100 transition mr-6"
+                    className="text-blue-300 font-medium px-4 py-2 rounded-md hover:bg-blue-100 transition mr-6 cursor-pointer"
                   >
                     Đăng nhập / Đăng ký
                   </Menu.Button>
