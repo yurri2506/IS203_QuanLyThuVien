@@ -9,7 +9,7 @@ import { FiLoader } from "react-icons/fi";
 import { Button } from "@/components/ui/button";
 import axios from "axios";
 
-const page = () => {
+const Page = () => {
   const [allBorrowCards, setAllBorrowCards] = useState([]);
 
   const [selectedButton, setSelectedButton] = useState("Đã yêu cầu");
@@ -217,4 +217,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;
