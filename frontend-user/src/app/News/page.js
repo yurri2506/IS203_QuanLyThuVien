@@ -7,7 +7,7 @@ import CardNew from "./CardNew";
 import { Button } from "@/components/ui/button";
 import ChatBotButton from "../components/ChatBoxButton";
 
-const page = () => {
+const Page = () => {
   return (
     <div className="min-h-screen flex flex-col -mr-[190px]">
       <main className="pt-16 flex flex-1">
@@ -91,4 +91,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;

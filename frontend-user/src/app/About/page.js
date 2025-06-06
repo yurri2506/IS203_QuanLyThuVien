@@ -102,7 +102,7 @@ const benefits = [
   "Đăng nhập nhanh bằng tài khoản Google/Facebook",
 ];
 
-const page = () => {
+const Page = () => {
   return (
     <div className="min-h-screen flex flex-col -mr-[180px] mt-20">
       <div className="flex-1 bg-white max-w-5xl mx-auto px-4 rounded-2xl">
@@ -293,4 +293,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;
