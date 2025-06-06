@@ -66,7 +66,7 @@ const books = [
   },
 ];
 
-const page = () => {
+const Page = () => {
   const [selected, setSelected] = useState([]);
   const [books, setBooks] = useState(""); // Giỏ hàng
   const [loading, setLoading] = useState(true); // Trạng thái loading
@@ -84,7 +84,7 @@ const page = () => {
       if (response.ok) {
         const data = await response.json();
         cartId = data.data.id;
-        console.log(data.data)
+        console.log(data.data);
         setBooks(data.data); // Giả sử API trả về đối tượng có key 'books'
       } else {
         console.error("Lỗi khi lấy giỏ hàng");
@@ -115,7 +115,7 @@ const page = () => {
   // Xóa sách trong giỏ hàng
   const handleDeleteBooks = async () => {
     console.log("id", cartId);
-    console.log("id sach", selected)
+    console.log("id sach", selected);
     try {
       const response = await axios.delete(
         `${process.env.NEXT_PUBLIC_API_URL}/api/cart/${user.id}/remove/books`, // Endpoint API xóa sách trong giỏ hàng
@@ -248,4 +248,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;
