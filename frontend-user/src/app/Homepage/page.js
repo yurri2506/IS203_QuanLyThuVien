@@ -22,6 +22,7 @@ const HomePage = () => {
   const [totalPages, setTotalPages] = useState(1);
   const itemsPerPage = 20;
   const [loading, setLoading] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const sliderRecommendSettings = {
     dots: false, // Hiển thị chấm điều hướng
@@ -71,12 +72,17 @@ const HomePage = () => {
       try {
         const userId = localStorage.getItem("id"); // thay bằng userId thật của bạn
         const searchKeywords = localStorage.getItem("searchKeywords"); // mảng keyword ví dụ
+        const accessToken = localStorage.getItem("accessToken");
+        setIsLoggedIn(!!accessToken); // Set isLoggedIn to true if accessToken exists
         const keywords = searchKeywords ? JSON.parse(searchKeywords) : [];
 
-        const response = await axios.post("http://localhost:8080/api/book/suggest", {
-          userId: userId,
-          keywords: keywords,
-        });
+        const response = await axios.post(
+          "http://localhost:8080/api/book/suggest",
+          {
+            userId: userId,
+            keywords: keywords,
+          }
+        );
         // console.log("Dữ liệu sách:", response.data);
         const convertedBooks = response.data.map((book) => ({
           id: book.maSach,
@@ -88,7 +94,7 @@ const HomePage = () => {
           borrowCount: book.soLuongMuon,
         }));
         setBooksSuggest(convertedBooks);
-        console.log(convertedBooks)
+        console.log(convertedBooks);
       } catch (error) {
         console.error("Lỗi khi fetch sách:", error);
       }
@@ -331,7 +337,6 @@ const HomePage = () => {
                 <Slider {...sliderRecommendSettings} className="mt-5 max-w-6xl">
                   {bookSuggest.map((book) => (
                     <div key={book.id} className="px-10">
-
                       <BookRecommend {...book} />
                     </div>
                   ))}
@@ -368,7 +373,7 @@ const HomePage = () => {
                 </div>
               </section>
             </section>
-            <ChatBotButton />
+            {isLoggedIn && <ChatBotButton />}
           </>
         )}
       </main>
