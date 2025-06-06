@@ -2,7 +2,7 @@
 
 Website quản lý thư viện hỗ trợ quản lý sách, người dùng, và các giao dịch mượn trả sách một cách hiệu quả, với giao diện riêng cho người dùng và quản trị viên.
 
-> 🔗 Link GitHub repository: [https://github.com/yurri2506/IS203_QuanLyThuVien](https://github.com/yurri2506/IS203_QuanLyThuVien)
+> 🔗 Link GitHub repository: [https://github.com/yurri2506/IS216_QuanLyThuVien](https://github.com/yurri2506/IS216_QuanLyThuVien)
 
 ---
 
@@ -103,16 +103,25 @@ npm run dev
 
 ### 🗂️ Cấu hình môi trường Frontend
 
-- Dự án sử dụng biến môi trường `.env.local` để kết nối Supabase và cấu hình Google OAuth. Tạo file `.env.local` trong thư mục `frontend-user` và `frontend-admin` với nội dung:
+- Dự án sử dụng biến môi trường `.env.local` để kết nối Supabase và cấu hình Google OAuth. Tạo file `.env.local` trong thư mục `frontend-user` với nội dung:
 
 ```bash
 # Supabase
 NEXT_PUBLIC_SUPABASE_URL=<YOUR_SUPABASE_URL>
 NEXT_PUBLIC_SUPABASE_ANON_KEY=<YOUR_SUPABASE_ANON_KEY>
-
+NEXT_PUBLIC_API_URL="http://localhost:8080"
 # OAuth
 NEXT_PUBLIC_GOOGLE_CLIENT_ID=<YOUR_GOOGLE_CLIENT_ID>
+GOOGLE_CLIENT_SECRET=<YOUR_GOOGLE_CLIENT_SECRET>
+NEXT_PUBLIC_FACEBOOK_APP_ID=<YOUR_FACEBOOK_APP_ID>
+FACEBOOK_CLIENT_SECRET=<YOUR_CLIENT_SECRET>
+
 ```
+- Tạo file `.env.local` trong thư mục `frontend-admin` với nội dung:
+```bash
+NEXT_PUBLIC_API_URL="http://localhost:8080"
+```
+
 ### 📌 Hướng dẫn lấy thông tin:
  - `Supabase URL & Anon Key`: Vào Supabase → chọn dự án → Settings > API → mục Project API keys.
  - `Google Client ID`: Vào Google Cloud Console → API & Services → Credentials → tạo OAuth Client ID.
