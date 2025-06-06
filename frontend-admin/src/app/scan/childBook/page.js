@@ -66,7 +66,7 @@ const UploadChild = ({ resultChild, setResultChild }) => {
       );
 
       if (!response.ok) {
-        toast.error("Không tìm thấy sách");
+        window.alert("Không tìm thấy sách");
         setLoading(false);
         return;
       }
