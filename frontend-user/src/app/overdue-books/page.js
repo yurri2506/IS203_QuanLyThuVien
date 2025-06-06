@@ -3,7 +3,6 @@ import React, { useState, useEffect } from "react";
 import LeftSideBar from "../components/LeftSideBar";
 import ChatBox from "../components/ChatBoxButton";
 import Image from "next/image";
-import useSidebarStore from "@/store/sideBarStore";
 
 const Page = () => {
   const [bookList, setBookList] = useState([]);
@@ -66,7 +65,7 @@ const Page = () => {
                   <div className="px-2 py-1/2 bg-red-500 text-white text-sm w-fit rounded-lg font-semibold">
                     Quá hạn
                   </div>
-                  // <h3 className="font-semibold">{book.TenSach}</h3>
+                  {/* // <h3 className="font-semibold">{book.TenSach}</h3>
                   //{" "}
                   <p className="text-sm text-black">Tác giả: {book.TacGia}</p>
                   // <p className="text-sm text-black">NXB: {book.NhaXB}</p>
@@ -74,7 +73,7 @@ const Page = () => {
                   <p className="text-sm text-black">
                     // Ngày mượn: {book.NgayMuon}
                     //{" "}
-                  </p>
+                  </p> */}
                   <h3 className="font-semibold">{book.tenSach}</h3>
                   <p className="text-sm text-black">
                     Tác giả: {book.tenTacGia}

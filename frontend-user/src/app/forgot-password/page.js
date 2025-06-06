@@ -99,11 +99,8 @@ export default function ForgotPasswordPage() {
       <Card className="w-[90vw] sm:w-[25vw] border-[#062D76] px-4 py-8 shadow-lg rounded-xl">
         <CardHeader>
           <CardTitle className="flex justify-center">
-            <img src="/images/logo.jpg" alt="logo" className="w-30" />
+            <img src="/images/logoN.png" alt="logo" className="w-80 h-45" />
           </CardTitle>
-          <CardDescription className="text-center text-[#062D76]">
-            Mỗi cuốn sách là một cánh cửa mở ra thế giới tri thức
-          </CardDescription>
         </CardHeader>
 
         <CardContent>

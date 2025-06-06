@@ -40,4 +40,8 @@ public interface BookService {
     List<Book> getGeneralSuggestions(List<String> keywords);
 
     List<Book> getPersonalizedSuggestions(Long userId, List<String> keywords);
+    // List<Book> getBooksByFilter(String filter, String categoryChildId);
+     List<Book> getAllBooksV2(String filter);
+    List<Book> getBooksByCategoryChildV2(String categoryChildId, String filter);
+     List<Book> getBooksByCategoryParentV2(Long categoryParentId, String filter);
 }

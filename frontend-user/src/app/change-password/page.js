@@ -41,9 +41,7 @@ const ChangePassword = () => {
     resolver: yupResolver(schema),
   });
 
-  const handleLogin = () => {
-    router.push("/user-login");
-  };
+
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -51,13 +49,7 @@ const ChangePassword = () => {
         const userId = localStorage.getItem("id");
         const accessToken = localStorage.getItem("accessToken");
 
-        if (!userId || !accessToken) {
-          toast.error(
-            "Không tìm thấy thông tin đăng nhập. Vui lòng đăng nhập lại."
-          );
-          setTimeout(() => handleLogin(), 1000);
-          return;
-        }
+  
 
         const response = await axios.get(
           `${process.env.NEXT_PUBLIC_API_URL}/api/user/${userId}`,
@@ -75,13 +67,9 @@ const ChangePassword = () => {
       } catch (err) {
         toast.error(
           err.response?.data?.message ||
-            "Không thể lấy thông tin người dùng. Vui lòng thử lại."
-        );
-        if (err.response?.status === 401 || err.response?.status === 403) {
-          toast.error("Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.");
-          setTimeout(() => handleLogin(), 1000);
+            "Không thể lấy thông tin người dùng. Vui lòng thử lại.");
         }
-      }
+        
     };
 
     fetchUserData();

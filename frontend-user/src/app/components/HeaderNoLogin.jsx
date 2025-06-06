@@ -6,7 +6,7 @@ import {
   DisclosurePanel,
   Menu,
 } from "@headlessui/react";
-import { Menu as MenuIcon, X, Bell, ShoppingCart } from "lucide-react";
+import { Menu as MenuIcon, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import axios from "axios";
@@ -29,6 +29,9 @@ const HeaderNoLogin = () => {
   const [books, setBooks] = useState([]);
   const [bookTitles, setBookTitles] = useState([]);
   const [bookAuthors, setBookAuthors] = useState([]);
+  const [bookPublishers, setBookPublishers] = useState([]);
+  const [searchResults, setSearchResults] = useState([]);
+  const [showResults, setShowResults] = useState(false);
 
   const removeVietnameseTones = (str) => {
     return str
@@ -45,122 +48,125 @@ const HeaderNoLogin = () => {
       return;
     }
 
-    // Lọc sách tên chứa từ khóa (case-insensitive)
-    // let filtered = books.filter(
-    //   (book) =>
-    //     book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    //     book.author.toLowerCase().includes(searchTerm.toLowerCase())
-    // );
     const normalizedTerm = removeVietnameseTones(searchTerm);
-    let filtered = books.filter(
-      (book) =>
-        removeVietnameseTones(book.title).includes(normalizedTerm) ||
-        removeVietnameseTones(book.author).includes(normalizedTerm)
-    );
+    let filtered = books.filter((book) => {
+      const bookData = [
+        book.title,
+        book.author,
+        book.publisher,
+        book.year?.toString(),
+      ]
+        .filter((field) => field != null)
+        .map((field) => removeVietnameseTones(field));
+      return bookData.some((field) => field.includes(normalizedTerm));
+    });
 
-    // Nếu không có kết quả thì sửa lỗi chính tả với didyoumean
-    // if (filtered.length === 0) {
-    //   const correction = didYouMean(searchTerm, bookTitles ) || didYouMean(searchTerm, bookAuthors);
-    //   if (correction) {
-    //     filtered = books.filter(book => book.title === correction) || books.filter(book => book.author === correction);
-    //   }
-    // }
     if (filtered.length === 0) {
-      // const correctionTitle = didYouMean(searchTerm, bookTitles);
       const correctionTitle = didYouMean(
         normalizedTerm,
         bookTitles.map(removeVietnameseTones)
       );
-      // const correctionAuthor = didYouMean(searchTerm, bookAuthors);
       const correctionAuthor = didYouMean(
         normalizedTerm,
         bookAuthors.map(removeVietnameseTones)
       );
+      const correctionPublisher = didYouMean(
+        normalizedTerm,
+        bookPublishers.map(removeVietnameseTones)
+      );
 
       if (correctionTitle) {
-        filtered = books.filter((book) => book.title === correctionTitle);
+        filtered = books.filter((book) =>
+          removeVietnameseTones(book.title).includes(
+            removeVietnameseTones(correctionTitle)
+          )
+        );
       } else if (correctionAuthor) {
-        filtered = books.filter((book) => book.author === correctionAuthor);
+        filtered = books.filter((book) =>
+          removeVietnameseTones(book.author).includes(
+            removeVietnameseTones(correctionAuthor)
+          )
+        );
+      } else if (correctionPublisher) {
+        filtered = books.filter((book) =>
+          removeVietnameseTones(book.publisher).includes(
+            removeVietnameseTones(correctionPublisher)
+          )
+        );
       }
     }
 
     setSuggestions(filtered);
-  }, [searchTerm, books, bookTitles, bookAuthors]);
+  }, [searchTerm, books, bookTitles, bookAuthors, bookPublishers]);
 
   const MAX_KEYWORDS = 5;
 
   const saveSearchTermToCache = (term) => {
     if (!term.trim()) return;
-
-    // Lấy danh sách từ khóa hiện tại
     const stored = JSON.parse(localStorage.getItem("searchKeywords") || "[]");
-
-    // Xóa nếu đã tồn tại
     const updated = stored.filter((item) => item !== term);
-
-    // Thêm từ khóa mới vào đầu mảng
     updated.unshift(term);
-
-    // Giới hạn số lượng từ khóa
     const limited = updated.slice(0, MAX_KEYWORDS);
-
-    // Lưu lại vào localStorage
     localStorage.setItem("searchKeywords", JSON.stringify(limited));
   };
 
-  // 3. Khi chọn 1 sách trong gợi ý
   const handleSelect = (book) => {
     console.log("Selected book:", book);
     setSearchTerm(book.title);
     setSuggestions([]);
-    // console.log("Tìm kiếm:", id);
-    // handleSearch();
-    router.push(`/book-detail/${book.id}`); // Chuyển hướng đến trang sách
+    router.push(`/book-detail/${book.id}`);
   };
 
   const handleSearch = async () => {
     try {
       let res;
-
       if (!searchTerm.trim()) {
         res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/book`);
       } else {
         res = await axios.get(
           `${process.env.NEXT_PUBLIC_API_URL}/api/book/search2`,
-          {
-            params: { query: searchTerm },
-          }
+          { params: { query: searchTerm } }
         );
       }
+      console.log("API Response:", res.data);
       saveSearchTermToCache(searchTerm.trim());
       const data = res?.data || [];
 
       const convertedBooks = Array.isArray(data)
         ? data.map((book) => ({
             id: book.maSach,
-            imageSrc: book.hinhAnh[0],
-            available:
-              book.tongSoLuong - book.soLuongMuon - book.soLuongXoa > 0,
+            imageSrc: book.hinhAnh?.[0]?.trimEnd() || "/placeholder.png", // Làm sạch URL
+            available: book.tongSoLuong > 0,
             title: book.tenSach,
             author: book.tenTacGia,
             publisher: book.nxb,
-            borrowCount: book.soLuongMuon,
+            year: book.nam,
           }))
         : [];
 
       setBooks(convertedBooks);
+      setSearchResults(convertedBooks);
+      setBookTitles(convertedBooks.map((book) => book.title));
+      setBookAuthors(convertedBooks.map((book) => book.author));
+      setBookPublishers(convertedBooks.map((book) => book.publisher));
+      setShowResults(true);
     } catch (error) {
       console.error("Lỗi khi tìm kiếm sách:", error);
-      setBooks([]); // Nếu có lỗi cũng để trống
+      setBooks([]);
+      setSearchResults([]);
+      setShowResults(false);
     }
   };
 
   const handleLogin = () => {
     router.push("/user-login");
   };
+
   useEffect(() => {
     setSearchTerm("");
     setSuggestions([]);
+    setSearchResults([]);
+    setShowResults(false);
   }, [pathname]);
 
   return (
@@ -214,16 +220,20 @@ const HeaderNoLogin = () => {
                         placeholder="Tìm kiếm sách"
                         className="flex-1 text-sm bg-transparent border-none outline-none px-2 text-gray-400 placeholder-gray-400"
                         value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onChange={(e) => {
+                          setSearchTerm(e.target.value);
+                          setShowResults(false);
+                        }}
                         onKeyDown={(e) => {
                           if (e.key === "Enter") {
+                            setSuggestions([]);
                             handleSearch();
                           }
                         }}
                       />
                     </div>
 
-                    {suggestions.length > 0 && (
+                    {suggestions.length > 0 && !showResults && (
                       <ul className="absolute left-0 right-0 mt-2 bg-white border border-gray-300 rounded-lg shadow-lg z-50 max-h-[250px] overflow-y-auto">
                         {suggestions.map((book, idx) => (
                           <li
@@ -233,10 +243,64 @@ const HeaderNoLogin = () => {
                             className="px-4 py-2 cursor-pointer hover:bg-[#f2f2f2] transition-colors text-black"
                           >
                             <strong>{book.title}</strong>
-                            {book.author && ` — ${book.author}`}
+                            {book.author && <span> — {book.author}</span>}
+                            {book.publisher && (
+                              <span className="text-sm text-gray-600"> (NXB: {book.publisher})</span>
+                            )}
+                            {book.year && (
+                              <span className="text-sm text-gray-600"> (Năm: {book.year})</span>
+                            )}
                           </li>
                         ))}
                       </ul>
+                    )}
+
+                    {showResults && (
+                      <div className="absolute left-0 right-0 mt-2 bg-white border border-gray-300 rounded-lg shadow-lg z-50 max-h-[300px] overflow-y-auto">
+                        <h3 className="px-4 py-2 text-lg font-semibold">
+                          Kết quả tìm kiếm cho: "{searchTerm}"
+                        </h3>
+                        {searchResults.length > 0 ? (
+                          searchResults.map((book, idx) => (
+                            <Link
+                              key={idx}
+                              href={`/book-detail/${book.id}`}
+                              onClick={() => setShowResults(false)}
+                              className="flex items-center px-4 py-2 hover:bg-[#f2f2f2] transition-colors text-black"
+                            >
+                              <Image
+                                src={book.imageSrc}
+                                alt={book.title}
+                                width={50}
+                                height={70}
+                                className="mr-4 rounded"
+                                onError={(e) => (e.target.src = "/placeholder.png")} // Fallback nếu Cloudinary lỗi
+                              />
+                              <div>
+                                <strong>{book.title}</strong>
+                                {book.author && (
+                                  <p className="text-sm text-gray-600">— {book.author}</p>
+                                )}
+                                {book.publisher && (
+                                  <p className="text-sm text-gray-600">NXB: {book.publisher}</p>
+                                )}
+                                {book.year && (
+                                  <p className="text-sm text-gray-600">Năm: {book.year}</p>
+                                )}
+                                <p
+                                  className={`text-sm font-medium ${
+                                    book.available ? "text-green-500" : "text-red-500"
+                                  }`}
+                                >
+                                  {book.available ? "Còn sẵn" : "Hết sách"}
+                                </p>
+                              </div>
+                            </Link>
+                          ))
+                        ) : (
+                          <p className="px-4 py-2 text-gray-500">Không tìm thấy sách nào.</p>
+                        )}
+                      </div>
                     )}
                   </div>
                 </div>
@@ -244,7 +308,7 @@ const HeaderNoLogin = () => {
                 <Menu as="div" className="relative">
                   <Menu.Button
                     onClick={handleLogin}
-                    className="text-blue-300 font-medium px-4 py-2 rounded-md hover:bg-blue-100 transition mr-6"
+                    className="text-blue-300 font-medium px-4 py-2 rounded-md hover:bg-blue-100 transition mr-6 cursor-pointer"
                   >
                     Đăng nhập / Đăng ký
                   </Menu.Button>
@@ -254,11 +318,7 @@ const HeaderNoLogin = () => {
               {/* Mobile Menu Button */}
               <div className="sm:hidden">
                 <DisclosureButton className="p-2 rounded-md hover:bg-blue-700">
-                  {open ? (
-                    <X className="size-6" />
-                  ) : (
-                    <MenuIcon className="size-6" />
-                  )}
+                  {open ? <X className="size-6" /> : <MenuIcon className="size-6" />}
                 </DisclosureButton>
               </div>
             </div>

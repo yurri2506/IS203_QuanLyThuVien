@@ -6,7 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
-function page() {
+function Page() {
   const params = useParams();
   const id = params.id;
   const [fine, setFine] = useState(null);
@@ -180,4 +180,4 @@ function page() {
   );
 }
 
-export default page;
+export default Page;

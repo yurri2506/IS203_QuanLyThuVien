@@ -23,6 +23,7 @@ const HomePage = () => {
   const [totalPages, setTotalPages] = useState(1);
   const itemsPerPage = 20;
   const [loading, setLoading] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const sliderRecommendSettings = {
     dots: false, // Hiển thị chấm điều hướng
@@ -72,6 +73,8 @@ const HomePage = () => {
       try {
         const userId = localStorage.getItem("id"); // thay bằng userId thật của bạn
         const searchKeywords = localStorage.getItem("searchKeywords"); // mảng keyword ví dụ
+        const accessToken = localStorage.getItem("accessToken");
+        setIsLoggedIn(!!accessToken); // Set isLoggedIn to true if accessToken exists
         const keywords = searchKeywords ? JSON.parse(searchKeywords) : [];
 
         const response = await axios.post(
@@ -383,7 +386,7 @@ const HomePage = () => {
                 </div>
               </section>
             </section>
-            <ChatBotButton />
+            {isLoggedIn && <ChatBotButton />}
           </>
         )}
       </main>

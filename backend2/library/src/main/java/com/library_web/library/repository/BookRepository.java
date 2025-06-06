@@ -40,4 +40,12 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     // List<Book> findByTheLoaiContainingIgnoreCase(String query);
 
     List<Book> findAllByMaSachIn(List<Long> borrowedBookIds);
+    // @Query("SELECT b FROM Book b WHERE " +
+    //    "LOWER(b.tenSach) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+    //    "LOWER(b.tenTacGia) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+    //    "LOWER(b.moTa) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+    //    "LOWER(b.nxb) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+    //    "CAST(b.nam AS string) LIKE CONCAT('%', :query, '%')")
+    // List<Book> searchByMultipleFields(@Param("query") String query);
+
 }
