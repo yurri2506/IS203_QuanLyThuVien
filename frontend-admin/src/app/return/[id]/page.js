@@ -5,7 +5,7 @@ import { Undo2, Trash2, Pencil, Eye } from "lucide-react";
 import { useRouter, useParams } from "next/navigation";
 import { Button } from "@/app/components/ui/button";
 import useSidebarStore from "@/store/sideBarStore";
-const page = () => {
+const Page = () => {
   const { id } = useParams();
   const { isSidebarOpen } = useSidebarStore();
   const route = useRouter();
@@ -196,4 +196,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;
