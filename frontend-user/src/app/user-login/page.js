@@ -279,7 +279,7 @@ const Page = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
-      <Toaster position="top-right" toastOptions={{ duration: 5000 }} />
+      <Toaster position="top-center" toastOptions={{ duration: 5000 }} />
 
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
@@ -361,7 +361,7 @@ const Page = () => {
                       )}
                     </div>
                     <div className="text-right text-blue-500 text-sm mb-4">
-                      <a href="/change-password" className="underline">
+                      <a href="/forgot-password" className="underline">
                         Quên mật khẩu?
                       </a>
                     </div>
