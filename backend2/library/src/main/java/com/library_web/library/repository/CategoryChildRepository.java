@@ -11,4 +11,8 @@ public interface CategoryChildRepository extends JpaRepository<CategoryChild, St
     Optional<CategoryChild> findByName(String name);
     List<CategoryChild> findByParentIdOrderByIdAsc(Long parentId);
     Optional<CategoryChild> findByNameAndParentId(String name, Long parentId);
+
+    List<CategoryChild> findByParentId(Long parentId);
+
+
 }

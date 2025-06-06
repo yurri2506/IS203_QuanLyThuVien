@@ -23,6 +23,32 @@ public class BookController {
 
         public BookController(BookService service) {
                 this.service = service;
+
+
+        }
+
+        @GetMapping("/v2")
+        public List<Book> getAllBooksV2(
+                @RequestParam(value = "filter", required = false, defaultValue = "ALL") String filter
+        ) {
+                return service.getAllBooksV2(filter);
+        }
+
+       @GetMapping("/v2/category-child/{categoryChildId}")
+        public List<Book> getBooksByCategoryChildV2(
+                @PathVariable String categoryChildId,
+                @RequestParam(value = "filter", required = false, defaultValue = "ALL") String filter
+        ) {
+                return service.getBooksByCategoryChildV2(categoryChildId, filter);
+        }
+
+        @GetMapping("/v2/category-parent/{categoryParentId}")
+        public List<Book> getBooksByCategoryParentV2(
+                @PathVariable Long categoryParentId,
+                @RequestParam(value = "filter", required = false, defaultValue = "ALL") String filter
+        ) {
+                return service.getBooksByCategoryParentV2(categoryParentId, filter);
+
         }
 
         @GetMapping
