@@ -8,7 +8,7 @@ import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { ThreeDot } from "react-loading-indicators";
 
-function page() {
+function Page() {
   const [loading, setLoading] = useState(false);
   const route = useRouter();
   const handleGoBack = () => {
@@ -285,4 +285,4 @@ function page() {
     </div>
   );
 }
-export default page;
+export default Page;
