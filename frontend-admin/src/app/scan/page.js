@@ -301,7 +301,7 @@ const UploadImage = () => {
     setLoading(true);
     try {
       let response;
-
+      console.log(children)
       if (currentChoose.status === "Đã yêu cầu") {
         response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/api/borrow-cards/borrow/${currentChoose?.id}`,
@@ -313,6 +313,8 @@ const UploadImage = () => {
             body: JSON.stringify(children),
           }
         );
+        setChildren([])
+        console.log(children)
       } else {
         response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/api/borrow-cards/return/${currentChoose?.id}`,
@@ -321,8 +323,11 @@ const UploadImage = () => {
             headers: {
               "Content-Type": "application/json",
             },
+            body: JSON.stringify(children),
           }
         );
+         setChildren([])
+        console.log(children)
       }
 
       if (!response.ok) {

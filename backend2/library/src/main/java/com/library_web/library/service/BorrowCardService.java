@@ -221,12 +221,15 @@ public class BorrowCardService {
             childBookRepo.save(child); // lưu lại từng sách con
         }
         // Cập nhật số lượng sách available
-        List<String> bookIds = borrowCard.getBookIds();
-        for (String bookId : bookIds) {
-            Book book = BookRepository.findById(Long.parseLong(bookId))
+        List<Long> bookIds = borrowCard.getBorrowedBooks().stream()
+                .map(bb -> bb.getBookId())
+                .collect(Collectors.toList());
+         for (Long bookId : bookIds) {
+            Book book = BookRepository.findById(bookId)
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy sách với id: " + bookId));
+
             book.setSoLuongMuon(book.getSoLuongMuon() - 1);
-            BookRepository.save(book); // lưu lại từng sách
+            BookRepository.save(book);
         }
         EmailService.mailReturned(borrowCard);
         return repository.save(borrowCard);

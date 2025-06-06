@@ -50,6 +50,7 @@ function page() {
         }
         const books = await res.json();
         setBookList(books);
+        // console.log(books)
       } catch (e) {
         console.log("Lỗi khi tải danh sách sách: ", e);
       }
@@ -60,7 +61,7 @@ function page() {
   const handleEnterUser = () => {
     const selected = userList.filter((user) => user?.id == userText);
     if (selected.length < 1) {
-      toast.error("Không tìm thấy người dùng với id này");
+      window.alert("Không tìm thấy người dùng với id này");
       return;
     }
     setUser(selected.at(0));
@@ -70,24 +71,26 @@ function page() {
   };
   const handleAddIntoList = () => {
     if (book) {
-      if (!borrowList.find((bk) => bk?.id === book?.id)) {
+      if (!borrowList.find((bk) => bk?.maSach === book?.maSach)) {
         borrowList.push(book);
         setBook(null);
       } else {
-        toast.error("Sách này đã có trong danh sách mượn");
+        window.alert("Sách này đã có trong danh sách mượn");
       }
     } else {
-      toast.error("Vui lòng nhập thông tin sách");
+      window.alert("Vui lòng nhập thông tin sách");
     }
   };
   const handleRemoveBook = (selectedBook) => {
-    setBorrowList((prev) => prev.filter((book) => book.id !== selectedBook.id));
+    setBorrowList((prev) =>
+      prev.filter((book) => book.maSach !== selectedBook.maSach)
+    );
   };
   const BookCard = ({ book }) => {
     return (
       <div className="w-full h-[200px] p-5 flex justify-between items-center my-3 px-5">
         <div className="flex flex-col">
-          <p className="font-semibold">Id:&nbsp;{book?.id}</p>
+          <p className="font-semibold">Id:&nbsp;{book?.maSach}</p>
           <p className="font-semibold">{book?.tenSach}</p>
           <p>{book?.tenTacGia}</p>
           <p>{book?.nxb}</p>
@@ -108,11 +111,21 @@ function page() {
   const handleCreateBorrowCard = async () => {
     try {
       setLoading(true);
-      const idList = borrowList.map((book) => book.id);
+      const borrowedBooks = borrowList.map((book) => ({
+        bookId: book.maSach,
+        childBookId: null,
+      }));
+
       const borrowCardRequest = {
-        userId: user?.id,
-        bookIds: idList,
+        userId: user.id,
+        borrowedBooks,
+        borrowDate: new Date().toISOString(),
+        status: "REQUESTED",
+        dueDate: new Date(
+          new Date().setDate(new Date().getDate() + 7)
+        ).toISOString(), // Ngày trả sách là 14 ngày sau
       };
+      console.log(borrowCardRequest);
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/borrow-cards`,
         {
@@ -124,22 +137,22 @@ function page() {
         }
       );
       if (response.status === 200) {
-        toast.success("Tạo phiếu mượn thành công");
+        window.alert("Tạo phiếu mượn thành công");
         handleGoBack();
       }
     } catch (error) {
-      toast.error("Đã xảy ra lỗi");
+      window.alert("Đã xảy ra lỗi");
       console.error("Lỗi khi tạo phiếu mượn:", error);
     }
     setLoading(false);
   };
   const handleSubmit = () => {
     if (!user) {
-      toast.error("Vui lòng nhập thông tin người mượn");
+      window.alert("Vui lòng nhập thông tin người mượn");
       return;
     }
     if (borrowList.length < 1) {
-      toast.error("Vui lòng nhập thông tin danh sách mượn");
+      window.alert("Vui lòng nhập thông tin danh sách mượn");
       return;
     }
     if (confirm("Bạn chắc chắn muốn tạo phiếu mượn với các thông tin sau?")) {
@@ -207,7 +220,7 @@ function page() {
                 >
                   <p>
                     {book
-                      ? `${book?.id}-${book?.tenSach}-${book?.tenTacGia}-${book?.nxb}`
+                      ? `${book?.maSach}-${book?.tenSach}-${book?.tenTacGia}-${book?.nxb}`
                       : "Vui lòng chọn sách"}
                   </p>
                   <ChevronDown className="w-12 h-12 text-[#062D76]" />
@@ -221,7 +234,7 @@ function page() {
                             onClick={() => handleEnterBook(book)}
                           >
                             <p>
-                              {book?.id}-{book?.tenSach}-{book?.tenTacGia}-
+                              {book?.maSach}-{book?.tenSach}-{book?.tenTacGia}-
                               {book?.nxb}
                             </p>
                           </div>
