@@ -6,11 +6,9 @@ import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
 import { ArrowUpFromLine, ChevronDown, CircleCheck, Undo2 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-<<<<<<< HEAD
+
 import toast from "react-hot-toast";
-=======
-import toast, { Toaster } from "react-hot-toast";
->>>>>>> PhuongThao
+
 import { ThreeDot } from "react-loading-indicators";
 import axios from "axios";
 
