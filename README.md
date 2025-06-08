@@ -69,7 +69,7 @@ Trước khi bắt đầu, hãy đảm bảo đã cài đặt các phần mềm 
 ### 1. Clone project về máy
 
 ```bash
-git clone https://github.com/yurri2506/IS203_QuanLyThuVien.git
+git clone https://github.com/yurri2506/IS216_QuanLyThuVien.git
 cd IS203_QuanLyThuVien
 ```
 
