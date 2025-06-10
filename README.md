@@ -70,7 +70,7 @@ Trước khi bắt đầu, hãy đảm bảo đã cài đặt các phần mềm 
 
 ```bash
 git clone https://github.com/yurri2506/IS216_QuanLyThuVien.git
-cd IS203_QuanLyThuVien
+cd IS216_QuanLyThuVien
 ```
 
 ### 2. Cài đặt và chạy backend (Spring Boot)
