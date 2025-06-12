@@ -5,11 +5,22 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import org.springframework.http.HttpStatus;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(MaxBorrowLimitExceededException.class)
+    public ResponseEntity<?> handleMaxBorrowLimit(MaxBorrowLimitExceededException ex) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "Không thể mượn sách");
+        response.put("data", Map.of("reason", ex.getMessage()));
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST); // 400 thay vì 500
+    }
+
 
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<Map<String, Object>> handleResponseStatusException(ResponseStatusException ex) {

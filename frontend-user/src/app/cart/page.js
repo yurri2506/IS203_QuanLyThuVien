@@ -68,11 +68,37 @@ const books = [
 
 const Page = () => {
   const [selected, setSelected] = useState([]);
+  const [maxAllowed, setMaxAllowed] = useState(null);
   const [books, setBooks] = useState(""); // Giỏ hàng
   const [loading, setLoading] = useState(true); // Trạng thái loading
   const user = JSON.parse(localStorage.getItem("persist:root")); // lấy thông tin người dùng từ localStorage
   let cartId = "";
 
+  const fetchMaxAllowed = async () => {
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/settings`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            maxBorrowedBooks: maxBorrowedBooks,
+          }),
+        }
+      );
+      if (!res.ok) throw new Error("Không thể tải cài đặt.");
+      const result = await res.json();
+      setMaxAllowed(result?.maxBorrowedBooks ? result?.maxBorrowedBooks : 5);
+    } catch (error) {
+      console.error("Lỗi khi lấy cài đặt:", error);
+      setMaxAllowed(5); // Mặc định là 5 nếu có lỗi
+    }
+  };
+  useEffect(() => {
+    fetchMaxAllowed(); // Lấy số lượng sách tối đa được mượn
+  }, []);
   // Lấy giỏ hàng từ API theo userId
   const fetchCart = async () => {
     try {
@@ -157,6 +183,8 @@ const Page = () => {
         }
       );
 
+      // Kiểm tra phản hồi từ backend
+
       if (response.status === 200) {
         alert("Phiếu mượn đã được tạo!");
         console.log(response.data); // Xem chi tiết phiếu mượn
@@ -174,10 +202,11 @@ const Page = () => {
         alert("Không thể tạo phiếu mượn");
       }
     } catch (error) {
-      console.error("Lỗi khi mượn sách:", error);
-      alert("Có lỗi xảy ra khi mượn sách.");
+      console.error("Lỗi gọi API mượn quá sách:", error);
+      alert("Bạn đã vượt quá số lượng sách mượn tối đa hoặc có lỗi xảy ra.");
     }
   };
+  const exceedLimit = selected.length > maxAllowed;
 
   return (
     <div className="flex flex-col min-h-screen text-foreground">
@@ -239,6 +268,11 @@ const Page = () => {
                 >
                   Đăng ký mượn ({selected.length})
                 </button>
+                {exceedLimit && (
+                  <p className="text-red-500 text-sm">
+                    Bạn chỉ được mượn tối đa {maxAllowed} sách.
+                  </p>
+                )}
               </div>
             </footer>
           )}

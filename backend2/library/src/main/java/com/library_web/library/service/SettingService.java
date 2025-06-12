@@ -17,7 +17,7 @@ public class SettingService {
     public Setting getSetting() {
         List<Setting> all = SettingRepo.findAll();
         if (all.isEmpty()) {
-            Setting defaultSetting = new Setting(5000,3,21,3); // default nếu chưa có
+            Setting defaultSetting = new Setting(5000,3,21,3,5); // default nếu chưa có
             return SettingRepo.save(defaultSetting);
         }
         return all.get(0);
@@ -33,6 +33,7 @@ public class SettingService {
         existing.setWaitingToTake(newSetting.getWaitingToTake());
         existing.setBorrowDay(newSetting.getBorrowDay());
         existing.setStartToMail(newSetting.getStartToMail());
+        existing.setMaxBorrowedBooks(newSetting.getMaxBorrowedBooks());
         return SettingRepo.save(existing);
     }
   
