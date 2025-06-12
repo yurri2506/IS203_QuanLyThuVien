@@ -51,7 +51,7 @@ const BookDetailsPage = () => {
 
   useEffect(() => {
     if (user.id != "") {
-      console.log("sos", user.id)
+      console.log("sos", user.id);
       const checkBookInCart = async () => {
         try {
           const res = await axios.get(
@@ -81,7 +81,7 @@ const BookDetailsPage = () => {
       router.push("/user-login");
     } else {
       try {
-        console.log("sos", user.id)
+        console.log("sos", user.id);
         const res = await axios.post(
           `${process.env.NEXT_PUBLIC_API_URL}/api/cart/${user.id}/add/books`,
           [id] // đưa vào mảng 1 phần tử
@@ -105,21 +105,21 @@ const BookDetailsPage = () => {
       router.push("/user-login");
     } else {
       try {
-        console.log("sos", user.id)
+        console.log("sos", user.id);
         console.log({
-            userId: user.id,
-            borrowedBooks: [
-              {
-                bookId: id,
-                childBookId: null,
-              },
-            ],
-            borrowDate: new Date().toISOString(),
-            status: "REQUESTED",
-            dueDate: new Date(
-              new Date().setDate(new Date().getDate() + 14)
-            ).toISOString(), // Ngày trả sách là 14 ngày sau
-          })
+          userId: user.id,
+          borrowedBooks: [
+            {
+              bookId: id,
+              childBookId: null,
+            },
+          ],
+          borrowDate: new Date().toISOString(),
+          status: "REQUESTED",
+          dueDate: new Date(
+            new Date().setDate(new Date().getDate() + 14)
+          ).toISOString(), // Ngày trả sách là 14 ngày sau
+        });
         // gửi yêu cầu mượn sách
         const response = await axios.post(
           `${process.env.NEXT_PUBLIC_API_URL}/api/borrow-cards`,
@@ -147,8 +147,8 @@ const BookDetailsPage = () => {
           alert("Có lỗi xảy ra khi tạo phiếu mượn");
         }
       } catch (error) {
-        console.error("Lỗi khi mượn sách:", error);
-        alert("Có lỗi xảy ra khi mượn sách");
+        console.error("Lỗi gọi API mượn quá sách:", error);
+        alert("Bạn đã vượt quá số lượng sách mượn tối đa hoặc có lỗi xảy ra.");
       }
     }
   };

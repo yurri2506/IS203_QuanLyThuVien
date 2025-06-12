@@ -13,6 +13,7 @@ const Page = () => {
   const [wait, setWait] = useState(0);
   const [borrow, setBorrow] = useState(0);
   const [startMail, setStartMail] = useState(0);
+  const [maxBorrowedBooks, setMaxBorrowedBooks] = useState(0);
   const fetchSetting = async () => {
     try {
       const res = await fetch(
@@ -27,6 +28,9 @@ const Page = () => {
       setWait(result?.waitingToTake ? result?.waitingToTake : 3);
       setBorrow(result?.borrowDay ? result?.borrowDay : 21);
       setStartMail(result?.startToMail ? result?.startToMail : 3);
+      setMaxBorrowedBooks(
+        result?.maxBorrowedBooks ? result?.maxBorrowedBooks : 5
+      );
     } catch (error) {
       toast.error(error.message);
     }
@@ -51,6 +55,7 @@ const Page = () => {
             waitingToTake: wait,
             borrowDay: borrow,
             startToMail: startMail,
+            maxBorrowedBooks: maxBorrowedBooks,
           }),
         }
       );
@@ -81,6 +86,18 @@ const Page = () => {
         </div>
       ) : (
         <div className="flex w-full flex-col py-6 md:ml-52 relative mt-10 gap-2 items-center px-10">
+          <div className="flex flex-col w-full gap-[5px] md:gap-[10px]">
+            <p className="font-semibold text-lg mt-3">
+              Số lượt sách được mượn tối đa
+            </p>
+            <Input
+              type="number"
+              placeholder="Nhập số sách được mượn tối đa"
+              className="font-semibold rounded-lg w-full h-10 flex items-center px-5 bg-white"
+              value={maxBorrowedBooks}
+              onChange={(e) => setMaxBorrowedBooks(e.target.value)}
+            />
+          </div>
           <div className="flex flex-col w-full gap-[5px] md:gap-[10px]">
             <p className="font-semibold text-lg mt-3">Số tiền phạt/ngày</p>
             <Input

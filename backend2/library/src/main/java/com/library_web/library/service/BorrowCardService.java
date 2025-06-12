@@ -15,6 +15,8 @@ import com.library_web.library.repository.BookRepository;
 import com.library_web.library.repository.BorrowCardRepository;
 import com.library_web.library.repository.CategoryChildRepository;
 import com.library_web.library.repository.UserRepository;
+import com.library_web.library.repository.BorrowBookRepository;
+import com.library_web.library.exception.MaxBorrowLimitExceededException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -48,6 +50,9 @@ public class BorrowCardService {
     private SettingService settingService;
     @Autowired
     private NotificationService notificationService;
+
+        @Autowired
+        private BorrowBookRepository borrowBookrepository;
 
     public List<BorrowCard> getAll() {
         return repository.findAll();
@@ -94,6 +99,18 @@ public class BorrowCardService {
 
     public BorrowCard create(Long userId, List<Long> bookIds) {
         System.out.println("dữ liệu: " + bookIds);
+
+        if (bookIds == null || bookIds.isEmpty()) {
+            throw new RuntimeException("Danh sách sách không được để trống");
+        }
+        int maxBorrowedBooks = settingService.getSetting().getMaxBorrowedBooks();
+        int currentBorrowedCount = borrowBookrepository.countBooksBeingBorrowedByUser(userId);
+        int totalBooksToBorrow = currentBorrowedCount + bookIds.size();
+        if (totalBooksToBorrow > maxBorrowedBooks) {
+            throw new MaxBorrowLimitExceededException("Bạn đã mượn quá số lượng sách cho phép. Số lượng tối đa là: "
+                    + maxBorrowedBooks);
+        }
+        
         LocalDateTime borrowDate = LocalDateTime.now();
         int waitingToTake = settingService.getSetting().getWaitingToTake();
 
@@ -122,9 +139,12 @@ public class BorrowCardService {
         }
         BorrowCard savedBorrowCard = repository.save(borrowCard);
         String message = "Bạn đã tạo phiếu mượn sách thành công! Vui lòng đến lấy sách trong thời gian sớm nhất nhé!\nID Phiếu mượn: "
-                + savedBorrowCard.getId();
+                + savedBorrowCard.getId() + "\nSố lượng sách mượn: "
+                + savedBorrowCard.getBorrowedBooks().size() + "/"
+                + settingService.getSetting().getMaxBorrowedBooks();
         notificationService.sendNotification(savedBorrowCard.getUserId(), message);
         return savedBorrowCard;
+        
     }
 
     public boolean delete(Long id) {
