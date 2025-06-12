@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { Send, MessageCircleMore, Minus, Maximize, Minimize } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { createClient } from "@supabase/supabase-js";
+import axios from "axios";
 
 // Icon Chat
 const ChatIcon = () => {
@@ -84,17 +84,6 @@ const ChatBotButton = () => {
   const [input, setInput] = useState("");
   const [notificationVisible, setNotificationVisible] = useState(true);
 
-  // Khởi tạo Supabase client
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL || "https://bodplopetgopwanaxmej.supabase.co",
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJvZHBsb3BldGdvcHdhbmF4bWVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ1MjE0NjksImV4cCI6MjA2MDA5NzQ2OX0.4Ao054tK11NFSqSdM0iYbze3kGgq3aJLd8cDrwQ8vr4"
-  );
-
-  // Google AI Studio API
-  const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_AI_API_KEY || "AIzaSyBqd2u7gmKg_Dm9tG8ZLtAH_l6P3-h4kTo";
-  const API_URL =
-    "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
-
   const sendMessage = async () => {
     if (input.trim() === "") return;
     const newUserMessage = {
@@ -111,270 +100,21 @@ const ChatBotButton = () => {
     setNotificationVisible(false);
 
     try {
-      const lowerMessage = input.toLowerCase();
-      let botReply = ""; // Reset botReply at the start
-
-      // Kiểm tra tình trạng sách
-      if (
-        lowerMessage.includes("còn sách") ||
-        lowerMessage.includes("sách còn không") ||
-        lowerMessage.includes("liên quan")
-      ) {
-        const bookTitle = extractBookTitle(input);
-        const { data: bookData, error: bookError } = await supabase
-          .from("book")
-          .select("ma_sach, ten_sach, ten_tac_gia, trang_thai")
-          .ilike("ten_sach", `%${bookTitle}%`)
-          .limit(5);
-
-        if (bookError)
-          throw new Error("Lỗi truy vấn Supabase (book): " + bookError.message);
-        if (bookData && bookData.length > 0) {
-          const book = bookData[0];
-          const { data: borrowData, error: borrowError } = await supabase
-            .from("borrow_cards")
-            .select("id")
-            .eq("book_id", book.ma_sach)
-            .eq("status", "borrowed");
-
-          if (borrowError)
-            throw new Error(
-              "Lỗi truy vấn Supabase (borrow_cards): " + borrowError.message
-            );
-          botReply = `Cuốn "${book.ten_sach}" của ${book.ten_tac_gia} hiện ${
-            borrowData.length === 0 ? "còn" : "đã được mượn"
-          }. Bạn muốn mình hướng dẫn cách mượn không?`;
-        } else {
-          botReply = `Không tìm thấy cuốn "${bookTitle}". Bạn có muốn thử tên khác không?`;
+      const response = await axios.post(
+        "https://thanhtri1904.app.n8n.cloud/webhook/bec2193d-0a8a-4919-87f7-d11507518684",
+        {
+          message: input,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
         }
-      }
-      // Sách mới trong tháng
-      else if (
-        lowerMessage.includes("sách mới") ||
-        lowerMessage.includes("mới ra")
-      ) {
-        const currentMonth = new Date().getMonth() + 1;
-        const currentYear = new Date().getFullYear();
-        const { data, error } = await supabase
-          .from("book")
-          .select("ten_sach, ten_tac_gia, created_at")
-          .gte("created_at", `${currentYear}-${currentMonth.toString().padStart(2, '0')}-01`)
-          .lte("created_at", `${currentYear}-${currentMonth.toString().padStart(2, '0')}-31`)
-          .limit(5);
-
-        if (error) throw new Error("Lỗi truy vấn Supabase: " + error.message);
-        if (data && data.length > 0) {
-          botReply =
-            `Sách mới trong tháng ${currentMonth}/${currentYear}:\n` +
-            data
-              .map((book) => `- ${book.ten_sach} (${book.ten_tac_gia})`)
-              .join("\n");
-        } else {
-          botReply =
-            "Hiện không có sách mới trong tháng này. Bạn muốn tìm sách theo thể loại không?";
-        }
-      }
-      // Sách được yêu thích
-      else if (
-        lowerMessage.includes("sách yêu thích") ||
-        lowerMessage.includes("phổ biến") ||
-        lowerMessage.includes("gợi ý") ||
-        lowerMessage.includes("hay")
-      ) {
-        const { data, error } = await supabase
-          .from("borrowed_books")
-          .select("book_id, book!inner(ten_sach, ten_tac_gia)");
-
-        if (error) throw new Error("Lỗi truy vấn Supabase: " + error.message);
-
-        if (data && data.length > 0) {
-          const bookCounts = data.reduce((acc, curr) => {
-            const book = curr.book;
-            const bookId = curr.book_id;
-            acc[bookId] = acc[bookId] || {
-              title: book.ten_sach,
-              author: book.ten_tac_gia,
-              count: 0,
-            };
-            acc[bookId].count += 1;
-            return acc;
-          }, {});
-
-          const sortedBooks = Object.values(bookCounts)
-            .sort((a, b) => b.count - a.count)
-            .slice(0, 5);
-
-          botReply =
-            "Sách được yêu thích nhất:\n" +
-            sortedBooks
-              .map(
-                (book) =>
-                  `- ${book.title} (${book.author}, ${book.count} lượt mượn)`
-              )
-              .join("\n");
-        } else {
-          botReply =
-            "Hiện chưa có dữ liệu về sách được yêu thích. Bạn muốn tìm sách theo thể loại không?";
-        }
-      }
-      // Giờ hoạt động
-      else if (
-        lowerMessage.includes("hoạt động") ||
-        lowerMessage.includes("mở cửa") ||
-        lowerMessage.includes("giờ làm việc")
-      ) {
-        botReply =
-          "Thư viện mở cửa từ 7:30 đến 16:30 từ thứ Hai đến thứ Sáu. Vào cuối tuần, thư viện mở cửa từ 8:00 đến 16:00. Bạn có cần thêm thông tin gì không?";
-      }
-      // Cách mượn sách
-      else if (
-        lowerMessage.includes("mượn sách") ||
-        lowerMessage.includes("cách mượn sách")
-      ) {
-        botReply =
-          "Để mượn sách, bạn có thể tạo phiếu yêu cầu mượn sách để đăng ký online hoặc có thể đăng ký trực tiếp với thủ thư. Bạn có thể mượn tối đa 5 cuốn sách trong một lần.";
-      }
-      // Cách trả sách
-      else if (
-        lowerMessage.includes("trả sách") ||
-        lowerMessage.includes("cách trả sách")
-      ) {
-        botReply = "Để trả sách, bạn tới thư viện và đưa sách cho thủ thư.";
-      }
-      // Trễ hạn sách
-      else if (
-        lowerMessage.includes("trễ sách") ||
-        lowerMessage.includes("hết hạn")
-      ) {
-        botReply =
-          "Nếu bạn trả sách trễ, bạn sẽ bị phạt 5.000 đồng cho mỗi ngày trễ. Bạn có thể thanh toán tại quầy thủ thư hoặc thanh toán online qua MoMo ở phần phiếu phạt.";
-      }
-      // Mất hoặc hư sách
-      else if (
-        lowerMessage.includes("mất sách") ||
-        lowerMessage.includes("hư sách") ||
-        lowerMessage.includes("hỏng sách")
-      ) {
-        botReply =
-          "Nếu bạn làm mất hoặc hư hỏng sách, bạn sẽ phải bồi thường theo giá trị của sách đó. Bạn có thể liên hệ thủ thư để biết thêm chi tiết.";
-      }
-      // Câu hỏi chung (tìm kiếm theo tên sách, tác giả, thể loại, mô tả)
-      else {
-        const keyword = extractBookDescription(input);
-        if (!keyword) {
-          botReply =
-            "Xin lỗi, mình không hiểu câu hỏi của bạn. Bạn có thể hỏi về sách còn hay không, sách mới, hoặc cách mượn/trả sách nhé!";
-        } else {
-          let bookData = [];
-
-          // Search books by ten_sach, ten_tac_gia, mo_ta
-          const { data: bookMatches, error: bookError } = await supabase
-            .from("book")
-            .select(
-              "ma_sach, ten_sach, ten_tac_gia, mo_ta, trang_thai, category_child!inner(name)"
-            )
-            .or(
-              `ten_sach.ilike.%${keyword}%,ten_tac_gia.ilike.%${keyword}%,mo_ta.ilike.%${keyword}%`
-            )
-            .limit(5);
-
-          if (bookError) {
-            throw new Error("Lỗi truy vấn Supabase (book): " + bookError.message);
-          }
-
-          if (bookMatches && bookMatches.length > 0) {
-            bookData = bookData.concat(bookMatches);
-          }
-
-          // Search books by category_child.ten_the_loai
-          const { data: categoryMatches, error: categoryError } = await supabase
-            .from("category_child")
-            .select("id, name")
-            .ilike("name", `%${keyword}%`);
-
-          if (categoryError) {
-            throw new Error(
-              "Lỗi truy vấn Supabase (category_child): " + categoryError.message
-            );
-          }
-
-          if (categoryMatches && categoryMatches.length > 0) {
-            const categoryIds = categoryMatches.map((cat) => cat.id);
-            const { data: booksByCategory, error: booksByCategoryError } =
-              await supabase
-                .from("book")
-                .select(
-                  "ma_sach, ten_sach, ten_tac_gia, mo_ta, trang_thai, category_child!inner(name)"
-                )
-                .in("category_child_id", categoryIds)
-                .limit(5 - bookData.length);
-
-            if (booksByCategoryError) {
-              throw new Error(
-                "Lỗi truy vấn Supabase (books by category): " +
-                  booksByCategoryError.message
-              );
-            }
-
-            if (booksByCategory && booksByCategory.length > 0) {
-              bookData = bookData.concat(booksByCategory);
-            }
-          }
-
-          // Remove duplicates by ma_sach and limit to 5
-          bookData = Array.from(
-            new Map(bookData.map((book) => [book.ma_sach, book])).values()
-          ).slice(0, 5);
-
-          if (bookData.length > 0) {
-            botReply =
-              "Kết quả tìm kiếm:\n" +
-              bookData
-                .map(
-                  (book) =>
-                    `- ${book.ten_sach} (${book.ten_tac_gia}, Thể loại: ${
-                      book.category_child?.name || "Không xác định"
-                    }, ${book.trang_thai === "available" ? "Còn" : "Đã mượn"})`
-                )
-                .join("\n");
-          } else {
-            // Fallback to Google AI Studio API
-            try {
-              const response = await fetch(`${API_URL}?key=${API_KEY}`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  contents: [{ parts: [{ text: input }] }],
-                  systemInstruction: {
-                    parts: [
-                      {
-                        text: "Bạn là một trợ lý thư viện thông minh, hỗ trợ người dùng tra cứu sách, kiểm tra tình trạng mượn/trả, và cung cấp thông tin về thư viện. Trả lời thân thiện, ngắn gọn, và chuyên nghiệp. Nếu không biết thông tin cụ thể, hướng dẫn người dùng liên hệ thư viện trực tiếp.",
-                      },
-                    ],
-                  },
-                }),
-              });
-
-              if (!response.ok) {
-                throw new Error(
-                  "Lỗi khi gọi Google AI Studio API: " + response.statusText
-                );
-              }
-
-              const data = await response.json();
-              botReply = data.candidates[0].content.parts[0].text;
-            } catch (apiError) {
-              console.error("Lỗi Google AI Studio:", apiError);
-              botReply =
-                "Xin lỗi, không thể xử lý câu hỏi của bạn lúc này. Vui lòng thử lại hoặc liên hệ thư viện trực tiếp.";
-            }
-          }
-        }
-      }
-
+      );
+      const reply = response.data?.reply || "Không có phản hồi!";
       const newBotMessage = {
         sender: "bot",
-        text: botReply || "Xin lỗi, mình không hiểu câu hỏi của bạn. Hãy thử hỏi lại nhé!",
+        text: reply,
         time: new Date().toLocaleTimeString([], {
           hour: "2-digit",
           minute: "2-digit",
@@ -382,7 +122,7 @@ const ChatBotButton = () => {
       };
       setMessages((prev) => [...prev, newBotMessage]);
     } catch (error) {
-      console.error("Lỗi:", error);
+      console.error("Lỗi khi gọi n8n cloud:", error);
       const errorMessage = {
         sender: "bot",
         text: "Xin lỗi, có lỗi xảy ra. Vui lòng thử lại!",
@@ -393,16 +133,6 @@ const ChatBotButton = () => {
       };
       setMessages((prev) => [...prev, errorMessage]);
     }
-  };
-
-  const extractBookTitle = (message) => {
-    const match = message.match(/"([^"]+)"|'([^']+)'|(\w[\w\s]*\w)/);
-    return match ? (match[1] || match[2] || match[3]).trim() : "";
-  };
-
-  const extractBookDescription = (message) => {
-    const match = message.match(/"([^"]+)"|'([^']+)'|(\w[\w\s]*\w)/);
-    return match ? (match[1] || match[2] || match[3]).trim() : "";
   };
 
   return (
